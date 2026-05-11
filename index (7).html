@@ -1,0 +1,2244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control Documental — Flota Nacional 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1117;--bg2:#161b27;--bg3:#1e2535;--bg4:#252e42;
+  --border:#2a3347;--border2:#354060;
+  --accent:#3b82f6;--accent2:#60a5fa;--accent3:rgba(59,130,246,0.12);
+  --green:#22c55e;--green2:rgba(34,197,94,0.12);
+  --warn:#f59e0b;--warn2:rgba(245,158,11,0.12);
+  --danger:#ef4444;--danger2:rgba(239,68,68,0.12);
+  --purple:#a78bfa;--purple2:rgba(167,139,250,0.12);
+  --text:#f0f4ff;--text2:#94a3b8;--text3:#4b5563;
+  --radius:10px;--radius-sm:6px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px;}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);}
+.logo-tag{font-size:9px;font-weight:700;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:5px;}
+.logo-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.2;}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:3px;font-family:var(--mono);}
+.sidebar-nav{padding:10px 0;flex:1;overflow-y:auto;}
+.nav-section{padding:14px 18px 5px;font-size:9px;font-weight:700;letter-spacing:2.5px;color:var(--text3);text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 18px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:400;border-left:2px solid transparent;transition:all 0.12s;}
+.nav-item:hover{color:var(--text);background:var(--bg3);}
+.nav-item.active{color:var(--accent2);background:var(--accent3);border-left-color:var(--accent);font-weight:500;}
+.nav-item .ico{font-size:14px;min-width:18px;text-align:center;}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);}
+.gs-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;margin-bottom:4px;}
+.gs-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.gs-dot.off{background:var(--danger);}
+
+/* MAIN */
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:11px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-title{font-size:14px;font-weight:600;color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.tb-btn{border:1px solid var(--border2);background:var(--bg3);border-radius:var(--radius-sm);padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all 0.12s;display:flex;align-items:center;gap:5px;}
+.tb-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.tb-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.tb-btn.primary:hover{background:#2563eb;}
+.search-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;font-size:12px;font-family:var(--font);width:200px;outline:none;color:var(--text);transition:border-color 0.12s;}
+.search-box:focus{border-color:var(--accent);}
+.filter-sel{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;color:var(--text);cursor:pointer;}
+.content{padding:20px 24px;flex:1;}
+
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;animation:fadeUp 0.18s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPI GRID */
+.kpi-grid{display:grid;gap:10px;margin-bottom:18px;}
+.kpi-grid.cols-6{grid-template-columns:repeat(6,1fr);}
+.kpi-grid.cols-5{grid-template-columns:repeat(5,1fr);}
+.kpi-grid.cols-4{grid-template-columns:repeat(4,1fr);}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi-card.blue::after{background:var(--accent);}
+.kpi-card.green::after{background:var(--green);}
+.kpi-card.warn::after{background:var(--warn);}
+.kpi-card.danger::after{background:var(--danger);}
+.kpi-card.purple::after{background:var(--purple);}
+.kpi-label{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+.kpi-value{font-size:28px;font-weight:700;color:var(--text);line-height:1;margin-bottom:3px;font-family:var(--mono);}
+.kpi-sub{font-size:11px;color:var(--text2);}
+.kpi-sub .hi{color:var(--accent2);}
+.kpi-sub .ok{color:var(--green);}
+.kpi-sub .bad{color:var(--danger);}
+.kpi-sub .wu{color:var(--warn);}
+
+/* SECTION */
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.section-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;}
+.section-title::before{content:'';display:inline-block;width:3px;height:13px;background:var(--accent);border-radius:2px;}
+.count-tag{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--text2);font-family:var(--mono);}
+
+/* TABLE */
+.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;}
+.tbl-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead th{text-align:left;padding:9px 12px;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:var(--bg3);border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(42,51,71,0.7);transition:background 0.1s;}
+tbody tr:hover{background:rgba(59,130,246,0.04);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:8px 12px;color:var(--text);font-size:12px;vertical-align:middle;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
+td.mono{font-family:var(--mono);font-size:11px;}
+.tbl-footer{padding:8px 14px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:space-between;}
+.pag-btns{display:flex;gap:4px;}
+.pag-btn{background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px 9px;color:var(--text2);cursor:pointer;font-size:11px;font-family:var(--font);transition:all 0.12s;}
+.pag-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.pag-btn.active{background:var(--accent3);border-color:var(--accent);color:var(--accent2);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;white-space:nowrap;}
+.badge::before{content:'●';font-size:6px;}
+.badge.ok{background:var(--green2);color:var(--green);}
+.badge.warn{background:var(--warn2);color:var(--warn);}
+.badge.danger{background:var(--danger2);color:var(--danger);}
+.badge.inactive{background:var(--bg4);color:var(--text3);}
+.badge.blue{background:var(--accent3);color:var(--accent2);}
+.badge.purple{background:var(--purple2);color:var(--purple);}
+
+/* DIAS */
+.d-ok{color:var(--green);font-family:var(--mono);font-size:11px;font-weight:500;}
+.d-warn{color:var(--warn);font-family:var(--mono);font-size:11px;font-weight:500;}
+.d-danger{color:var(--danger);font-family:var(--mono);font-size:11px;font-weight:500;}
+
+/* BAR */
+.bar-wrap{display:flex;align-items:center;gap:6px;}
+.bar-bg{flex:1;height:4px;background:var(--bg4);border-radius:4px;overflow:hidden;min-width:40px;}
+.bar-fill{height:100%;border-radius:4px;}
+.bar-fill.hi{background:var(--green);}
+.bar-fill.md{background:var(--warn);}
+.bar-fill.lo{background:var(--danger);}
+.bar-pct{font-family:var(--mono);font-size:10px;color:var(--text2);min-width:28px;text-align:right;}
+
+/* DOC PILLS */
+.doc-pill{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:3px;font-size:9.5px;font-weight:600;margin:1px;}
+.doc-pill.ok{background:var(--green2);color:var(--green);}
+.doc-pill.fail{background:var(--danger2);color:var(--danger);}
+.doc-pill.na{background:var(--bg4);color:var(--text3);}
+
+/* EDIT CLICK */
+.editable-cell{cursor:pointer;position:relative;}
+.editable-cell:hover::after{content:'✏️';font-size:9px;margin-left:3px;}
+
+/* GOOGLE SHEETS MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:26px;width:500px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,0.5);}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.modal-sub{font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.6;}
+.modal-label{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;display:block;}
+.modal-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;font-size:12px;font-family:var(--mono);outline:none;color:var(--text);margin-bottom:12px;}
+.modal-input:focus{border-color:var(--accent);}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+.modal-info{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
+.modal-info code{background:var(--bg4);padding:1px 5px;border-radius:3px;font-family:var(--mono);color:var(--accent2);}
+.script-box{background:#0a0f1a;color:#7dd3fc;padding:12px;border-radius:var(--radius-sm);font-size:10px;font-family:var(--mono);white-space:pre-wrap;margin-bottom:12px;max-height:160px;overflow-y:auto;border:1px solid var(--border);}
+
+/* EDIT FECHA MODAL */
+.edit-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:24px;width:380px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,0.5);}
+.dias-preview{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--text2);margin-bottom:10px;min-height:36px;}
+
+/* FORM */
+.form-sec{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+.form-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+.form-grid{display:grid;gap:12px;margin-bottom:12px;}
+.form-grid.g2{grid-template-columns:1fr 1fr;}
+.form-grid.g3{grid-template-columns:1fr 1fr 1fr;}
+.form-grid.g4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;}
+.form-label .req{color:var(--danger);margin-left:2px;}
+.form-label .auto{color:var(--green);font-size:9px;margin-left:4px;background:var(--green2);padding:1px 4px;border-radius:3px;}
+.form-input,.form-select,.form-textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px 11px;font-size:12px;font-family:var(--font);color:var(--text);outline:none;transition:border-color 0.12s;}
+.form-input:focus,.form-select:focus{border-color:var(--accent);}
+.form-input[readonly]{background:var(--bg4);color:var(--text2);font-family:var(--mono);}
+.form-input.auto-field{border-style:dashed;color:var(--accent2);font-family:var(--mono);}
+.form-textarea{resize:vertical;min-height:65px;}
+.check-group{display:flex;flex-wrap:wrap;gap:8px;}
+.check-item{display:flex;align-items:center;gap:5px;cursor:pointer;}
+.check-item input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;}
+.check-item label{font-size:12px;color:var(--text2);cursor:pointer;}
+.btn-row{display:flex;gap:8px;align-items:center;margin-top:4px;}
+.btn{border:none;border-radius:var(--radius-sm);padding:9px 20px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.12s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#2563eb;}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border2);}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent2);}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:hover{opacity:0.9;}
+
+/* REPORTE */
+.rep-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.rep-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 11px;font-size:11px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all 0.12s;}
+.rep-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.rep-btn.active{background:var(--accent3);border-color:var(--accent);color:var(--accent2);font-weight:600;}
+
+/* ALERTS */
+.alert-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;}
+.alert-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.alert-card-hd{padding:9px 13px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text);display:flex;align-items:center;justify-content:space-between;}
+.alert-card-body{max-height:210px;overflow-y:auto;}
+.alert-item{padding:8px 13px;border-bottom:1px solid rgba(42,51,71,0.5);}
+.alert-item:last-child{border-bottom:none;}
+.alert-name{font-size:12px;color:var(--text);font-weight:500;}
+.alert-meta{font-size:11px;color:var(--text2);display:flex;gap:8px;margin-top:2px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:11px 16px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;z-index:999;display:none;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+.toast.show{display:flex;animation:slideIn 0.25s ease;}
+.toast.ok{border-color:var(--green);color:var(--green);}
+.toast.err{border-color:var(--danger);color:var(--danger);}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* GS banner */
+.gs-banner{background:linear-gradient(135deg,var(--accent3),var(--purple2));border:1px solid var(--accent);border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;}
+.gs-banner-ico{font-size:22px;}
+.gs-banner-text{flex:1;}
+.gs-banner-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.gs-banner-sub{font-size:11px;color:var(--text2);}
+
+/* Dashboard grid panels */
+.dash-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.dash-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.dash-panel-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.bar-label{font-size:11px;color:var(--text2);width:110px;flex-shrink:0;}
+.bar-value{font-family:var(--mono);font-size:11px;color:var(--text);width:30px;text-align:right;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px;}
+
+.empty-state{text-align:center;padding:32px;color:var(--text3);font-size:12px;}
+.pulse-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);position:relative;}
+.pulse-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid var(--accent);animation:pr 2s ease-out infinite;opacity:0;}
+@keyframes pr{0%{transform:scale(0.6);opacity:0.8}100%{transform:scale(1.8);opacity:0}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-tag">Sistema</div>
+    <div class="logo-title">Control<br>Documental</div>
+    <div class="logo-sub">Flota Nacional 2026</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" onclick="goPage('dashboard',this)"><span class="ico">📊</span> Dashboard</div>
+    <div class="nav-section">Registro</div>
+    <div class="nav-item" onclick="goPage('reg-conductor',this)"><span class="ico">👤</span> Conductor</div>
+    <div class="nav-item" onclick="goPage('reg-unidad',this)"><span class="ico">🚛</span> Unidad</div>
+    <div class="nav-item" onclick="goPage('reg-proveedor',this)"><span class="ico">🏢</span> Proveedor</div>
+    <div class="nav-section">Consultas</div>
+    <div class="nav-item" onclick="goPage('conductores',this)"><span class="ico">📋</span> Conductores</div>
+    <div class="nav-item" onclick="goPage('unidades',this)"><span class="ico">🚌</span> Unidades</div>
+    <div class="nav-item" onclick="goPage('proveedores',this)"><span class="ico">🏢</span> Proveedores</div>
+    <div class="nav-section">Operaciones</div>
+    <div class="nav-item" onclick="goPage('alertas',this)"><span class="ico">⚠️</span> Alertas</div>
+    <div class="nav-item" onclick="goPage('reporte',this)"><span class="ico">📑</span> Reporte Diario</div>
+    <div class="nav-section">Configuración</div>
+    <div class="nav-item" onclick="openGSModal()"><span class="ico">🔗</span> Google Sheets</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="gs-badge"><div class="gs-dot off" id="gs-dot"></div><span id="gs-status">Sin conectar</span></div>
+    v2026.2 · Nacional
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="pulse-dot"></div>
+      <div class="topbar-title" id="page-title">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <input type="text" class="search-box" id="search-input" placeholder="🔍 Buscar..." oninput="onSearch()" style="display:none">
+      <select class="filter-sel" id="filter-estado" onchange="onFilter()" style="display:none">
+        <option value="">Todos</option>
+        <option value="ACTIVO">Activos</option>
+        <option value="INACTIVO">Inactivos</option>
+      </select>
+      <button class="tb-btn primary" id="btn-sync" onclick="syncFromSheets()" style="display:none">🔄 Sincronizar</button>
+      <button class="tb-btn" id="btn-export" onclick="exportCSV()" style="display:none">⬇ Exportar</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ======== DASHBOARD ======== -->
+  <div class="page active" id="page-dashboard">
+    <div id="gs-banner-wrap"></div>
+
+    <!-- ── BLOQUE 1: BASE GENERAL ── -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="width:3px;height:14px;background:linear-gradient(var(--accent),var(--green));border-radius:2px"></div>
+      <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)">Base General — Google Sheets</span>
+      <span id="gs-sync-time" style="font-size:10px;color:var(--text3);margin-left:4px"></span>
+    </div>
+    <div class="kpi-grid cols-6" style="margin-bottom:6px">
+      <!-- Aviso si no hay conexión GS -->
+      <div id="kd-nodata-warn" style="display:none;grid-column:1/-1;background:rgba(124,58,237,.08);border:1.5px dashed var(--accent);border-radius:8px;padding:12px 16px;text-align:center;font-size:12.5px;color:var(--accent)">
+        ⚡ <b>Sin datos</b> — conecta Google Sheets para cargar conductores, unidades y proveedores
+        <button onclick="openGSModal()" style="margin-left:10px;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;font-weight:600">Conectar Sheets</button>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Proveedores</div>
+        <div class="kpi-value" id="kd-act-prov">—</div>
+        <div class="kpi-sub">activos · <span class="bad" id="kd-inact-prov">—</span> inactivos · <span id="kd-total-prov" style="color:var(--text3)">— total</span></div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Conductores</div>
+        <div class="kpi-value" id="kd-act-cond">—</div>
+        <div class="kpi-sub">activos · <span class="bad" id="kd-inact-cond">—</span> inactivos · <span id="kd-total-cond" style="color:var(--text3)">— total</span></div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Unidades</div>
+        <div class="kpi-value" id="kd-act-unid">—</div>
+        <div class="kpi-sub">activas · <span class="bad" id="kd-inact-unid">—</span> inactivas · <span id="kd-total-unid" style="color:var(--text3)">— total</span></div>
+      </div>
+      <div class="kpi-card danger">
+        <div class="kpi-label">SOAT Vencidos</div>
+        <div class="kpi-value" id="kd-soat-venc">—</div>
+        <div class="kpi-sub"><span class="wu" id="kd-soat-warn">—</span> por vencer ≤30d</div>
+      </div>
+      <div class="kpi-card danger">
+        <div class="kpi-label">RTV Vencidos</div>
+        <div class="kpi-value" id="kd-rtv-venc">—</div>
+        <div class="kpi-sub"><span class="wu" id="kd-rtv-warn">—</span> por vencer ≤30d</div>
+      </div>
+      <div class="kpi-card danger">
+        <div class="kpi-label">SCTR Vencidos</div>
+        <div class="kpi-value" id="kd-sctr-venc">—</div>
+        <div class="kpi-sub"><span class="wu" id="kd-sctr-warn">—</span> por vencer ≤30d</div>
+      </div>
+    </div>
+
+    <!-- ── BLOQUE 2: OPERACIÓN DEL DÍA ── -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;margin-top:18px">
+      <div style="width:3px;height:14px;background:linear-gradient(var(--green),var(--accent));border-radius:2px"></div>
+      <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)">Operación del día — Excel cargado</span>
+      <span id="kd-fecha-rep" style="font-size:11px;color:var(--text3);margin-left:4px"></span>
+      <span id="kd-rep-badge" style="display:none;font-size:10px;padding:2px 8px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;margin-left:4px">● EN VIVO</span>
+    </div>
+    <div class="kpi-grid cols-5" style="margin-bottom:6px" id="kd-dia-grid">
+      <div class="kpi-card green">
+        <div class="kpi-label">Unidades Operando</div>
+        <div class="kpi-value" id="kd-dia-unid">—</div>
+        <div class="kpi-sub" id="kd-dia-unid-sub">Carga el Excel del día</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Conductores en Ruta</div>
+        <div class="kpi-value" id="kd-dia-cond">—</div>
+        <div class="kpi-sub" id="kd-dia-cond-sub">Del reporte diario</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Proveedores Activos Hoy</div>
+        <div class="kpi-value" id="kd-dia-prov">—</div>
+        <div class="kpi-sub">Con unidades en ruta</div>
+      </div>
+      <div class="kpi-card warn">
+        <div class="kpi-label">Con Alertas Doc.</div>
+        <div class="kpi-value" id="kd-dia-warn">—</div>
+        <div class="kpi-sub" style="color:var(--warn)">Doc. próxima a vencer</div>
+      </div>
+      <div class="kpi-card danger">
+        <div class="kpi-label">No Aptas Hoy</div>
+        <div class="kpi-value" id="kd-dia-bad">—</div>
+        <div class="kpi-sub" style="color:var(--danger)">Doc. vencida crítica</div>
+      </div>
+    </div>
+    <!-- Aviso si no hay reporte cargado -->
+    <div id="kd-sin-rep" style="background:var(--bg2);border:1.5px dashed var(--border);border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:20px">📋</span>
+      <div>
+        <div style="font-size:12.5px;font-weight:600;color:var(--text2)">Sin reporte diario cargado</div>
+        <div style="font-size:11.5px;color:var(--text3)">Ve a <b>Reporte Diario</b> y sube el Excel del día para ver la operación en tiempo real</div>
+      </div>
+      <button class="btn-primary" style="margin-left:auto;padding:6px 14px;font-size:12px" onclick="goPage('reporte',document.querySelector('.nav-item[onclick*=reporte]'))">→ Ir a Reporte</button>
+    </div>
+
+    <!-- Tabla resumen del día (se llena cuando hay reporte) -->
+    <div id="kd-rep-tabla-wrap" style="display:none;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:600;color:var(--text2)">Unidades en operación hoy</span>
+        <div style="display:flex;gap:6px">
+          <button class="tb-btn" onclick="filtDashDia('todos',this)" style="font-size:11px" data-fd="todos">Todos</button>
+          <button class="tb-btn" onclick="filtDashDia('ok',this)" style="font-size:11px" data-fd="ok">✔ Aptas</button>
+          <button class="tb-btn" onclick="filtDashDia('warn',this)" style="font-size:11px" data-fd="warn">⚠ Alertas</button>
+          <button class="tb-btn" onclick="filtDashDia('bad',this)" style="font-size:11px" data-fd="bad">🔴 No aptas</button>
+        </div>
+      </div>
+      <div class="tbl-wrap" style="margin-bottom:0">
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Placa</th><th style="min-width:130px">Conductor</th><th style="min-width:120px">Proveedor</th>
+              <th>Ruta</th><th>Centro</th><th>Turno</th>
+              <th>Est.Lic.</th><th>Est.SCTR</th><th>Est.SOAT</th><th>Est.RTV</th>
+              <th class="tc">Estado</th>
+            </tr></thead>
+            <tbody id="kd-rep-tbody"></tbody>
+          </table>
+        </div>
+        <div class="tbl-footer"><span id="kd-rep-cnt">—</span></div>
+      </div>
+    </div>
+
+    <!-- ── ALERTAS ── -->
+    <div class="alert-cards">
+      <div class="alert-card">
+        <div class="alert-card-hd">⚠️ Licencias críticas <span class="count-tag" id="cnt-lic">0</span></div>
+        <div class="alert-card-body" id="dash-lic-list"><div class="empty-state">Cargando...</div></div>
+      </div>
+      <div class="alert-card">
+        <div class="alert-card-hd">🔴 SCTR Vencidos <span class="count-tag" id="cnt-sctr">0</span></div>
+        <div class="alert-card-body" id="dash-sctr-list"><div class="empty-state">Cargando...</div></div>
+      </div>
+      <div class="alert-card">
+        <div class="alert-card-hd">🚛 SOAT Vencidos <span class="count-tag" id="cnt-soat">0</span></div>
+        <div class="alert-card-body" id="dash-soat-list"><div class="empty-state">Cargando...</div></div>
+      </div>
+    </div>
+
+    <div class="dash-panels">
+      <div class="dash-panel">
+        <div class="dash-panel-title">Documentos Conductores (activos en base)</div>
+        <div id="dash-docs-cond"></div>
+      </div>
+      <div class="dash-panel">
+        <div class="dash-panel-title">Documentos Unidades (activas en base)</div>
+        <div id="dash-docs-unid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== CONDUCTORES ======== -->
+  <div class="page" id="page-conductores">
+    <div class="section-hd">
+      <div class="section-title">Conductores <span class="count-tag" id="cond-count">—</span></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div id="cond-modo-badge" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;display:none">📋 Reporte del día</div>
+        <div id="cond-modo-badge-base" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--bg3);color:var(--text3);font-weight:600">📦 Base completa</div>
+        <button class="tb-btn" id="btn-cond-modo" onclick="toggleCondModo()" style="font-size:11px">Ver reporte del día</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>#</th><th>DNI</th><th>Conductor</th><th>Estado</th><th>Proveedor</th>
+            <th>Placa</th><th>Centro</th><th>Cat. Lic</th>
+            <th>Est. Lic</th><th>Días Lic ✏️</th>
+            <th>Est. SCTR</th><th>Días SCTR ✏️</th>
+            <th>DNI</th><th>Lic</th><th>Récord</th><th>SCTR</th><th>EMO ✏️</th>
+            <th>Cumpl.</th>
+          </tr></thead>
+          <tbody id="cond-tbody"><tr><td colspan="18" class="empty-state">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="tbl-footer">
+        <span id="cond-info">—</span>
+        <div class="pag-btns" id="cond-pag"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== UNIDADES ======== -->
+  <div class="page" id="page-unidades">
+    <div class="section-hd">
+      <div class="section-title">Unidades <span class="count-tag" id="unid-count">—</span></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div id="unid-modo-badge" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;display:none">📋 Reporte del día</div>
+        <div id="unid-modo-badge-base" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--bg3);color:var(--text3);font-weight:600">📦 Base completa</div>
+        <button class="tb-btn" id="btn-unid-modo" onclick="toggleUnidModo()" style="font-size:11px">Ver reporte del día</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Placa</th><th>Estado</th><th>Proveedor</th><th>Centro</th><th>Tipo</th><th>Año</th>
+            <th>SOAT ✏️</th><th>Días SOAT</th>
+            <th>RTV ✏️</th><th>Días RTV</th>
+            <th>T.C. ✏️</th><th>Días T.C.</th>
+            <th>T.Prop</th><th>SOAT</th><th>RTV</th><th>T.C.</th><th>MNTO</th><th>Boletín</th><th>Póliza</th>
+            <th>Cumpl.</th>
+          </tr></thead>
+          <tbody id="unid-tbody"><tr><td colspan="21" class="empty-state">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="tbl-footer">
+        <span id="unid-info">—</span>
+        <div class="pag-btns" id="unid-pag"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== PROVEEDORES ======== -->
+  <div class="page" id="page-proveedores">
+    <div class="section-hd" style="flex-wrap:wrap;gap:8px">
+      <div class="section-title">Proveedores — File Documentario <span class="count-tag" id="prov-count">—</span></div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <!-- Búsqueda -->
+        <input class="search-box" id="pv-srch" placeholder="🔍 Buscar proveedor..."
+          oninput="PV_PAGE=1;renderProveedores()" style="width:180px">
+        <!-- Filtro zona -->
+        <select class="filter-sel" id="pv-zona" onchange="PV_PAGE=1;renderProveedores()">
+          <option value="">Todas las zonas</option>
+          <option value="NORTE">Norte</option>
+          <option value="SUR">Sur</option>
+        </select>
+        <!-- Filtro estado -->
+        <select class="filter-sel" id="pv-est" onchange="PV_PAGE=1;renderProveedores()">
+          <option value="">Todos</option>
+          <option value="ACTIVO">Activos</option>
+          <option value="INACTIVO">Inactivos</option>
+        </select>
+        <!-- Filtro cumplimiento -->
+        <select class="filter-sel" id="pv-cumpl" onchange="PV_PAGE=1;renderProveedores()">
+          <option value="">Todos los docs</option>
+          <option value="completo">✅ Completo (≥80%)</option>
+          <option value="proceso">⏳ En proceso (≥50%)</option>
+          <option value="incompleto">❌ Incompleto (&lt;50%)</option>
+        </select>
+        <!-- Filtro tipo -->
+        <select class="filter-sel" id="pv-tipo" onchange="PV_PAGE=1;renderProveedores()">
+          <option value="">Todos los tipos</option>
+          <option value="Z.PER">Z.PER</option>
+          <option value="PIURA">PIURA</option>
+        </select>
+        <!-- Filtro responsable -->
+        <select class="filter-sel" id="pv-resp" onchange="PV_PAGE=1;renderProveedores()">
+          <option value="">Todos</option>
+          <option value="EODAR">EODAR</option>
+          <option value="WMUÑOZ">WMUÑOZ</option>
+        </select>
+        <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px"
+          onclick="goPage('reg-proveedor',document.querySelector('.nav-item[onclick*=reg-proveedor]'))">+ Nuevo</button>
+        <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px"
+          onclick="expCSVProv()">⬇ CSV</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>#</th>
+            <th style="min-width:220px">Proveedor</th>
+            <th>Estado</th><th>Zona</th><th>Tipo</th><th>Código</th><th>RUC</th><th>Contacto</th>
+            <th class="tc" title="1. Contrato">1<br><span style="font-weight:400;font-size:7px;text-transform:none">CONTRATO</span></th>
+            <th class="tc" title="2. Ficha RUC">2<br><span style="font-weight:400;font-size:7px;text-transform:none">FICHA RUC</span></th>
+            <th class="tc" title="3. Reporte Sentinel">3<br><span style="font-weight:400;font-size:7px;text-transform:none">SENTINEL</span></th>
+            <th class="tc" title="4. Referencias Comerciales">4<br><span style="font-weight:400;font-size:7px;text-transform:none">REF.COM.</span></th>
+            <th class="tc" title="5. Vigencia Poder / DNI Rep. Legal">5<br><span style="font-weight:400;font-size:7px;text-transform:none">VIG.PODER</span></th>
+            <th class="tc" title="6. Brochure / Carta de Presentación">6<br><span style="font-weight:400;font-size:7px;text-transform:none">BROCHURE</span></th>
+            <th class="tc" title="7. Carta de Presentación">7<br><span style="font-weight:400;font-size:7px;text-transform:none">CARTA P.</span></th>
+            <th class="tc" title="8. Lista de Clientes">8<br><span style="font-weight:400;font-size:7px;text-transform:none">LISTA CL.</span></th>
+            <th class="tc" title="9. Antecedentes">9<br><span style="font-weight:400;font-size:7px;text-transform:none">ANTEC.</span></th>
+            <th class="tc" title="10. Declaración Jurada">10<br><span style="font-weight:400;font-size:7px;text-transform:none">DECL.J.</span></th>
+            <th class="tc" title="11. Declaración ACK">11<br><span style="font-weight:400;font-size:7px;text-transform:none">DECL.ACK</span></th>
+            <th class="tc" title="12. Deuda Coactiva">12<br><span style="font-weight:400;font-size:7px;text-transform:none">DEUDA C.</span></th>
+            <th class="tc" title="13. Cotización">13<br><span style="font-weight:400;font-size:7px;text-transform:none">COTIZ.</span></th>
+            <th>Cumpl.</th>
+            <th>Resp.</th>
+            <th>Cond.</th><th>Unid.</th>
+          </tr></thead>
+          <tbody id="prov-tbody"><tr><td colspan="23" class="empty-state">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pag-wrap"><span id="pv-info">—</span><div class="pag-btns" id="pv-pag"></div></div>
+    </div>
+  </div>
+
+  <!-- ======== REGISTRO PROVEEDOR ======== -->
+  <div class="page" id="page-reg-proveedor">
+    <div style="max-width:900px">
+
+      <div class="form-sec">
+        <div class="form-sec-title">🏢 Datos del Proveedor</div>
+        <!-- Fila 1: Nombre ocupa todo -->
+        <div class="form-group full" style="margin-bottom:10px">
+          <label class="form-label">Razón Social / Nombre <span class="req">*</span></label>
+          <input class="form-input" id="rp-nombre" placeholder="EMPRESA DE TRANSPORTES..." oninput="buscarProv(this.value)" style="text-transform:uppercase">
+        </div>
+        <!-- Fila 2: 5 campos en línea -->
+        <div class="form-grid g4" style="margin-bottom:10px">
+          <div class="form-group"><label class="form-label">Estado</label>
+            <select class="form-select" id="rp-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
+          <div class="form-group"><label class="form-label">Zona</label>
+            <select class="form-select" id="rp-zona"><option value="">— Sin zona —</option><option value="NORTE">NORTE</option><option value="SUR">SUR</option></select></div>
+          <div class="form-group"><label class="form-label">Tipo</label>
+            <select class="form-select" id="rp-tipo"><option value="Z.PER">Z.PER</option><option value="PIURA">PIURA</option><option value="">Otro</option></select></div>
+          <div class="form-group"><label class="form-label">RUC</label>
+            <input class="form-input" id="rp-ruc" placeholder="20123456789" maxlength="11"></div>
+        </div>
+        <!-- Fila 3: 4 campos -->
+        <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">Código SAP</label>
+            <input class="form-input" id="rp-codigo" placeholder="134166"></div>
+          <div class="form-group"><label class="form-label">Contacto / Rep. Legal</label>
+            <input class="form-input" id="rp-contacto" placeholder="Nombre del contacto"></div>
+          <div class="form-group"><label class="form-label">Celular</label>
+            <input class="form-input" id="rp-celular" placeholder="987654321" maxlength="9"></div>
+          <div class="form-group"><label class="form-label">Responsable</label>
+            <input class="form-input" id="rp-resp" placeholder="EODAR / WMUÑOZ"></div>
+        </div>
+      </div>
+
+      <div class="form-sec">
+        <div class="form-sec-title">📋 Checklist Documentario
+          <span style="margin-left:auto;font-size:11px;font-weight:400;color:var(--text3)" id="rp-cumpl-pct">0 / 13 — 0%</span>
+        </div>
+        <!-- Checkboxes: 4 columnas, compactos -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d0').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d0" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>1. Contrato</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d1').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d1" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>2. Ficha RUC</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d2').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d2" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>3. Sentinel</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d3').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d3" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>4. Ref. Comerciales</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d4').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d4" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>5. Vig. Poder/DNI</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d5').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d5" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>6. Brochure</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d6').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d6" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>7. Carta Pres.</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d7').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d7" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>8. Lista Clientes</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d8').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d8" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>9. Antecedentes</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d9').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d9" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>10. Decl. Jurada</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d10').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d10" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>11. Decl. ACK</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d11').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d11" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>12. Deuda Coactiva</span></label>
+          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d12').checked?'var(--success)':'var(--border)'">
+            <input type="checkbox" id="rp-d12" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+            <span>13. Cotización</span></label>
+        </div>
+        <!-- Barra progreso compacta -->
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border-radius:6px;border:1px solid var(--border)">
+          <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+            <div id="rp-cumpl-bar" style="height:100%;width:0%;background:var(--danger);border-radius:3px;transition:.4s"></div>
+          </div>
+          <div id="rp-cumpl-badge" style="font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700;background:var(--danger-bg);color:var(--danger);white-space:nowrap">INCOMPLETO</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center;padding-bottom:20px">
+        <button class="btn-primary" onclick="guardarProv()">💾 Guardar proveedor</button>
+        <button class="btn-secondary" onclick="limpiarProv()">✕ Limpiar</button>
+        <span style="font-size:11px;color:var(--text3)" id="rp-msg"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== ALERTAS ======== -->
+  <div class="page" id="page-alertas">
+    <div class="section-hd"><div class="section-title">Licencias Críticas — Conductores</div></div>
+    <div class="tbl-wrap" style="margin-bottom:20px">
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Conductor</th><th>DNI</th><th>Proveedor</th><th>Días Lic.</th><th>Estado</th><th>Días SCTR</th><th>Estado SCTR</th></tr></thead>
+        <tbody id="alerta-cond-tbody"><tr><td colspan="8" class="empty-state">Sin alertas</td></tr></tbody>
+      </table></div>
+    </div>
+    <div class="section-hd"><div class="section-title">SOAT/RTV Críticos — Unidades</div></div>
+    <div class="tbl-wrap">
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Placa</th><th>Proveedor</th><th>Tipo</th><th>Días SOAT</th><th>Estado SOAT</th><th>Días RTV</th><th>Estado RTV</th></tr></thead>
+        <tbody id="alerta-unid-tbody"><tr><td colspan="8" class="empty-state">Sin alertas</td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ======== REPORTE DIARIO ======== -->
+  <div class="page" id="page-reporte">
+    <div class="form-sec" style="margin-bottom:14px;">
+      <div class="form-sec-title">📑 Reporte Diario — Carga Excel de Operaciones</div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div>
+          <div class="form-label" style="margin-bottom:4px;">Archivo Excel (.xlsx/.xls/.csv)</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <label style="display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:#fff;border-radius:var(--radius-sm);padding:8px 14px;cursor:pointer;font-size:12px;font-weight:600;">
+              📂 Seleccionar
+              <input type="file" id="repFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="previewRepNombre(this)">
+            </label>
+            <span id="rep-nombre" style="font-size:11px;color:var(--text2);">Ningún archivo</span>
+          </div>
+        </div>
+        <div>
+          <div class="form-label" style="margin-bottom:4px;">Fecha del reporte</div>
+          <input class="form-input" type="date" id="rep-fecha" style="width:150px;">
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="leerReporte()">🔍 Analizar</button>
+          <button class="btn btn-secondary" onclick="limpiarReporte()">🗑 Limpiar</button>
+          <button class="btn btn-secondary" id="btn-rep-export" onclick="exportarReporteCsv()" style="display:none">⬇ Exportar CSV</button>
+        </div>
+      </div>
+      <div style="margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 13px;font-size:11px;color:var(--text2);line-height:1.8;">
+        Columnas esperadas: <code style="font-family:var(--mono);color:var(--accent2);">PLACA · CONDUCTOR · PROVEEDOR · RUTA</code> — opcionales: <code style="font-family:var(--mono);color:var(--text3);">CENTRO · TURNO · DNI</code>
+      </div>
+    </div>
+
+    <div id="rep-kpi-row" style="display:none;margin-bottom:14px;">
+      <div class="kpi-grid cols-5">
+        <div class="kpi-card green"><div class="kpi-label">Unidades Cargadas</div><div class="kpi-value" id="rk-total">0</div><div class="kpi-sub">Del Excel</div></div>
+        <div class="kpi-card green"><div class="kpi-label">Doc. Completa</div><div class="kpi-value" id="rk-ok">0</div><div class="kpi-sub ok">✔ Aptas</div></div>
+        <div class="kpi-card warn"><div class="kpi-label">Con Alertas</div><div class="kpi-value" id="rk-warn">0</div><div class="kpi-sub wu">Doc. próxima a vencer</div></div>
+        <div class="kpi-card danger"><div class="kpi-label">No Aptas</div><div class="kpi-value" id="rk-bad">0</div><div class="kpi-sub bad">Doc. vencida</div></div>
+        <div class="kpi-card purple"><div class="kpi-label">Sin Registro</div><div class="kpi-value" id="rk-nf">0</div><div class="kpi-sub">No en BD</div></div>
+      </div>
+    </div>
+
+    <div id="rep-filtros" style="display:none" class="rep-filters">
+      <span style="font-size:11px;color:var(--text2);font-weight:600;">Filtrar:</span>
+      <button class="rep-btn active" data-f="todos" onclick="filtrarRep('todos',this)">Todos</button>
+      <button class="rep-btn" data-f="ok" onclick="filtrarRep('ok',this)">✔ Aptas</button>
+      <button class="rep-btn" data-f="warn" onclick="filtrarRep('warn',this)">⚠ Alertas</button>
+      <button class="rep-btn" data-f="bad" onclick="filtrarRep('bad',this)">🔴 No Aptas</button>
+      <button class="rep-btn" data-f="nf" onclick="filtrarRep('nf',this)">❓ Sin Registro</button>
+      <input type="text" class="search-box" style="width:200px;margin-left:auto" id="rep-search" placeholder="🔍 Buscar..." oninput="renderReporte()">
+    </div>
+
+    <div id="rep-tabla-wrap" style="display:none;">
+      <div class="tbl-wrap">
+        <div class="tbl-scroll"><table style="min-width:1100px;">
+          <thead><tr>
+            <th>#</th><th>Placa</th><th>Conductor</th><th>Proveedor</th><th>Ruta</th><th>Centro</th><th>Turno</th>
+            <th>Licencia</th><th>Días Lic</th><th>SCTR</th><th>Días SCTR</th>
+            <th>SOAT</th><th>Días SOAT</th><th>RTV</th><th>Días RTV</th>
+            <th>Estado</th>
+          </tr></thead>
+          <tbody id="rep-tbody"><tr><td colspan="16" class="empty-state">Carga el Excel para ver el reporte</td></tr></tbody>
+        </table></div>
+        <div style="padding:7px 13px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);background:var(--bg3);">
+          Mostrando <span id="rep-count">0</span> unidades
+        </div>
+      </div>
+    </div>
+    <div id="rep-empty" style="text-align:center;padding:60px 20px;color:var(--text3);">
+      <div style="font-size:42px;margin-bottom:10px;">📋</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:5px;">Carga el Excel del día</div>
+      <div style="font-size:12px;">El sistema cruzará automáticamente con la base de datos</div>
+    </div>
+  </div>
+
+  <!-- ======== REG CONDUCTOR ======== -->
+  <div class="page" id="page-reg-conductor">
+    <div style="max-width:1100px;">
+      <div class="form-sec">
+        <div class="form-sec-title">👤 Datos del Conductor</div>
+        <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">DNI <span class="req">*</span></label><input class="form-input" type="text" id="c-dni" placeholder="12345678" oninput="buscarConductor(this.value)"></div>
+          <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="c-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
+          <div class="form-group"><label class="form-label">Proveedor <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-proveedor" readonly></div>
+          <div class="form-group"><label class="form-label">Placa <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-placa" readonly></div>
+        </div>
+        <div class="form-group full"><label class="form-label">Conductor <span class="req">*</span></label><input class="form-input" type="text" id="c-nombre" placeholder="Apellidos y nombres completos" style="text-transform:uppercase"></div>
+      </div>
+      <div class="form-sec">
+        <div class="form-sec-title">🪪 Licencia de Conducir</div>
+        <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" id="c-cat-lic"><option>A-I</option><option>A-IIA</option><option>A-IIB</option><option>A-IIIA</option><option>A-IIIB</option><option>A-IIIC</option><option>A-IV</option></select></div>
+          <div class="form-group"><label class="form-label">Fecha Vcto. Lic.</label><input class="form-input" type="date" id="c-fecha-lic" onchange="calcDocDias('c-fecha-lic','c-dias-lic','c-est-lic')"></div>
+          <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-dias-lic" readonly></div>
+          <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-est-lic" readonly></div>
+          <div class="form-group"><label class="form-label">Restricción</label><select class="form-select" id="c-restriccion"><option>SIN RESTRICCIONES</option><option>CON LENTES</option></select></div>
+        </div>
+      </div>
+      <div class="form-sec">
+        <div class="form-sec-title">🏥 SCTR</div>
+        <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">Aseguradora</label><select class="form-select" id="c-aseg-sctr"><option>SANITAS</option><option>RIMAC</option><option>MAPFRE</option><option>LA POSITIVA</option><option>PACIFICO</option><option>GRANDIA</option><option>PROTECTA</option><option>CRECER</option></select></div>
+          <div class="form-group"><label class="form-label">Fecha Vcto. SCTR</label><input class="form-input" type="date" id="c-fecha-sctr" onchange="calcDocDias('c-fecha-sctr','c-dias-sctr','c-est-sctr')"></div>
+          <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-dias-sctr" readonly></div>
+          <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-est-sctr" readonly></div>
+        </div>
+      </div>
+      <div class="form-sec">
+        <div class="form-sec-title">🩺 EMO — Examen Médico Ocupacional</div>
+        <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">¿Tiene EMO?</label><select class="form-select" id="c-tiene-emo"><option>SI</option><option>NO</option></select></div>
+          <div class="form-group"><label class="form-label">Fecha Vcto. EMO</label><input class="form-input" type="date" id="c-fecha-emo" onchange="calcDocDias('c-fecha-emo','c-dias-emo','c-est-emo')"></div>
+          <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-dias-emo" readonly></div>
+          <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-est-emo" readonly></div>
+          <div class="form-group"><label class="form-label">Condición</label><select class="form-select" id="c-cond-emo"><option>APTO</option><option>NO APTO</option><option>APTO CON RESTRICCIONES</option></select></div>
+        </div>
+      </div>
+      <div class="form-sec">
+        <div class="form-sec-title">📋 Papeletas MTC</div>
+        <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">Cantidad Papeletas</label><input class="form-input" type="number" id="c-pap-cant" placeholder="0" min="0"></div>
+          <div class="form-group"><label class="form-label">Puntos Firmes</label><input class="form-input" type="number" id="c-pap-firmes" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">Puntos en Proceso</label><input class="form-input" type="number" id="c-pap-proceso" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">Alerta</label><select class="form-select" id="c-alerta-pap"><option>APTO</option><option>NO APTO</option></select></div>
+        </div>
+      </div>
+      <div class="form-sec">
+        <div class="form-sec-title">✅ Cumplimiento Documentario</div>
+        <div class="check-group" style="margin-bottom:12px;">
+          <label class="check-item"><input type="checkbox" id="ch-dni"><label for="ch-dni">D.N.I.</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-lic"><label for="ch-lic">Licencia</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-record"><label for="ch-record">Récord de Conducir</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-sctr"><label for="ch-sctr">SCTR</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-emo"><label for="ch-emo">EMO</label></label>
+        </div>
+        <div class="form-group" style="max-width:120px;"><label class="form-label">% Cumpl. <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-cumpl" readonly></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="guardarConductor()">💾 Guardar en Sheets</button>
+        <button class="btn btn-secondary" onclick="limpiarFormCond()">🗑 Limpiar</button>
+        <span id="c-msg" style="font-size:11px;color:var(--text3)"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== REG UNIDAD ======== -->
+  <div class="page" id="page-reg-unidad">
+    <div style="max-width:1100px;">
+      <div class="form-sec">
+        <div class="form-sec-title">🚛 Datos de la Unidad</div>
+        <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">Placa <span class="req">*</span></label><input class="form-input" type="text" id="u-placa" placeholder="A1B234" style="text-transform:uppercase" oninput="buscarUnidad(this.value)"></div>
+          <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="u-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
+          <div class="form-group"><label class="form-label">Proveedor <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-proveedor" readonly></div>
+          <div class="form-group"><label class="form-label">Centro</label><select class="form-select" id="u-centro"><option value="">— Seleccionar —</option><option value="4101">4101 — PLANTA CHINCHA</option><option value="4202">4202 — FUNDO ICA</option><option value="4208">4208 — OLMOS I</option><option value="4210">4210 — OLMOS II</option><option value="4205">4205 — FUNDO JAYANCA</option><option value="4109">4109 — PLANTA OLMOS</option><option value="4104">4104 — PLANTA JAYANCA</option><option value="4206">4206 — FUNDO PIURA</option></select></div>
+          <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="u-tipo"><option>BUS</option><option>MINIBUS</option><option>COUSTER</option><option>COMBI</option><option>CAMIONETA</option><option>CAMION</option></select></div>
+          <div class="form-group"><label class="form-label">Año Fab.</label><input class="form-input" type="number" id="u-anio" placeholder="2015" min="1980" max="2026" oninput="calcAntig()"></div>
+          <div class="form-group"><label class="form-label">Antigüedad <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-antig" readonly></div>
+          <div class="form-group"><label class="form-label">Marca</label><input class="form-input" type="text" id="u-marca" placeholder="Toyota"></div>
+        </div>
+      </div>
+      <div class="form-sec">
+        <div class="form-sec-title">📄 SOAT</div>
+        <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">Aseguradora</label><select class="form-select" id="u-aseg-soat"><option>LA POSITIVA</option><option>MAPFRE</option><option>RIMAC</option><option>PACIFICO</option><option>SANITAS</option><option>INTERSEGURO</option></select></div>
+          <div class="form-group"><label class="form-label">Fecha Vcto. SOAT</label><input class="form-input" type="date" id="u-fecha-soat" onchange="calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat')"></div>
+          <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-dias-soat" readonly></div>
+          <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-est-soat" readonly></div>
+        </div>
+      </div>
+      <div class="form-sec">
+        <div class="form-sec-title">🔧 Revisión Técnica (RTV)</div>
+        <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">Fecha Vcto. RTV</label><input class="form-input" type="date" id="u-fecha-rtv" onchange="calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv')"></div>
+          <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-dias-rtv" readonly></div>
+          <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-est-rtv" readonly></div>
+          <div class="form-group"><label class="form-label">Observaciones RTV</label><input class="form-input" type="text" id="u-obs-rtv" placeholder="Sin observaciones"></div>
+        </div>
+      </div>
+      <div class="form-sec">
+        <div class="form-sec-title">📇 Tarjeta de Circulación</div>
+        <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">¿Tiene T.C.?</label><select class="form-select" id="u-tiene-tc"><option>SI</option><option>NO</option><option>EN TRAMITE</option><option>NO APLICA</option></select></div>
+          <div class="form-group"><label class="form-label">Fecha Vcto. T.C.</label><input class="form-input" type="date" id="u-fecha-tc" onchange="calcDocDias('u-fecha-tc','u-dias-tc','u-est-tc')"></div>
+          <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-dias-tc" readonly></div>
+          <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-est-tc" readonly></div>
+        </div>
+      </div>
+      <div class="form-sec">
+        <div class="form-sec-title">✅ Cumplimiento Documentario</div>
+        <div class="check-group" style="margin-bottom:12px;">
+          <label class="check-item"><input type="checkbox" id="uch-tarj"><label for="uch-tarj">Tarj. Prop.</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-soat"><label for="uch-soat">SOAT</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-rtv"><label for="uch-rtv">Rev. Téc.</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-tc"><label for="uch-tc">Tarj. Circ.</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-mnto"><label for="uch-mnto">Program. MNTO</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-boletin"><label for="uch-boletin">Boletín SUNARP</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-poliza"><label for="uch-poliza">Póliza Seguro</label></label>
+        </div>
+        <div class="form-group" style="max-width:120px;"><label class="form-label">% Cumpl. <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-cumpl" readonly></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="guardarUnidad()">💾 Guardar en Sheets</button>
+        <button class="btn btn-secondary" onclick="limpiarFormUnid()">🗑 Limpiar</button>
+        <span id="u-msg" style="font-size:11px;color:var(--text3)"></span>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- GS MODAL -->
+<div class="modal-overlay" id="gs-modal">
+  <div class="modal">
+    <div class="modal-title">🔗 Conectar con Google Sheets</div>
+    <div class="modal-sub">Vincula tu Google Sheet para que el sistema jale los datos automáticamente al abrir.</div>
+    <div class="modal-info">
+      <strong>📋 Pasos:</strong><br>
+      1. Abre tu Google Sheet → <code>Extensiones → Apps Script</code><br>
+      2. Pega el script y despliega como <code>Web App</code> (acceso: cualquiera)<br>
+      3. Copia la URL generada y pégala aquí<br>
+      <button class="tb-btn" onclick="toggleScript()" style="margin-top:6px;font-size:11px;">Ver script Apps Script</button>
+    </div>
+    <div class="script-box" id="gs-script" style="display:none">// Apps Script — pega esto en tu Google Sheet
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(data.hoja) || ss.insertSheet(data.hoja);
+  if (sheet.getLastRow() === 0) sheet.appendRow(data.headers);
+  sheet.appendRow(data.row);
+  return ContentService.createTextOutput(JSON.stringify({ok:true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+function doGet(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = e.parameter.hoja || 'CONDUCTORES';
+  const sheet = ss.getSheetByName(hoja);
+  const data = sheet ? sheet.getDataRange().getValues() : [];
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}</div>
+    <label class="modal-label">URL del Web App</label>
+    <input class="modal-input" type="text" id="gs-url-input" placeholder="https://script.google.com/macros/s/...">
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeGSModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="conectarGS()">✅ Conectar y Sincronizar</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT FECHA MODAL -->
+<div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)cerrarEdit()">
+  <div class="edit-modal">
+    <div class="modal-title" id="edit-title">✏️ Editar Fecha</div>
+    <div class="modal-sub" style="margin-bottom:12px;font-size:12px;color:var(--text2);">Los días y estado se recalcularán automáticamente.</div>
+    <label class="modal-label">Nueva Fecha de Vencimiento</label>
+    <input class="modal-input" type="date" id="edit-fecha" oninput="previewEdit()" onchange="previewEdit()">
+    <div class="dias-preview" id="edit-preview">—</div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="cerrarEdit()">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdit()">✅ Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+// BASE DE DATOS — desde Excel (se reemplaza con Sheets)
+// ═══════════════════════════════════════════════
+let GS_URL = localStorage.getItem('gs_url') || 'https://script.google.com/macros/s/AKfycbwqCXqQ9nlMoSWbMuFyg_JO0C87b7iCu_cLdoekpkMlvdVZb_UZHRkEr5SQHAnmtUCb/exec';
+const SHEET_ID = '1-j5nz2p1CYNgHvyhZwjwSo6rAiDLAKMtveW-NIVT2LA';
+let GS_CONNECTED = false;
+
+let CONDUCTORES = [];
+let UNIDADES = [];
+let PROVEEDORES = [];
+
+// ═══════════════════════════════════════════════
+// RECÁLCULO AUTOMÁTICO
+// ═══════════════════════════════════════════════
+function calcDiasDesde(fechaStr) {
+  if (!fechaStr || fechaStr==='' || fechaStr==='NO APLICA' || fechaStr==='UNIDAD <=') return null;
+  try {
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const fv = new Date(fechaStr); fv.setHours(0,0,0,0);
+    if (isNaN(fv.getTime())) return null;
+    return Math.round((fv-hoy)/86400000);
+  } catch(e){ return null; }
+}
+function estadoDesde(dias) {
+  if (dias===null) return '';
+  if (dias<0) return 'VENCIDO';
+  if (dias<=30) return 'POR VENCER';
+  return 'VIGENTE';
+}
+function recalcular() {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  CONDUCTORES.forEach(c => {
+    if (c.fechaLic) { const d=calcDiasDesde(c.fechaLic); if(d!==null){c.diasLic=String(d);c.estadoLic=estadoDesde(d);} }
+    if (c.fechaSctr){ const d=calcDiasDesde(c.fechaSctr);if(d!==null){c.diasSctr=String(d);c.estadoSctr=estadoDesde(d);}}
+    if (c.fechaEmo) { const d=calcDiasDesde(c.fechaEmo); if(d!==null){c.diasEmo=String(d);c.estadoEmo=estadoDesde(d);} }
+  });
+  UNIDADES.forEach(u => {
+    if (u.fechaSoat){ const d=calcDiasDesde(u.fechaSoat);if(d!==null){u.diasSoat=String(d);u.estadoSoat=estadoDesde(d);}}
+    if (u.fechaRtv) { const d=calcDiasDesde(u.fechaRtv); if(d!==null){u.diasRtv=String(d);u.estadoRtv=estadoDesde(d); }}
+    if (u.fechaTc)  { const d=calcDiasDesde(u.fechaTc);  if(d!==null){u.diasTc=String(d);u.estadoTc=estadoDesde(d);  }}
+    if (u.anio&&parseInt(u.anio)>0) u.antiguedad=String(new Date().getFullYear()-parseInt(u.anio));
+  });
+}
+recalcular();
+
+// ═══════════════════════════════════════════════
+// GOOGLE SHEETS SYNC
+// ═══════════════════════════════════════════════
+function updateGSStatus(ok) {
+  GS_CONNECTED = ok;
+  document.getElementById('gs-dot').className = 'gs-dot'+(ok?'':' off');
+  document.getElementById('gs-status').textContent = ok ? 'Conectado' : 'Sin conectar';
+  document.getElementById('btn-sync').style.display = GS_URL ? '' : 'none';
+}
+// ══ GOOGLE SHEETS — JSONP (sin CORS) ══
+
+// Normalizar cabeceras del Sheet
+function normKey(h){
+  return (h||'').toString().trim().toLowerCase()
+    .replace(/[áäà]/g,'a').replace(/[éëè]/g,'e')
+    .replace(/[íïì]/g,'i').replace(/[óöò]/g,'o')
+    .replace(/[úüù]/g,'u').replace(/ñ/g,'n')
+    .replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_')
+    .replace(/^_|_$/g,'');
+}
+
+// Sheets array-of-arrays → array de objetos
+function sheetsToObjs(raw){
+  if(!Array.isArray(raw)||raw.length<2) return [];
+  const hdrs = raw[0].map(normKey);
+  return raw.slice(1)
+    .filter(r=>r.some(v=>v!==''&&v!==null))
+    .map(row=>{
+      const o={};
+      hdrs.forEach((h,i)=>{ o[h]=row[i]===null||row[i]===undefined?'':String(row[i]).trim(); });
+      return o;
+    });
+}
+
+// Leer hoja via CSV público (sin CORS, sin Apps Script)
+// Requiere que el Sheet sea público: Compartir → Cualquiera con el enlace puede ver
+async function leerHoja(hoja){
+  // Mapa nombre de hoja → gid (número de pestaña)
+  // El sistema intentará con el nombre; si falla, usar gid directo
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(hoja)}&t=${Date.now()}`;
+  const r = await fetch(url, {cache:'no-store'});
+  if(!r.ok) throw new Error(`No se pudo leer la hoja "${hoja}" — verifica que el Sheet sea público`);
+  const text = await r.text();
+  if(!text || text.trim().startsWith('<')) throw new Error(`La hoja "${hoja}" no existe o el Sheet no es público`);
+  return parseCsv(text);
+}
+
+// Parsear CSV robusto (maneja comillas, comas dentro de valores, etc.)
+function parseCsv(text){
+  const lines = [];
+  let cur = '', inQ = false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(c==='"'){ if(inQ&&text[i+1]==='"'){cur+='"';i++;}else inQ=!inQ; }
+    else if(c===','&&!inQ){ if(lines.length===0)lines.push([]);lines[lines.length-1].push(cur.trim());cur=''; }
+    else if((c==='\n'||c==='\r')&&!inQ){ if(cur||lines.length){if(lines.length===0)lines.push([]);lines[lines.length-1].push(cur.trim());lines.push([]);cur='';}if(c==='\r'&&text[i+1]==='\n')i++; }
+    else cur+=c;
+  }
+  if(cur||lines[lines.length-1]?.length) {if(lines.length===0)lines.push([]);lines[lines.length-1].push(cur.trim());}
+  // Filtrar filas vacías
+  const rows = lines.filter(r=>r.some(v=>v!==''));
+  if(rows.length<2) return [];
+  const hdrs = rows[0].map(normKey);
+  return rows.slice(1).filter(r=>r.some(v=>v!=='')).map(row=>{
+    const o={};
+    hdrs.forEach((h,i)=>{ o[h]=(row[i]||'').replace(/^"|"$/g,'').trim(); });
+    return o;
+  });
+}
+
+// Guardar/actualizar fila (no-cors, fire-and-forget)
+function guardarEnSheets(hoja, headers, row, keyField){
+  if(!GS_URL) return Promise.resolve(false);
+  const keyIdx = headers.indexOf(keyField);
+  const body   = JSON.stringify({hoja, headers, row: row.map(v=>String(v||'')), keyField: keyIdx>=0?keyIdx:0});
+  return fetch(GS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body})
+    .then(()=>true).catch(()=>false);
+}
+
+// Sincronizar todo desde Sheets
+async function syncFromSheets(){
+  if(!GS_URL){ openGSModal(); return; }
+  showToast('Sincronizando desde Google Sheets...','');
+  updateGSStatus('syncing');
+  try {
+    const condRaw  = await leerHoja('CONDUCTORES');
+    const unidRaw  = await leerHoja('UNIDADES');
+    const provRaw  = await leerHoja('PROVEEDORES');
+
+    if(condRaw.length>0){
+      CONDUCTORES = condRaw.map(o=>({
+        dni:           o.dni||o.n_doc||'',
+        conductor:     o.conductor||o.nombre||'',
+        estado:        (o.estado||'INACTIVO').toUpperCase(),
+        proveedor:     o.proveedor||'',
+        placa:         o.placa||'',
+        tipoUnidad:    o.tipo_unidad||o.tipo_de_unidad||o.tipo||'',
+        centro:        o.centro||'',
+        ruta:          o.ruta||'',
+        turno:         o.turno||'',
+        catLic:        o.categoria_lic||o.categoria||o.cat_lic||'',
+        fechaLic:      o.fecha_vto_lic||o.fecha_revalidaci_n||o.fecha_lic||'',
+        diasLic:       o.dias_lic||o.d_as_vencimiento||o.d_as_lic||'',
+        estadoLic:     o.estado_lic||o.alerta_licencia||'',
+        restriccion:   o.restriccion||'',
+        cantPapeletas: o.cant_papeletas||o.papeletas||'0',
+        puntosTotal:   o.puntos_total||o.puntos||'0',
+        alertaPuntos:  o.alerta_puntos||'',
+        asegSctr:      o.aseguradora_sctr||o.aseguradora||'',
+        fechaSctr:     o.fecha_vto_sctr||o.fecha_sctr||'',
+        diasSctr:      o.dias_sctr||o.d_as_sctr||'',
+        estadoSctr:    o.estado_sctr||o.alerta_sctr||'',
+        fechaEmo:      o.fecha_vto_emo||o.fecha_emo||'',
+        diasEmo:       o.dias_emo||o.d_as_emo||'',
+        estadoEmo:     o.estado_emo||o.alerta_emo||'',
+        record:        o.record_conducir||o.r_cord_conducir||o.record||'',
+        cumpl:         o.cumpl||'—',
+        pctCumpl:      o.pct_cumpl||'',
+      }));
+    }
+
+    if(unidRaw.length>0){
+      UNIDADES = unidRaw.map(o=>({
+        placa:         o.placa||'',
+        estado:        (o.estado||'INACTIVO').toUpperCase(),
+        proveedor:     o.proveedor||'',
+        centro:        o.centro||'',
+        tipo:          o.tipo_de_unidad||o.tipo||'',
+        anio:          o.a_o_fab||o.anio||o.a_o||'',
+        antiguedad:    o.antiguedad||o.antig_edad||'',
+        marca:         o.marca||'',
+        aseguradora:   o.aseguradora||'',
+        fechaSoat:     o.fecha_vto_soat||o.fecha_soat||'',
+        diasSoat:      o.dias_soat||o.d_as_soat||'',
+        estadoSoat:    o.estado_soat||o.alerta_soat||'',
+        fechaRtv:      o.fecha_vto_rtv||o.fecha_rtv||'',
+        diasRtv:       o.dias_rtv||o.d_as_rtv||'',
+        estadoRtv:     o.estado_rtv||o.alerta_rtv||'',
+        fechaTc:       o.fecha_vto_tc||o.fecha_tc||'',
+        diasTc:        o.dias_tc||o.d_as_tc||'',
+        estadoTc:      o.estado_tc||o.alerta_t_c_||'',
+        fechaPoliza:   o.fecha_vto_poliza||o.fecha_p_liza||'',
+        diasPoliza:    o.dias_poliza||o.d_as_p_liza||o.dias_p_liza||'',
+        estadoPoliza:  o.estado_poliza||o.estado_p_liza||'',
+        tieneBoletin:  o.tiene_boletin||o.boletin||'',
+        mnto:          o.prog_mnto||o.mnto||'',
+        responsable:   o.responsable||'',
+        cumpl:         o.cumpl||'—',
+      }));
+    }
+
+    if(provRaw.length>0){
+      PROVEEDORES = provRaw
+        .filter(o=>o.nombre||o.proveedor||o.raz_n_social)
+        .map(o=>({
+          nombre:     o.nombre||o.proveedor||o.raz_n_social||'',
+          estado:     (o.estado||'INACTIVO').toUpperCase(),
+          zona:       (o.zona||o.sede_zona||'').toUpperCase(),
+          tipo:       o.tipo||'',
+          codigo:     o.c_digo||o.codigo||'',
+          ruc:        o.ruc||'',
+          contacto:   o.contacto||'',
+          celular:    o.celular||'',
+          correo:     o.correo||'',
+          responsable:o.responsable||'',
+        }));
+    }
+
+    const total = condRaw.length+unidRaw.length+provRaw.length;
+    if(total>0){
+      recalcular();
+      updateGSStatus(true);
+      render();
+      showToast(`✅ Sincronizado — ${condRaw.length} cond · ${unidRaw.length} unid · ${provRaw.length} prov`,'ok');
+      const el=document.getElementById('gs-last-sync');
+      const now=new Date().toLocaleTimeString('es-PE');
+      if(el){el.textContent='Sync: '+now;el.style.display='';}
+      const el2=document.getElementById('gs-sync-time');
+      if(el2) el2.textContent='· actualizado '+now;
+    } else {
+      showToast('Conectado pero hojas vacías — verifica nombres de hojas','warn');
+      updateGSStatus('empty');
+    }
+  } catch(e){
+    updateGSStatus(false);
+    showToast('Error GS: '+e.message,'err');
+    console.error('syncFromSheets:',e);
+  }
+}
+
+function openGSModal(){
+  const inp=document.getElementById('gs-url-input');
+  if(inp) inp.value=GS_URL||'';
+  document.getElementById('gs-modal').classList.add('open');
+}
+function closeGSModal(){ document.getElementById('gs-modal').classList.remove('open'); }
+function toggleScript(){
+  const s=document.getElementById('gs-script');
+  s.style.display=s.style.display==='none'?'block':'none';
+}
+async function conectarGS(){
+  const url=(document.getElementById('gs-url-input').value||'').trim();
+  if(!url){ showToast('Ingresa la URL','err'); return; }
+  GS_URL=url;
+  localStorage.setItem('gs_url',url);
+  closeGSModal();
+  await syncFromSheets();
+}
+
+// ═══════════════════════════════════════════════
+// NAVEGACIÓN
+// ═══════════════════════════════════════════════
+let currentPage = 'dashboard';
+const pageTitles = {
+  dashboard:'Dashboard','reg-conductor':'Registro — Conductor','reg-unidad':'Registro — Unidad','reg-proveedor':'Registro — Proveedor',
+  conductores:'Conductores',unidades:'Unidades',proveedores:'Proveedores',
+  alertas:'Alertas Críticas',reporte:'Reporte Diario'
+};
+const showSearch = ['conductores','unidades','proveedores'];
+function goPage(name, el) {
+  currentPage = name;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-title').textContent = pageTitles[name]||name;
+  document.getElementById('search-input').style.display = showSearch.includes(name)?'':'none';
+  document.getElementById('filter-estado').style.display = ['conductores','unidades'].includes(name)?'':'none';
+  document.getElementById('btn-export').style.display = showSearch.includes(name)?'':'none';
+  document.getElementById('btn-sync').style.display = GS_URL?'':'none';
+  document.getElementById('search-input').value='';
+  document.getElementById('filter-estado').value='';
+  render();
+}
+function render() {
+  if(currentPage==='dashboard') renderDashboard();
+  else if(currentPage==='conductores') renderConductores();
+  else if(currentPage==='unidades') renderUnidades();
+  else if(currentPage==='proveedores') renderProveedores();
+  else if(currentPage==='alertas') renderAlertas();
+}
+function onSearch(){ state[currentPage]&&(state[currentPage].page=1,state[currentPage].search=document.getElementById('search-input').value.toLowerCase()); render(); }
+function onFilter(){ state[currentPage]&&(state[currentPage].page=1,state[currentPage].estado=document.getElementById('filter-estado').value); render(); }
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+const PAGE_SIZE = 20;
+const state = {
+  conductores:{page:1,search:'',estado:''},
+  unidades:{page:1,search:'',estado:''},
+  proveedores:{page:1,search:'',estado:''},
+};
+function badge(s){
+  const m={'ACTIVO':'ok','VIGENTE':'ok','APTO':'ok','SI':'ok','POR VENCER':'warn','INACTIVO':'inactive','NO APTO':'danger','VENCIDO':'danger','NO':'inactive','—':'inactive','EN TRAMITE':'warn'};
+  const cls=m[s]||'inactive';
+  return `<span class="badge ${cls}">${s||'—'}</span>`;
+}
+function barCumpl(txt){
+  if(!txt||txt==='—')return '—';
+  const [a,b]=txt.split('/').map(Number);
+  const pct=b>0?Math.round(a/b*100):0;
+  const cls=pct>=80?'hi':pct>=50?'md':'lo';
+  return `<div class="bar-wrap"><div class="bar-bg"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div><span class="bar-pct">${txt}</span></div>`;
+}
+function diasCell(d){
+  if(d===null||d===undefined||d==='')return '<span style="color:var(--text3)">—</span>';
+  const n=parseInt(d);
+  const cls=n<0?'d-danger':n<=30?'d-warn':'d-ok';
+  return `<span class="${cls}">${n>0?'+':''}${n}d</span>`;
+}
+function docPill(v,label){
+  if(!v||v==='N/A')return `<span class="doc-pill na">${label}</span>`;
+  const ok=v==='✓';
+  return `<span class="doc-pill ${ok?'ok':'fail'}">${ok?'✓':'✗'} ${label}</span>`;
+}
+function filterData(data,search,estado){
+  return data.filter(r=>{
+    if(estado&&r.estado!==estado)return false;
+    if(search&&!JSON.stringify(r).toLowerCase().includes(search))return false;
+    return true;
+  });
+}
+function renderPag(pagId,infoId,page,total,setter){
+  const tp=Math.ceil(total/PAGE_SIZE)||1;
+  document.getElementById(infoId).textContent=`${total} registros · Pág ${page}/${tp}`;
+  const c=document.getElementById(pagId); c.innerHTML='';
+  const s=Math.max(1,page-2),e=Math.min(tp,page+2);
+  const mk=(t,pg)=>{const b=document.createElement('button');b.className='pag-btn'+(pg===page?' active':'');b.textContent=t;b.onclick=()=>{setter(pg);render();};c.appendChild(b);};
+  if(page>1)mk('←',page-1);
+  for(let i=s;i<=e;i++)mk(i,i);
+  if(page<tp)mk('→',page+1);
+}
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+(type||'');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
+}
+function exportCSV(){
+  const data=currentPage==='conductores'?CONDUCTORES:currentPage==='unidades'?UNIDADES:PROVEEDORES;
+  if(!data.length)return;
+  const keys=Object.keys(data[0]);
+  const csv=[keys,...data.map(r=>keys.map(k=>`"${(r[k]||'').toString().replace(/"/g,'""')}"`))].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download=`${currentPage}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════
+// ── DASH: filtro tabla del día
+let DASH_DIA_FILTRO = 'todos';
+function filtDashDia(f, btn){
+  DASH_DIA_FILTRO = f;
+  document.querySelectorAll('[data-fd]').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderDashDiaTabla();
+}
+function renderDashDiaTabla(){
+  const rows = REP_ROWS.filter(r => DASH_DIA_FILTRO==='todos' || r.estado===DASH_DIA_FILTRO);
+  const estBadge = s=>{
+    if(s==='ok') return '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--success-bg);color:var(--success);font-weight:700">✔ APTA</span>';
+    if(s==='warn') return '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--warning-bg);color:var(--warning);font-weight:700">⚠ ALERTA</span>';
+    if(s==='bad') return '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--danger-bg);color:var(--danger);font-weight:700">✖ NO APTA</span>';
+    return '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--bg3);color:var(--text3);font-weight:700">❓ S/REG</span>';
+  };
+  const b = s => {
+    const m={'VIGENTE':'var(--success)','VENCIDO':'var(--danger)','POR VENCER':'var(--warning)','—':'var(--text3)'};
+    return `<span style="font-size:10.5px;font-weight:600;color:${m[s]||'var(--text3)'}">${s||'—'}</span>`;
+  };
+  const rowBg = s => s==='bad'?'background:rgba(239,68,68,.04)':s==='warn'?'background:rgba(249,115,22,.04)':'';
+  document.getElementById('kd-rep-tbody').innerHTML = rows.length ? rows.map((r,i)=>{
+    const u=r.unidBD, c=r.condBD;
+    return `<tr style="${rowBg(r.estado)}">
+      <td class="mono" style="color:var(--text3)">${i+1}</td>
+      <td class="mono" style="font-weight:700;color:var(--accent)">${r.placa||'—'}</td>
+      <td style="font-size:11.5px;white-space:normal;min-width:120px">${r.conductor||'—'}</td>
+      <td style="font-size:11px;white-space:normal;max-width:130px">${r.proveedor||u?.proveedor||'—'}</td>
+      <td style="font-size:11px">${r.ruta||'—'}</td>
+      <td class="mono">${r.centro||u?.centro||'—'}</td>
+      <td style="font-size:11px">${r.turno||'—'}</td>
+      <td>${b(c?.estadoLic||'—')}</td>
+      <td>${b(c?.estadoSctr||'—')}</td>
+      <td>${b(u?.estadoSoat||'—')}</td>
+      <td>${b(u?.estadoRtv||'—')}</td>
+      <td class="tc">${estBadge(r.estado)}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="12" class="empty-state">Sin resultados</td></tr>`;
+  document.getElementById('kd-rep-cnt').textContent = `${rows.length} de ${REP_ROWS.length} unidades`;
+}
+
+function renderDashboard(){
+  // ── Aviso si no hay datos cargados desde Sheets
+  const sinDatos = CONDUCTORES.length===0 && UNIDADES.length===0 && PROVEEDORES.length===0;
+  const ndWarn = document.getElementById('kd-nodata-warn');
+  if(ndWarn) ndWarn.style.display = sinDatos ? 'block' : 'none';
+
+  // ── BASE GENERAL
+  const pAct=PROVEEDORES.filter(p=>p.estado==='ACTIVO'&&p.nombre&&p.nombre.length>2&&p.nombre!=='PROVEEDOR').length;
+  const pInact=PROVEEDORES.filter(p=>p.estado==='INACTIVO'&&p.nombre&&p.nombre.length>2).length;
+  const pTot=pAct+pInact;
+  const cAct=CONDUCTORES.filter(c=>c.estado==='ACTIVO').length;
+  const cInact=CONDUCTORES.length-cAct;
+  const uAct=UNIDADES.filter(u=>u.estado==='ACTIVO').length;
+  const uInact=UNIDADES.length-uAct;
+  const soatV=UNIDADES.filter(u=>u.estadoSoat==='VENCIDO').length;
+  const soatW=UNIDADES.filter(u=>{const d=parseInt(u.diasSoat);return !isNaN(d)&&d>=0&&d<=30&&u.estadoSoat!=='VENCIDO';}).length;
+  const rtvV=UNIDADES.filter(u=>u.estadoRtv==='VENCIDO').length;
+  const rtvW=UNIDADES.filter(u=>{const d=parseInt(u.diasRtv);return !isNaN(d)&&d>=0&&d<=30&&u.estadoRtv!=='VENCIDO';}).length;
+  const sctrV=CONDUCTORES.filter(c=>c.estadoSctr==='VENCIDO').length;
+  const sctrW=CONDUCTORES.filter(c=>{const d=parseInt(c.diasSctr);return !isNaN(d)&&d>=0&&d<=30&&c.estadoSctr!=='VENCIDO';}).length;
+
+  const s=id=>document.getElementById(id);
+  // Bloque 1: valor grande = ACTIVOS, subtítulo = inactivos + total
+  s('kd-act-prov').textContent=pAct;
+  s('kd-inact-prov').textContent=pInact;
+  s('kd-total-prov').textContent=pTot+' total';
+  s('kd-act-cond').textContent=cAct;
+  s('kd-inact-cond').textContent=cInact;
+  s('kd-total-cond').textContent=CONDUCTORES.length+' total';
+  s('kd-act-unid').textContent=uAct;
+  s('kd-inact-unid').textContent=uInact;
+  s('kd-total-unid').textContent=UNIDADES.length+' total';
+  s('kd-soat-venc').textContent=soatV;s('kd-soat-warn').textContent=soatW;
+  s('kd-rtv-venc').textContent=rtvV;s('kd-rtv-warn').textContent=rtvW;
+  s('kd-sctr-venc').textContent=sctrV;s('kd-sctr-warn').textContent=sctrW;
+
+  // GS Banner
+  const bw=s('gs-banner-wrap');
+  if(bw) bw.innerHTML=GS_URL
+    ?`<div class="gs-banner"><div class="gs-banner-ico">🔗</div><div class="gs-banner-text"><div class="gs-banner-title">Google Sheets conectado</div><div class="gs-banner-sub">Datos sincronizados en la nube · <a href="#" onclick="syncFromSheets()" style="color:var(--accent2)">Sincronizar ahora</a></div></div><button class="tb-btn" onclick="openGSModal()">Cambiar URL</button></div>`
+    :`<div class="gs-banner"><div class="gs-banner-ico">⚡</div><div class="gs-banner-text"><div class="gs-banner-title">Conecta Google Sheets para base de datos en la nube</div><div class="gs-banner-sub">Así varios analistas pueden actualizar documentos y el sistema se refleja en tiempo real</div></div><button class="tb-btn primary" onclick="openGSModal()">Conectar Sheets</button></div>`;
+
+  // ── BLOQUE DÍA
+  const hayrep = REP_ROWS.length > 0;
+  s('kd-sin-rep').style.display = hayrep ? 'none' : 'flex';
+  s('kd-rep-tabla-wrap').style.display = hayrep ? 'block' : 'none';
+  s('kd-rep-badge').style.display = hayrep ? 'inline-flex' : 'none';
+
+  if(hayrep){
+    const ok=REP_ROWS.filter(r=>r.estado==='ok').length;
+    const wn=REP_ROWS.filter(r=>r.estado==='warn').length;
+    const bad=REP_ROWS.filter(r=>r.estado==='bad').length;
+    const nf=REP_ROWS.filter(r=>r.estado==='nf').length;
+    // proveedores únicos en el reporte
+    // Proveedores únicos del día que están ACTIVOS en Sheets
+    const provNombresHoy=new Set(REP_ROWS.map(r=>{
+      const nom=(r.proveedor||r.unidBD?.proveedor||'').trim().toUpperCase();
+      return nom;
+    }).filter(Boolean));
+    const provHoy=[...provNombresHoy].filter(nom=>{
+      const p=PROVEEDORES.find(p=>(p.nombre||'').trim().toUpperCase()===nom);
+      return !p||(p.estado||'').toUpperCase()==='ACTIVO'; // si no está en BD, lo cuenta igual
+    }).length;
+    // conductores únicos
+    const condHoy=new Set(REP_ROWS.map(r=>r.conductor).filter(Boolean)).size;
+    s('kd-dia-unid').textContent=REP_ROWS.length;
+    s('kd-dia-unid-sub').textContent=`${ok} aptas · ${bad} no aptas`;
+    s('kd-dia-cond').textContent=condHoy;
+    s('kd-dia-cond-sub').textContent=`únicos en ruta`;
+    s('kd-dia-prov').textContent=provHoy;
+    s('kd-dia-warn').textContent=wn;
+    s('kd-dia-bad').textContent=bad;
+    // fecha
+    const fv=document.getElementById('rep-fecha')?.value;
+    if(fv) s('kd-fecha-rep').textContent='· '+fv;
+    renderDashDiaTabla();
+  } else {
+    ['kd-dia-unid','kd-dia-cond','kd-dia-prov','kd-dia-warn','kd-dia-bad'].forEach(id=>s(id).textContent='—');
+    s('kd-dia-unid-sub').textContent='Carga el Excel del día';
+    s('kd-dia-cond-sub').textContent='Del reporte diario';
+  }
+
+  // ── ALERTAS
+  const licAlert=CONDUCTORES.filter(c=>{const d=parseInt(c.diasLic);return !isNaN(d)&&d<=30;}).sort((a,b)=>parseInt(a.diasLic)-parseInt(b.diasLic)).slice(0,8);
+  s('cnt-lic').textContent=licAlert.length;
+  s('dash-lic-list').innerHTML=licAlert.length?licAlert.map(c=>`<div class="alert-item"><div class="alert-name">${c.conductor||'—'}</div><div class="alert-meta"><span>${(c.proveedor||'').slice(0,26)}</span><span class="${parseInt(c.diasLic)<0?'d-danger':'d-warn'}">${c.diasLic}d</span></div></div>`).join(''):'<div class="empty-state">Sin alertas ✓</div>';
+
+  const sctrAlert=CONDUCTORES.filter(c=>c.estadoSctr==='VENCIDO').slice(0,8);
+  s('cnt-sctr').textContent=sctrAlert.length;
+  s('dash-sctr-list').innerHTML=sctrAlert.length?sctrAlert.map(c=>`<div class="alert-item"><div class="alert-name">${c.conductor||'—'}</div><div class="alert-meta"><span>${(c.proveedor||'').slice(0,26)}</span><span class="d-danger">${c.diasSctr}d</span></div></div>`).join(''):'<div class="empty-state">Sin alertas ✓</div>';
+
+  const soatAlert=UNIDADES.filter(u=>u.estadoSoat==='VENCIDO').slice(0,8);
+  s('cnt-soat').textContent=soatAlert.length;
+  s('dash-soat-list').innerHTML=soatAlert.length?soatAlert.map(u=>`<div class="alert-item"><div class="alert-name">${u.placa||'—'}</div><div class="alert-meta"><span>${(u.proveedor||'').slice(0,26)}</span><span class="d-danger">${u.diasSoat}d</span></div></div>`).join(''):'<div class="empty-state">Sin alertas ✓</div>';
+
+  // ── DOC PANELS (activos en base)
+  const actCond=CONDUCTORES.filter(c=>c.estado==='ACTIVO');
+  const actUnid=UNIDADES.filter(u=>u.estado==='ACTIVO');
+  const condDocsDef=[
+    {label:'DNI',key:'docDni'},{label:'Licencia',key:'docLic'},
+    {label:'Récord',key:'docRecord'},{label:'SCTR',key:'docSctr'},{label:'EMO',key:'docEmo'}
+  ];
+  const unidDocsDef=[
+    {label:'T.Prop',key:'docTarjProp'},{label:'SOAT',key:'docSoat'},{label:'RTV',key:'docRtv'},
+    {label:'T.C.',key:'docTc'},{label:'MNTO',key:'docMnto'},{label:'Boletín',key:'docBoletin'},{label:'Póliza',key:'docPoliza'}
+  ];
+  // Calcular % por estado documental
+  function mkDocPanel(docs, data, estadoKey, vigVal){
+    return docs.map(d=>{
+      // intenta por key directo, si no por estado
+      let ok=data.filter(r=>r[d.key]==='✓').length;
+      let tot=data.length||1;
+      if(ok===0&&d.key==='docSoat'){ok=data.filter(r=>r.estadoSoat==='VIGENTE').length;tot=data.length;}
+      if(ok===0&&d.key==='docRtv'){ok=data.filter(r=>r.estadoRtv==='VIGENTE').length;}
+      if(ok===0&&d.key==='docLic'){ok=data.filter(r=>r.estadoLic==='VIGENTE').length;}
+      if(ok===0&&d.key==='docSctr'){ok=data.filter(r=>r.estadoSctr==='VIGENTE').length;}
+      const pct=Math.round(ok/tot*100);
+      const col=pct>=80?'var(--success)':pct>=50?'var(--warning)':'var(--danger)';
+      return `<div class="bar-row"><div class="bar-label" style="font-size:11px;color:var(--text2);min-width:52px">${d.label}</div><div class="bar-bg" style="flex:1"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div><div class="bar-value" style="font-size:10.5px;color:var(--text3)">${ok}/${tot}</div></div>`;
+    }).join('');
+  }
+  s('dash-docs-cond').innerHTML=actCond.length?mkDocPanel(condDocsDef,actCond):'<div class="empty-state" style="font-size:11px">Sin conductores activos</div>';
+  s('dash-docs-unid').innerHTML=actUnid.length?mkDocPanel(unidDocsDef,actUnid):'<div class="empty-state" style="font-size:11px">Sin unidades activas</div>';
+}
+
+// ═══════════════════════════════════════════════
+// CONDUCTORES TABLE
+// ═══════════════════════════════════════════════
+function renderConductores(){
+  // ── MODO DÍA: mostrar solo conductores del reporte
+  if(COND_MODO_DIA && REP_ROWS.length>0){
+    const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
+    let rows=REP_ROWS.filter(r=>r.condBD).map(r=>r.condBD);
+    // deduplicar por DNI
+    const seen=new Set(); rows=rows.filter(c=>{if(seen.has(c.dni))return false;seen.add(c.dni);return true;});
+    if(search) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
+    document.getElementById('cond-count').textContent=rows.length+' del día';
+    const PS2=25; const pg=ST.conductores.page;
+    const sl=rows.slice((pg-1)*PS2,pg*PS2);
+    document.getElementById('cond-tbody').innerHTML=sl.length?sl.map((r,i)=>renderCondRow(r,(pg-1)*PS2+i+1)).join(''):'<tr><td colspan="18" class="empty-state">Sin conductores en el reporte del día</td></tr>';
+    renderPag('cond-pag','cond-info',pg,rows.length,v=>{ST.conductores.page=v;renderConductores();});
+    return;
+  }
+  const {page,search,estado}=state.conductores;
+  const data=filterData(CONDUCTORES,search,estado);
+  document.getElementById('cond-count').textContent=data.length+' registros';
+  const slice=data.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
+  document.getElementById('cond-tbody').innerHTML=slice.length?slice.map((r,i)=>{
+    const idx=CONDUCTORES.indexOf(r);
+    const nom=(r.conductor||'').replace(/'/g,"\'");
+    return `<tr>
+      <td class="mono" style="color:var(--text3)">${(page-1)*PAGE_SIZE+i+1}</td>
+      <td class="mono">${r.dni||'—'}</td>
+      <td style="max-width:170px;white-space:normal;font-size:12px;font-weight:500">${r.conductor||'—'}</td>
+      <td>${badge(r.estado||'INACTIVO')}</td>
+      <td style="max-width:130px;font-size:11px">${r.proveedor||'—'}</td>
+      <td class="mono">${r.placa||'—'}</td>
+      <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
+      <td><span class="badge blue">${r.catLic||'—'}</span></td>
+      <td>${badge(r.estadoLic||'—')}</td>
+      <td class="editable-cell" onclick="abrirEdit('conductor',${idx},'diasLic','fechaLic','${nom}')" title="Clic para editar">${diasCell(r.diasLic)}</td>
+      <td>${badge(r.estadoSctr||'—')}</td>
+      <td class="editable-cell" onclick="abrirEdit('conductor',${idx},'diasSctr','fechaSctr','${nom}')" title="Clic para editar">${diasCell(r.diasSctr)}</td>
+      <td>${docPill(r.docDni,'DNI')}</td>
+      <td>${docPill(r.docLic,'Lic')}</td>
+      <td>${docPill(r.docRecord,'Rec')}</td>
+      <td>${docPill(r.docSctr,'SCTR')}</td>
+      <td class="editable-cell" onclick="abrirEdit('conductor',${idx},'diasEmo','fechaEmo','${nom}')" title="Clic para editar EMO">${docPill(r.docEmo,'EMO')}</td>
+      <td>${barCumpl(r.cumpl||'—')}</td>
+    </tr>`;}).join(''):'<tr><td colspan="18" class="empty-state">Sin datos</td></tr>';
+  renderPag('cond-pag','cond-info',page,data.length,v=>state.conductores.page=v);
+}
+
+// ═══════════════════════════════════════════════
+// UNIDADES TABLE
+// ═══════════════════════════════════════════════
+function renderUnidades(){
+  // ── MODO DÍA: mostrar solo unidades del reporte
+  if(UNID_MODO_DIA && REP_ROWS.length>0){
+    const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
+    let rows=REP_ROWS.filter(r=>r.unidBD).map(r=>r.unidBD);
+    const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
+    if(search) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
+    document.getElementById('unid-count').textContent=rows.length+' del día';
+    const PS2=25; const pg=ST.unidades.page;
+    const sl=rows.slice((pg-1)*PS2,pg*PS2);
+    document.getElementById('unid-tbody').innerHTML=sl.length?sl.map((r,i)=>renderUnidRow(r,(pg-1)*PS2+i+1)).join(''):'<tr><td colspan="21" class="empty-state">Sin unidades en el reporte del día</td></tr>';
+    renderPag('unid-pag','unid-info',pg,rows.length,v=>{ST.unidades.page=v;renderUnidades();});
+    return;
+  }
+  const {page,search,estado}=state.unidades;
+  const data=filterData(UNIDADES,search,estado);
+  document.getElementById('unid-count').textContent=data.length+' registros';
+  const slice=data.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
+  document.getElementById('unid-tbody').innerHTML=slice.length?slice.map((r,i)=>{
+    const idx=UNIDADES.indexOf(r);
+    const placa=(r.placa||'').replace(/'/g,"\'");
+    return `<tr>
+      <td class="mono" style="color:var(--text3)">${(page-1)*PAGE_SIZE+i+1}</td>
+      <td class="mono" style="font-weight:700;color:var(--accent2)">${r.placa||'—'}</td>
+      <td>${badge(r.estado||'INACTIVO')}</td>
+      <td style="max-width:130px;font-size:11px">${r.proveedor||'—'}</td>
+      <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
+      <td style="font-size:11px">${r.tipo||'—'}</td>
+      <td class="mono">${r.anio||'—'}</td>
+      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')" title="Editar SOAT">${badge(r.estadoSoat||'—')}</td>
+      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')">${diasCell(r.diasSoat)}</td>
+      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')" title="Editar RTV">${badge(r.estadoRtv||'—')}</td>
+      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')">${diasCell(r.diasRtv)}</td>
+      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasTc','fechaTc','${placa}')" title="Editar T.C.">${badge(r.estadoTc||'—')}</td>
+      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasTc','fechaTc','${placa}')">${diasCell(r.diasTc)}</td>
+      <td>${docPill(r.docTarjProp,'TP')}</td>
+      <td>${docPill(r.docSoat,'SOAT')}</td>
+      <td>${docPill(r.docRtv,'RTV')}</td>
+      <td>${docPill(r.docTc,'TC')}</td>
+      <td>${docPill(r.docMnto,'MNTO')}</td>
+      <td>${docPill(r.docBoletin,'Bol')}</td>
+      <td>${docPill(r.docPoliza,'Pól')}</td>
+      <td>${barCumpl(r.cumpl||'—')}</td>
+    </tr>`;}).join(''):'<tr><td colspan="21" class="empty-state">Sin datos</td></tr>';
+  renderPag('unid-pag','unid-info',page,data.length,v=>state.unidades.page=v);
+}
+
+// ═══════════════════════════════════════════════
+// PROVEEDORES TABLE CON CHECKLIST
+// ═══════════════════════════════════════════════
+const PD_KEY='prov_docs_v4';
+let PD=JSON.parse(localStorage.getItem(PD_KEY)||'{}');
+const DOCS_PROV=['Contrato','Ficha RUC','Sentinel','Ref.Comerc.','Vig.Poder','Brochure','Carta Pres.','Lista Cl.','Antecedentes','Decl.J.','Decl.ACK','Deuda Coac.','Cotización'];
+const PV_PS=25; let PV_PAGE=1;
+
+function getPD(n){if(!PD[n])PD[n]={docs:new Array(13).fill(false),resp:''};return PD[n];}
+function savePD(){localStorage.setItem(PD_KEY,JSON.stringify(PD));}
+function toggleProvDoc(n,i){const d=getPD(n);d.docs[i]=!d.docs[i];PD[n]=d;savePD();if(typeof renderProveedores==="function")renderProveedores();}
+function updProvResp(n,v){const d=getPD(n);d.resp=v;PD[n]=d;savePD();}
+
+// Índice global para mapear fila → proveedor real (evita problemas con nombres especiales)
+let PV_MAP = []; // PV_MAP[i] = nombre del proveedor en la página actual
+
+function renderProveedores(){
+  // Filtros propios de la tabla de proveedores
+  const search = (document.getElementById('pv-srch')||{value:''}).value.toLowerCase();
+  const estado  = (document.getElementById('pv-est')||{value:''}).value;
+  const zona    = (document.getElementById('pv-zona')||{value:''}).value;
+  const cumplF  = (document.getElementById('pv-cumpl')||{value:''}).value;
+
+  // Detectar filas no válidas: cabeceras, resúmenes estadísticos, basura
+  const esInvalida = p => {
+    const n = (p.nombre||'').trim();
+    if(n.length < 3) return true;
+    // Fila de cabecera exacta
+    if(['PROVEEDOR','NOMBRE','EMPRESA','RAZÓN SOCIAL','RAZON SOCIAL','N°','#','RUC','ESTADO'].includes(n.toUpperCase())) return true;
+    // Fila de resumen: contiene "Activos:", "Inactivos:", "B1 =", "Actualizado:"
+    if(/activos\s*:/i.test(n)||/inactivos\s*:/i.test(n)||/actualizado\s*:/i.test(n)||/B[12]\s*=/i.test(n)) return true;
+    // No tiene estado ACTIVO/INACTIVO (probable basura si tampoco tiene RUC)
+    const est = (p.estado||'').trim().toUpperCase();
+    if(!['ACTIVO','INACTIVO'].includes(est)) return true;
+    return false;
+  };
+
+  let data=PROVEEDORES.filter(p=>{
+    if(esInvalida(p)) return false;
+    if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
+    if(estado&&p.estado!==estado) return false;
+    if(zona&&p.zona!==zona) return false;
+    // Filtro por tipo
+    const tipoF=(document.getElementById('pv-tipo')||{value:''}).value;
+    if(tipoF&&p.tipo!==tipoF) return false;
+    // Filtro por responsable
+    const respF=(document.getElementById('pv-resp')||{value:''}).value;
+    if(respF&&(p.responsable||'').toUpperCase()!==respF.toUpperCase()) return false;
+    // Filtro por cumplimiento documentario
+    if(cumplF){
+      const pd2=getPD(p.nombre);
+      const pct2=Math.round(pd2.docs.filter(Boolean).length/13*100);
+      if(cumplF==='completo'   && pct2< 80) return false;
+      if(cumplF==='proceso'    && (pct2<50||pct2>=80)) return false;
+      if(cumplF==='incompleto' && pct2>=50) return false;
+    }
+    return true;
+  });
+
+  const provCond={},provUnid={};
+  CONDUCTORES.forEach(c=>{if(c.proveedor)provCond[c.proveedor]=(provCond[c.proveedor]||0)+1;});
+  UNIDADES.forEach(u=>{if(u.proveedor)provUnid[u.proveedor]=(provUnid[u.proveedor]||0)+1;});
+
+  document.getElementById('prov-count').textContent=data.length+' proveedores';
+  const tp=Math.ceil(data.length/PV_PS)||1;
+  PV_PAGE=Math.min(PV_PAGE,tp);
+  const sl=data.slice((PV_PAGE-1)*PV_PS,PV_PAGE*PV_PS);
+
+  // Guardar mapa de índice → nombre para el onclick
+  PV_MAP = sl.map(p=>p.nombre);
+
+  const tbody = document.getElementById('prov-tbody');
+  if(!sl.length){
+    tbody.innerHTML='<tr><td colspan="23" class="empty-state">Sin proveedores</td></tr>';
+  } else {
+    tbody.innerHTML = sl.map((p,i)=>{
+      const pd  = getPD(p.nombre);
+      const ok  = pd.docs.filter(Boolean).length;
+      const pct = Math.round(ok/13*100);
+      const bc  = pct>=80?'#22c55e':pct>=50?'#f97316':'#ef4444';
+
+      // Checkboxes usando data-pi (índice en PV_MAP) y data-di (índice doc)
+      // Así evitamos inyectar el nombre del proveedor en el HTML
+      const dcs = pd.docs.map((v,di)=>`<td class="tc">
+        <div class="pv-ck" data-pi="${i}" data-di="${di}" title="${DOCS_PROV[di]}"
+          style="width:17px;height:17px;border-radius:3px;cursor:pointer;display:flex;
+          align-items:center;justify-content:center;font-size:9px;font-weight:700;
+          margin:0 auto;user-select:none;border:1.5px solid ${v?'#22c55e':'var(--border)'};
+          background:${v?'#dcfce7':'var(--bg2)'};color:#15803d">
+          ${v?'✓':''}
+        </div></td>`).join('');
+
+      return `<tr>
+        <td class="mono" style="color:var(--text3)">${(PV_PAGE-1)*PV_PS+i+1}</td>
+        <td style="min-width:200px;white-space:normal;font-size:11.5px;font-weight:500">${p.nombre}</td>
+        <td>${badge(p.estado||'INACTIVO')}</td>
+        <td style="font-size:11px">${p.zona||'—'}</td>
+        <td style="font-size:10.5px">${p.tipo||'—'}</td>
+        <td class="mono">${p.codigo||'—'}</td>
+        <td class="mono" style="font-size:10.5px">${p.ruc||'—'}</td>
+        <td style="font-size:11px;max-width:110px;white-space:normal">${p.contacto||'—'}</td>
+        ${dcs}
+        <td>
+          <div style="display:flex;align-items:center;gap:5px">
+            <div style="width:38px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0">
+              <div style="width:${pct}%;height:100%;background:${bc};border-radius:3px"></div>
+            </div>
+            <span style="font-size:10.5px;font-family:var(--mono);color:var(--text3)">${ok}/13</span>
+          </div>
+        </td>
+        <td><input class="pv-resp-inp" data-pi="${i}" value="${(pd.resp||p.responsable||'').replace(/"/g,'&quot;')}"
+          style="border:1px solid var(--border);border-radius:4px;padding:2px 6px;
+          font-size:10.5px;width:72px;background:var(--bg2)"></td>
+        <td class="mono" style="text-align:center">${provCond[p.nombre]||0}</td>
+        <td class="mono" style="text-align:center">${provUnid[p.nombre]||0}</td>
+      </tr>`;
+    }).join('');
+
+    // Delegar eventos en el tbody (1 listener, no 13×25 inline)
+    tbody.onclick = e=>{
+      const ck = e.target.closest('.pv-ck');
+      if(!ck) return;
+      const pi=parseInt(ck.dataset.pi), di=parseInt(ck.dataset.di);
+      const nom = PV_MAP[pi]; if(!nom) return;
+      const d=getPD(nom); d.docs[di]=!d.docs[di]; PD[nom]=d; savePD();
+      // Actualizar solo ese cuadro (sin re-render completo)
+      const v=d.docs[di];
+      ck.style.border=`1.5px solid ${v?'#22c55e':'var(--border)'}`;
+      ck.style.background=v?'#dcfce7':'var(--bg2)';
+      ck.textContent=v?'✓':'';
+      // Actualizar barra de cumplimiento en esa fila
+      const ok2=d.docs.filter(Boolean).length;
+      const pct2=Math.round(ok2/13*100);
+      const bc2=pct2>=80?'#22c55e':pct2>=50?'#f97316':'#ef4444';
+      const row=ck.closest('tr');
+      if(row){
+        const bar=row.querySelector('div[style*="border-radius:3px;overflow"]>div');
+        if(bar){bar.style.width=pct2+'%';bar.style.background=bc2;}
+        const lbl=row.querySelector('span[style*="font-family:var(--mono)"]');
+        if(lbl) lbl.textContent=ok2+'/13';
+      }
+    };
+    tbody.onchange = e=>{
+      const inp = e.target.closest('.pv-resp-inp');
+      if(!inp) return;
+      const pi=parseInt(inp.dataset.pi);
+      const nom=PV_MAP[pi]; if(!nom) return;
+      updProvResp(nom, inp.value);
+    };
+  }
+
+  // Paginación
+  const info=document.getElementById('pv-info');
+  const pag=document.getElementById('pv-pag');
+  if(info) info.textContent=`${data.length} proveedores · Pág ${PV_PAGE} de ${tp}`;
+  if(pag){
+    pag.innerHTML='';
+    const mk=(t,pg)=>{
+      const b=document.createElement('button');
+      b.className='pag-btn'+(pg===PV_PAGE?' active':'');
+      b.textContent=t;
+      b.onclick=()=>{PV_PAGE=pg;renderProveedores();};
+      pag.appendChild(b);
+    };
+    if(PV_PAGE>1) mk('←',PV_PAGE-1);
+    for(let i=Math.max(1,PV_PAGE-2);i<=Math.min(tp,PV_PAGE+2);i++) mk(i,i);
+    if(PV_PAGE<tp) mk('→',PV_PAGE+1);
+  }
+}
+
+function expCSVProv(){
+  if(!PROVEEDORES.length){showToast&&showToast('Sin datos','error');return;}
+  const h=['PROVEEDOR','ESTADO','ZONA','TIPO','CODIGO','RUC','CONTACTO','DOCS_OK','PCT_CUMPL','RESPONSABLE'];
+  const rows=PROVEEDORES.filter(p=>p.nombre&&p.nombre.length>2&&p.nombre!=='PROVEEDOR').map(p=>{
+    const pd=getPD(p.nombre);const ok=pd.docs.filter(Boolean).length;
+    return[p.nombre,p.estado,p.zona,p.tipo,p.codigo,p.ruc,p.contacto,ok+'/13',Math.round(ok/13*100)+'%',pd.resp||p.responsable||''];
+  });
+  const csv=[h,...rows].map(r=>r.map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='proveedores_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+// REGISTRO PROVEEDOR
+function buscarProv(nom){
+  const n=nom.trim().toUpperCase();
+  if(n.length<5)return;
+  const f=PROVEEDORES.find(p=>(p.nombre||'').toUpperCase().includes(n));
+  if(f){
+    document.getElementById('rp-estado').value=f.estado||'ACTIVO';
+    document.getElementById('rp-zona').value=f.zona||'';
+    document.getElementById('rp-tipo').value=f.tipo||'';
+    document.getElementById('rp-ruc').value=f.ruc||'';
+    document.getElementById('rp-codigo').value=f.codigo||'';
+    document.getElementById('rp-contacto').value=f.contacto||'';
+    document.getElementById('rp-celular').value=f.celular||'';
+    document.getElementById('rp-correo').value=f.correo||'';
+    document.getElementById('rp-resp').value=f.responsable||'';
+    // Cargar checklist guardado
+    const pd=getPD(f.nombre);
+    for(let i=0;i<13;i++){const el=document.getElementById('rp-d'+i);if(el)el.checked=pd.docs[i]||false;}
+    calcRPcumpl();
+    showToast&&showToast('Proveedor encontrado — datos cargados ✓','success');
+  }
+}
+function calcRPcumpl(){
+  let ok=0;
+  for(let i=0;i<13;i++){if(document.getElementById('rp-d'+i)?.checked)ok++;}
+  const pct=Math.round(ok/13*100);
+  const bar=document.getElementById('rp-cumpl-bar');
+  const txt=document.getElementById('rp-cumpl-pct');
+  const bdg=document.getElementById('rp-cumpl-badge');
+  const col=pct>=80?'var(--success)':pct>=50?'var(--warning)':'var(--danger)';
+  if(bar){bar.style.width=pct+'%';bar.style.background=col;}
+  if(txt)txt.textContent=ok+' / 13 — '+pct+'%';
+  if(bdg){
+    bdg.textContent=pct>=80?'✅ COMPLETO':pct>=50?'⏳ EN PROCESO':'❌ INCOMPLETO';
+    bdg.style.background=pct>=80?'var(--success-bg)':pct>=50?'var(--warning-bg)':'var(--danger-bg)';
+    bdg.style.color=col;
+  }
+  // Actualizar borde de cada checkbox según estado
+  for(let i=0;i<13;i++){
+    const el=document.getElementById('rp-d'+i);
+    if(el&&el.parentElement){
+      el.parentElement.style.borderColor=el.checked?'var(--success)':'var(--border)';
+      el.parentElement.style.background=el.checked?'var(--success-bg)':'var(--bg2)';
+    }
+  }
+}
+function guardarProv(){
+  const nom=(document.getElementById('rp-nombre').value||'').trim().toUpperCase();
+  if(!nom){showToast&&showToast('Ingresa la razón social','error');return;}
+  const docs=[];for(let i=0;i<13;i++)docs.push(document.getElementById('rp-d'+i)?.checked||false);
+  const ok=docs.filter(Boolean).length;
+  const r={nombre:nom,estado:document.getElementById('rp-estado').value,zona:document.getElementById('rp-zona').value,tipo:document.getElementById('rp-tipo').value,ruc:document.getElementById('rp-ruc').value,codigo:document.getElementById('rp-codigo').value,contacto:document.getElementById('rp-contacto').value,celular:document.getElementById('rp-celular').value,correo:document.getElementById('rp-correo').value,responsable:document.getElementById('rp-resp').value,obs:document.getElementById('rp-obs').value,fechaReg:new Date().toLocaleDateString('es-PE')};
+  const idx=PROVEEDORES.findIndex(p=>p.nombre===nom);
+  if(idx>=0)PROVEEDORES[idx]=r;else PROVEEDORES.push(r);
+  PD[nom]={docs,resp:r.responsable};savePD();
+  document.getElementById('rp-msg').textContent='✅ Guardado '+r.fechaReg;
+  showToast&&showToast('Proveedor guardado ✓','success');
+}
+function limpiarProv(){
+  ['rp-nombre','rp-ruc','rp-codigo','rp-contacto','rp-celular','rp-correo','rp-resp','rp-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['rp-estado','rp-zona','rp-tipo'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+  for(let i=0;i<13;i++){const el=document.getElementById('rp-d'+i);if(el)el.checked=false;}
+  calcRPcumpl();
+  document.getElementById('rp-msg').textContent='';
+}
+
+// ═══════════════════════════════════════════════
+// ALERTAS
+// ═══════════════════════════════════════════════
+function renderAlertas(){
+  const la=CONDUCTORES.filter(c=>{const d=parseInt(c.diasLic);return !isNaN(d)&&d<=30;}).sort((a,b)=>parseInt(a.diasLic)-parseInt(b.diasLic));
+  document.getElementById('alerta-cond-tbody').innerHTML=la.length?la.map((r,i)=>`<tr>
+    <td class="mono" style="color:var(--text3)">${i+1}</td>
+    <td style="font-size:12px;font-weight:500">${r.conductor||'—'}</td>
+    <td class="mono">${r.dni||'—'}</td>
+    <td style="font-size:11px">${r.proveedor||'—'}</td>
+    <td>${diasCell(r.diasLic)}</td><td>${badge(r.estadoLic||'—')}</td>
+    <td>${diasCell(r.diasSctr)}</td><td>${badge(r.estadoSctr||'—')}</td>
+  </tr>`).join(''):'<tr><td colspan="8" class="empty-state">Sin alertas ✓</td></tr>';
+
+  const ua=UNIDADES.filter(u=>u.estadoSoat==='VENCIDO'||parseInt(u.diasSoat)<=30).sort((a,b)=>parseInt(a.diasSoat)-parseInt(b.diasSoat));
+  document.getElementById('alerta-unid-tbody').innerHTML=ua.length?ua.map((r,i)=>`<tr>
+    <td class="mono" style="color:var(--text3)">${i+1}</td>
+    <td class="mono" style="font-weight:700;color:var(--danger)">${r.placa||'—'}</td>
+    <td style="font-size:11px">${r.proveedor||'—'}</td>
+    <td style="font-size:11px">${r.tipo||'—'}</td>
+    <td>${diasCell(r.diasSoat)}</td><td>${badge(r.estadoSoat||'—')}</td>
+    <td>${diasCell(r.diasRtv)}</td><td>${badge(r.estadoRtv||'—')}</td>
+  </tr>`).join(''):'<tr><td colspan="8" class="empty-state">Sin alertas ✓</td></tr>';
+}
+
+// ═══════════════════════════════════════════════
+// REPORTE DIARIO
+// ═══════════════════════════════════════════════
+let REP_ROWS=[], REP_FILTRO='todos';
+function previewRepNombre(i){document.getElementById('rep-nombre').textContent=i.files[0]?.name||'Ningún archivo';}
+function buscarPorPlaca(p){return UNIDADES.find(u=>u.placa&&u.placa.toUpperCase()===p.toUpperCase())||null;}
+function buscarConductorBD(nombre,dni){
+  if(dni)return CONDUCTORES.find(c=>c.dni===String(dni))||null;
+  if(nombre)return CONDUCTORES.find(c=>c.conductor&&c.conductor.toUpperCase()===nombre.toUpperCase())||null;
+  return null;
+}
+function estadoGlobal(u,c){
+  if(!u&&!c)return 'nf';
+  const bad=[u?.estadoSoat==='VENCIDO',u?.estadoRtv==='VENCIDO',c?.estadoLic==='VENCIDO',c?.estadoSctr==='VENCIDO'];
+  const warn=[u?.estadoSoat==='POR VENCER',u?.estadoRtv==='POR VENCER',c?.estadoLic==='POR VENCER'];
+  if(bad.some(Boolean))return 'bad';
+  if(warn.some(Boolean))return 'warn';
+  return 'ok';
+}
+async function leerReporte(){
+  const file=document.getElementById('repFile').files[0];
+  if(!file){showToast('Selecciona un archivo primero','err');return;}
+  const ext=file.name.split('.').pop().toLowerCase();
+  try {
+    let rows=[];
+    if(ext==='csv'){
+      const text=await file.text();
+      const lines=text.split('\n');
+      const sep=lines[0].includes(';')?';':',';
+      const headers=lines[0].split(sep).map(h=>h.trim().replace(/^"|"$/g,'').toUpperCase());
+      rows=lines.slice(1).filter(l=>l.trim()).map(l=>{
+        const vals=l.split(sep).map(v=>v.trim().replace(/^"|"$/g,''));
+        const obj={};headers.forEach((h,i)=>obj[h]=vals[i]||'');
+        return obj;
+      });
+    } else {
+      const buf=await file.arrayBuffer();
+      const wb=XLSX.read(buf);
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(raw.length<2){showToast('Excel vacío','err');return;}
+      const headers=raw[0].map(h=>String(h).toUpperCase().trim());
+      rows=raw.slice(1).filter(r=>r.some(v=>v)).map(r=>{
+        const obj={};headers.forEach((h,i)=>obj[h]=String(r[i]||'').trim());
+        return obj;
+      });
+    }
+    // normalize keys
+    const cm={};
+    ['PLACA','CONDUCTOR','PROVEEDOR','RUTA','CENTRO','TURNO','DNI','CELULAR'].forEach(k=>{
+      const found=Object.keys(rows[0]||{}).find(h=>h.toUpperCase().includes(k));
+      if(found)cm[k]=found;
+    });
+    REP_ROWS=rows.map(row=>{
+      const placa=(row[cm.PLACA]||'').toUpperCase().trim();
+      const conductor=(row[cm.CONDUCTOR]||'').trim();
+      const dni=(row[cm.DNI]||'').trim();
+      const unidBD=buscarPorPlaca(placa);
+      const condBD=buscarConductorBD(conductor,dni);
+      const estado=estadoGlobal(unidBD,condBD);
+      return {placa,conductor,proveedor:row[cm.PROVEEDOR]||'',ruta:row[cm.RUTA]||'',
+              centro:row[cm.CENTRO]||'',turno:row[cm.TURNO]||'',dni,unidBD,condBD,estado};
+    }).filter(r=>r.placa||r.conductor);
+    renderReporte();
+    document.getElementById('rep-kpi-row').style.display='';
+    document.getElementById('rep-filtros').style.display='flex';
+    document.getElementById('rep-tabla-wrap').style.display='';
+    document.getElementById('rep-empty').style.display='none';
+    document.getElementById('btn-rep-export').style.display='';
+    showToast(`✓ ${REP_ROWS.length} unidades cargadas`,'ok');
+    postCargarReporte(); // actualizar dashboard + consultas del día
+  } catch(e){showToast('Error al leer: '+e.message,'err');}
+}
+function filtrarRep(f,btn){
+  REP_FILTRO=f;
+  document.querySelectorAll('.rep-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderReporte();
+}
+function renderReporte(){
+  const busq=(document.getElementById('rep-search').value||'').toLowerCase();
+  const rows=REP_ROWS.filter(r=>{
+    if(REP_FILTRO!=='todos'&&r.estado!==REP_FILTRO)return false;
+    if(busq&&!`${r.placa} ${r.conductor} ${r.proveedor} ${r.ruta}`.toLowerCase().includes(busq))return false;
+    return true;
+  });
+  const tot=REP_ROWS.length,ok=REP_ROWS.filter(r=>r.estado==='ok').length,
+    warn=REP_ROWS.filter(r=>r.estado==='warn').length,
+    bad=REP_ROWS.filter(r=>r.estado==='bad').length,
+    nf=REP_ROWS.filter(r=>r.estado==='nf').length;
+  document.getElementById('rk-total').textContent=tot;
+  document.getElementById('rk-ok').textContent=ok;
+  document.getElementById('rk-warn').textContent=warn;
+  document.getElementById('rk-bad').textContent=bad;
+  document.getElementById('rk-nf').textContent=nf;
+  document.getElementById('rep-count').textContent=rows.length;
+  const estBadge=s=>{
+    if(s==='ok')return '<span class="badge ok">✔ APTA</span>';
+    if(s==='warn')return '<span class="badge warn">⚠ ALERTA</span>';
+    if(s==='bad')return '<span class="badge danger">✖ NO APTA</span>';
+    return '<span class="badge inactive">❓ SIN REG.</span>';
+  };
+  document.getElementById('rep-tbody').innerHTML=rows.length?rows.map((r,i)=>{
+    const u=r.unidBD,c=r.condBD;
+    const rowStyle=r.estado==='bad'?'style="background:rgba(239,68,68,0.04)"':r.estado==='warn'?'style="background:rgba(245,158,11,0.04)"':'';
+    return `<tr ${rowStyle}>
+      <td class="mono" style="color:var(--text3)">${i+1}</td>
+      <td class="mono" style="font-weight:700;color:var(--accent2)">${r.placa||'—'}</td>
+      <td style="max-width:150px;white-space:normal;font-size:12px">${r.conductor||'—'}${!c&&r.conductor?'<br><span style="font-size:9px;color:var(--text3)">No en BD</span>':''}</td>
+      <td style="font-size:11px;max-width:120px">${u?u.proveedor||r.proveedor:r.proveedor||'—'}</td>
+      <td style="font-size:11px">${r.ruta||'—'}</td>
+      <td class="mono" style="font-size:11px">${r.centro||(u?u.centro:'—')||'—'}</td>
+      <td style="font-size:11px">${r.turno||'—'}</td>
+      <td>${c?badge(c.estadoLic||'—'):'<span style="color:var(--text3)">—</span>'}</td>
+      <td>${c?diasCell(c.diasLic):'—'}</td>
+      <td>${c?badge(c.estadoSctr||'—'):'<span style="color:var(--text3)">—</span>'}</td>
+      <td>${c?diasCell(c.diasSctr):'—'}</td>
+      <td>${u?badge(u.estadoSoat||'—'):'<span style="color:var(--text3)">—</span>'}</td>
+      <td>${u?diasCell(u.diasSoat):'—'}</td>
+      <td>${u?badge(u.estadoRtv||'—'):'<span style="color:var(--text3)">—</span>'}</td>
+      <td>${u?diasCell(u.diasRtv):'—'}</td>
+      <td>${estBadge(r.estado)}</td>
+    </tr>`;}).join(''):'<tr><td colspan="16" class="empty-state">Sin resultados</td></tr>';
+}
+function limpiarReporte(){
+  REP_ROWS=[]; REP_FILTRO='todos';
+  document.getElementById('repFile').value='';
+  document.getElementById('rep-nombre').textContent='Ningún archivo';
+  document.getElementById('rep-kpi-row').style.display='none';
+  document.getElementById('rep-filtros').style.display='none';
+  document.getElementById('rep-tabla-wrap').style.display='none';
+  document.getElementById('rep-empty').style.display='';
+  document.getElementById('btn-rep-export').style.display='none';
+  document.querySelectorAll('.rep-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.rep-btn[data-f="todos"]')?.classList.add('active');
+}
+function exportarReporteCsv(){
+  if(!REP_ROWS.length){showToast('Sin datos','err');return;}
+  const hdrs=['PLACA','CONDUCTOR','PROVEEDOR','RUTA','CENTRO','TURNO','EST_LIC','DIAS_LIC','EST_SCTR','DIAS_SCTR','EST_SOAT','DIAS_SOAT','EST_RTV','DIAS_RTV','ESTADO'];
+  const csv=[hdrs,...REP_ROWS.map(r=>{const u=r.unidBD,c=r.condBD;return[r.placa,r.conductor,r.proveedor,r.ruta,r.centro,r.turno,c?c.estadoLic:'N/D',c?c.diasLic:'N/D',c?c.estadoSctr:'N/D',c?c.diasSctr:'N/D',u?u.estadoSoat:'N/D',u?u.diasSoat:'N/D',u?u.estadoRtv:'N/D',u?u.diasRtv:'N/D',r.estado.toUpperCase()];})].map(r=>r.map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  const fecha=document.getElementById('rep-fecha').value||new Date().toISOString().slice(0,10);
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='reporte_'+fecha+'.csv'; a.click();
+}
+
+// ═══════════════════════════════════════════════
+// EDICIÓN INLINE DE FECHAS
+// ═══════════════════════════════════════════════
+let editTarget=null;
+function abrirEdit(tipo,idx,diasCampo,fechaCampo,nombre){
+  const data=tipo==='conductor'?CONDUCTORES:UNIDADES;
+  editTarget={tipo,idx,diasCampo,fechaCampo};
+  const reg=data[idx];
+  document.getElementById('edit-title').textContent=`✏️ Editar ${fechaCampo.replace('fecha','').replace('Lic','Licencia').replace('Sctr','SCTR').replace('Soat','SOAT').replace('Rtv','RTV').replace('Tc','T.C.')} — ${nombre}`;
+  document.getElementById('edit-fecha').value=reg[fechaCampo]||'';
+  previewEdit();
+  document.getElementById('edit-modal').classList.add('open');
+}
+function previewEdit(){
+  const v=document.getElementById('edit-fecha').value;
+  const dias=calcDiasDesde(v);
+  if(dias!==null){
+    const est=estadoDesde(dias);
+    const cls=dias<0?'d-danger':dias<=30?'d-warn':'d-ok';
+    document.getElementById('edit-preview').innerHTML=`<span class="${cls}">${dias>0?'+':''}${dias} días</span> — <strong>${est}</strong>`;
+  } else document.getElementById('edit-preview').textContent='—';
+}
+function guardarEdit(){
+  if(!editTarget)return;
+  const {tipo,idx,diasCampo,fechaCampo}=editTarget;
+  const data=tipo==='conductor'?CONDUCTORES:UNIDADES;
+  const reg=data[idx];
+  const v=document.getElementById('edit-fecha').value;
+  reg[fechaCampo]=v;
+  const dias=calcDiasDesde(v);
+  if(dias!==null){
+    reg[diasCampo]=String(dias);
+    const mapaEst={diasLic:'estadoLic',diasSctr:'estadoSctr',diasEmo:'estadoEmo',diasSoat:'estadoSoat',diasRtv:'estadoRtv',diasTc:'estadoTc'};
+    if(mapaEst[diasCampo])reg[mapaEst[diasCampo]]=estadoDesde(dias);
+  }
+  cerrarEdit(); render(); showToast('Fecha actualizada ✓','ok');
+}
+function cerrarEdit(){ document.getElementById('edit-modal').classList.remove('open'); editTarget=null; }
+
+// ═══════════════════════════════════════════════
+// FORMULARIOS REGISTRO
+// ═══════════════════════════════════════════════
+function calcDocDias(fechaId,diasId,estId){
+  const v=document.getElementById(fechaId).value;
+  const dias=calcDiasDesde(v);
+  document.getElementById(diasId).value=dias!==null?dias+'d':'';
+  document.getElementById(estId).value=dias!==null?estadoDesde(dias):'';
+}
+function calcAntig(){
+  const a=parseInt(document.getElementById('u-anio').value);
+  document.getElementById('u-antig').value=a>0?String(new Date().getFullYear()-a)+' años':'';
+}
+function actualizarCumplCond(){
+  const chs=['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo'];
+  const ok=chs.filter(id=>document.getElementById(id)?.checked).length;
+  document.getElementById('c-cumpl').value=`${ok}/${chs.length} (${Math.round(ok/chs.length*100)}%)`;
+}
+function actualizarCumplUnid(){
+  const chs=['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'];
+  const ok=chs.filter(id=>document.getElementById(id)?.checked).length;
+  document.getElementById('u-cumpl').value=`${ok}/${chs.length} (${Math.round(ok/chs.length*100)}%)`;
+}
+['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo'].forEach(id=>document.getElementById(id)?.addEventListener('change',actualizarCumplCond));
+['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'].forEach(id=>document.getElementById(id)?.addEventListener('change',actualizarCumplUnid));
+
+function buscarConductor(dni){
+  if(!dni||dni.length<7)return;
+  const c=CONDUCTORES.find(x=>x.dni===dni);
+  if(c){
+    document.getElementById('c-nombre').value=c.conductor||'';
+    document.getElementById('c-proveedor').value=c.proveedor||'';
+    document.getElementById('c-placa').value=c.placa||'';
+    document.getElementById('c-estado').value=c.estado||'ACTIVO';
+    document.getElementById('c-cat-lic').value=c.catLic||'A-I';
+    document.getElementById('c-fecha-lic').value=c.fechaLic||'';
+    document.getElementById('c-restriccion').value=c.restriccion||'SIN RESTRICCIONES';
+    document.getElementById('c-aseg-sctr').value=c.asegSctr||'SANITAS';
+    document.getElementById('c-fecha-sctr').value=c.fechaSctr||'';
+    if(c.fechaLic)calcDocDias('c-fecha-lic','c-dias-lic','c-est-lic');
+    if(c.fechaSctr)calcDocDias('c-fecha-sctr','c-dias-sctr','c-est-sctr');
+    showToast('Conductor encontrado: '+c.conductor,'ok');
+  }
+}
+function buscarUnidad(placa){
+  if(!placa||placa.length<5)return;
+  const u=UNIDADES.find(x=>x.placa&&x.placa.toUpperCase()===placa.toUpperCase());
+  if(u){
+    document.getElementById('u-proveedor').value=u.proveedor||'';
+    document.getElementById('u-estado').value=u.estado||'ACTIVO';
+    document.getElementById('u-tipo').value=u.tipo||'CAMION';
+    document.getElementById('u-anio').value=u.anio||'';
+    document.getElementById('u-marca').value=u.marca||'';
+    document.getElementById('u-aseg-soat').value=u.aseguradora||'LA POSITIVA';
+    document.getElementById('u-fecha-soat').value=u.fechaSoat||'';
+    document.getElementById('u-fecha-rtv').value=u.fechaRtv||'';
+    document.getElementById('u-fecha-tc').value=u.fechaTc||'';
+    if(u.anio)calcAntig();
+    if(u.fechaSoat)calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat');
+    if(u.fechaRtv)calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv');
+    if(u.fechaTc)calcDocDias('u-fecha-tc','u-dias-tc','u-est-tc');
+    showToast('Unidad encontrada: '+u.placa,'ok');
+  }
+}
+async function guardarConductor(){
+  const dni=document.getElementById('c-dni').value.trim();
+  const nombre=document.getElementById('c-nombre').value.trim();
+  if(!dni||!nombre){showToast('DNI y Conductor son obligatorios','err');return;}
+  const row={dni,conductor:nombre,estado:document.getElementById('c-estado').value,
+    proveedor:document.getElementById('c-proveedor').value,placa:document.getElementById('c-placa').value,
+    catLic:document.getElementById('c-cat-lic').value,fechaLic:document.getElementById('c-fecha-lic').value,
+    restriccion:document.getElementById('c-restriccion').value,
+    asegSctr:document.getElementById('c-aseg-sctr').value,fechaSctr:document.getElementById('c-fecha-sctr').value,
+    tienEmo:document.getElementById('c-tiene-emo').value,fechaEmo:document.getElementById('c-fecha-emo').value,
+    cantPapeletas:document.getElementById('c-pap-cant').value||'0',
+    puntosTotal:document.getElementById('c-pap-firmes').value||'0',
+    alertaPuntos:document.getElementById('c-alerta-pap').value,
+    docDni:document.getElementById('ch-dni').checked?'✓':'✗',
+    docLic:document.getElementById('ch-lic').checked?'✓':'✗',
+    docRecord:document.getElementById('ch-record').checked?'✓':'✗',
+    docSctr:document.getElementById('ch-sctr').checked?'✓':'✗',
+    docEmo:document.getElementById('ch-emo').checked?'✓':'✗'};
+  recalcular();
+  const idx=CONDUCTORES.findIndex(c=>c.dni===dni);
+  if(idx>=0)CONDUCTORES[idx]={...CONDUCTORES[idx],...row};
+  else CONDUCTORES.push(row);
+  const ok=await guardarEnSheets('CONDUCTORES',Object.keys(row),Object.values(row));
+  showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
+  document.getElementById('c-msg').textContent=new Date().toLocaleTimeString('es-PE');
+}
+async function guardarUnidad(){
+  const placa=document.getElementById('u-placa').value.trim().toUpperCase();
+  if(!placa){showToast('La placa es obligatoria','err');return;}
+  const chs=['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'];
+  const row={placa,estado:document.getElementById('u-estado').value,
+    proveedor:document.getElementById('u-proveedor').value,
+    tipo:document.getElementById('u-tipo').value,anio:document.getElementById('u-anio').value,
+    marca:document.getElementById('u-marca').value,
+    aseguradora:document.getElementById('u-aseg-soat').value,
+    fechaSoat:document.getElementById('u-fecha-soat').value,
+    fechaRtv:document.getElementById('u-fecha-rtv').value,
+    obsRtv:document.getElementById('u-obs-rtv').value,
+    tieneTc:document.getElementById('u-tiene-tc').value,
+    fechaTc:document.getElementById('u-fecha-tc').value,
+    docTarjProp:document.getElementById('uch-tarj').checked?'✓':'✗',
+    docSoat:document.getElementById('uch-soat').checked?'✓':'✗',
+    docRtv:document.getElementById('uch-rtv').checked?'✓':'✗',
+    docTc:document.getElementById('uch-tc').checked?'✓':'✗',
+    docMnto:document.getElementById('uch-mnto').checked?'✓':'✗',
+    docBoletin:document.getElementById('uch-boletin').checked?'✓':'✗',
+    docPoliza:document.getElementById('uch-poliza').checked?'✓':'✗'};
+  recalcular();
+  const idx=UNIDADES.findIndex(u=>u.placa===placa);
+  if(idx>=0)UNIDADES[idx]={...UNIDADES[idx],...row};
+  else UNIDADES.push(row);
+  const ok=await guardarEnSheets('UNIDADES',Object.keys(row),Object.values(row));
+  showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
+  document.getElementById('u-msg').textContent=new Date().toLocaleTimeString('es-PE');
+}
+function limpiarFormCond(){
+  ['c-dni','c-nombre','c-proveedor','c-placa','c-fecha-lic','c-dias-lic','c-est-lic','c-fecha-sctr','c-dias-sctr','c-est-sctr','c-fecha-emo','c-dias-emo','c-est-emo','c-pap-cant','c-pap-firmes','c-pap-proceso','c-cumpl','c-msg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+}
+function limpiarFormUnid(){
+  ['u-placa','u-proveedor','u-anio','u-antig','u-marca','u-fecha-soat','u-dias-soat','u-est-soat','u-fecha-rtv','u-dias-rtv','u-est-rtv','u-obs-rtv','u-fecha-tc','u-dias-tc','u-est-tc','u-cumpl','u-msg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS DE UI — deben estar antes del INIT
+// ═══════════════════════════════════════════════
+function mostrarCargando(show){
+  let ov=document.getElementById('cargando-ov');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='cargando-ov';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(15,10,40,.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .3s';
+    ov.innerHTML=`<div style="width:52px;height:52px;border:4px solid rgba(167,139,250,.25);border-top-color:#7c3aed;border-radius:50%;animation:sps .8s linear infinite"></div>
+      <div style="color:#fff;font-size:15px;font-weight:700;font-family:Inter,sans-serif">Cargando desde Google Sheets...</div>
+      <div style="color:rgba(255,255,255,.45);font-size:12px;font-family:Inter,sans-serif">Conductores · Unidades · Proveedores</div>
+      <style>@keyframes sps{to{transform:rotate(360deg)}}</style>`;
+    document.body.appendChild(ov);
+  }
+  if(show){ov.style.display='flex';ov.style.opacity='1';}
+  else{ov.style.opacity='0';setTimeout(()=>{ov.style.display='none';},300);}
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+document.getElementById('rep-fecha').value=new Date().toISOString().slice(0,10);
+
+// ── ARRANQUE: cargar base desde Google Sheets
+if(!localStorage.getItem('gs_url') && GS_URL){
+  localStorage.setItem('gs_url', GS_URL);
+}
+if(GS_URL){
+  updateGSStatus('syncing');
+  const lsEl=document.getElementById('gs-last-sync');
+  if(lsEl) lsEl.style.display='';
+  mostrarCargando(true);
+  syncFromSheets()
+    .then(()=>{ renderDashboard(); })   // render DESPUÉS de cargar
+    .catch(e=>{ console.error(e); renderDashboard(); }) // igual renderizar aunque falle
+    .finally(()=>mostrarCargando(false));
+} else {
+  // Sin GS: abrir modal y mostrar dashboard vacío con aviso
+  openGSModal();
+  renderDashboard();
+}
+
+// ══════════════════════════════════════════════
+// MODO CONSULTA: BASE vs DÍA
+// ══════════════════════════════════════════════
+let COND_MODO_DIA = false;
+let UNID_MODO_DIA = false;
+
+function toggleCondModo(){
+  COND_MODO_DIA = !COND_MODO_DIA;
+  if(COND_MODO_DIA && REP_ROWS.length===0){
+    showToast('Primero carga el Excel del día en Reporte Diario','warn');
+    COND_MODO_DIA=false; return;
+  }
+  document.getElementById('cond-modo-badge').style.display=COND_MODO_DIA?'block':'none';
+  document.getElementById('cond-modo-badge-base').style.display=COND_MODO_DIA?'none':'block';
+  document.getElementById('btn-cond-modo').textContent=COND_MODO_DIA?'Ver base completa':'Ver reporte del día';
+  renderConductores();
+}
+function toggleUnidModo(){
+  UNID_MODO_DIA = !UNID_MODO_DIA;
+  if(UNID_MODO_DIA && REP_ROWS.length===0){
+    showToast('Primero carga el Excel del día en Reporte Diario','warn');
+    UNID_MODO_DIA=false; return;
+  }
+  document.getElementById('unid-modo-badge').style.display=UNID_MODO_DIA?'block':'none';
+  document.getElementById('unid-modo-badge-base').style.display=UNID_MODO_DIA?'none':'block';
+  document.getElementById('btn-unid-modo').textContent=UNID_MODO_DIA?'Ver base completa':'Ver reporte del día';
+  renderUnidades();
+}
+
+// Cuando se carga el reporte → actualizar el dashboard automáticamente
+const _origFinReporte = typeof finalizarReporte === 'function' ? finalizarReporte : null;
+function postCargarReporte(){
+  // Actualizar badge del dashboard
+  if(typeof renderDashboard==='function') renderDashboard();
+  // Si estaban en modo día, re-renderizar
+  if(COND_MODO_DIA && typeof renderConductores==='function') renderConductores();
+  if(UNID_MODO_DIA && typeof renderUnidades==='function') renderUnidades();
+}
+</script>
+</body>
+</html>
