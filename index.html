@@ -1068,14 +1068,42 @@ function parseCsv(text){
 }
 
 // Guardar/actualizar fila (no-cors, fire-and-forget)
-function guardarEnSheets(hoja, headers, row, keyField){
-  if(!GS_URL) return Promise.resolve(false);
-  const keyIdx = headers.indexOf(keyField);
-  const body   = JSON.stringify({hoja, headers, row: row.map(v=>String(v||'')), keyField: keyIdx>=0?keyIdx:0});
-  return fetch(GS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body})
-    .then(()=>true).catch(()=>false);
-}
+async function guardarEnSheets(hoja, headers, row, keyField){
 
+  if(!GS_URL) return false;
+
+  try {
+
+    const payload = {
+      hoja,
+      headers,
+      row: row.map(v => String(v || '')),
+      keyField
+    };
+
+    const response = await fetch(GS_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    console.log('GS OK:', data);
+
+    return true;
+
+  } catch(err){
+
+    console.error('GS ERROR:', err);
+
+    showToast('Error guardando en Google Sheets','err');
+
+    return false;
+  }
+}
 // Sincronizar todo desde Sheets
 async function syncFromSheets(){
   if(!GS_URL){ openGSModal(); return; }
