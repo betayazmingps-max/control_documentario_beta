@@ -1081,17 +1081,15 @@ async function guardarEnSheets(hoja, headers, row, keyField){
       keyField
     };
 
-    const response = await fetch(GS_URL, {
+    await fetch(GS_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'text/plain;charset=utf-8'
       },
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
-
-    console.log('GS OK:', data);
+    console.log('GS OK');
 
     return true;
 
