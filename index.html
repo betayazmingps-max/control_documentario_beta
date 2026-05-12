@@ -1505,99 +1505,187 @@ function renderDashboard(){
 // ═══════════════════════════════════════════════
 // CONDUCTORES TABLE
 // ═══════════════════════════════════════════════
+
+// Toggle check de documento desde la tabla y guardar en Sheets
+async function toggleDocCond(dni, campo){
+  const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
+  if(idx<0) return;
+  const actual = CONDUCTORES[idx][campo];
+  CONDUCTORES[idx][campo] = (actual==='✓') ? '✗' : '✓';
+  // recalcular cumplimiento
+  const c = CONDUCTORES[idx];
+  const docs = [c.docDni,c.docLic,c.docRecord,c.docSctr,c.docEmo].filter(v=>v==='✓').length;
+  CONDUCTORES[idx].cumpl = `${docs}/5 (${Math.round(docs/5*100)}%)`;
+  await guardarEnSheets('CONDUCTORES', Object.keys(CONDUCTORES[idx]), Object.values(CONDUCTORES[idx]));
+  renderConductores();
+}
+
+// Edición inline de celda en conductor
+function editCeldaCond(dni, campo, valorActual){
+  const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
+  if(idx<0) return;
+  const provOpts = PROVEEDORES.filter(p=>p.estado==='ACTIVO').map(p=>`<option>${p.nombre}</option>`).join('');
+  const input = campo==='proveedor'
+    ? `<select onblur="guardarCeldaCond('${dni}','${campo}',this.value)" onchange="guardarCeldaCond('${dni}','${campo}',this.value)" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px;font-size:11px">${provOpts}</select>`
+    : `<input value="${valorActual||''}" onblur="guardarCeldaCond('${dni}','${campo}',this.value)" onkeydown="if(event.key==='Enter')guardarCeldaCond('${dni}','${campo}',this.value)" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px;font-size:11px;text-transform:uppercase" />`;
+  const td = document.querySelector(`[data-dni="${dni}"][data-campo="${campo}"]`);
+  if(td){ td.innerHTML=input; td.querySelector('input,select')?.focus(); }
+}
+async function guardarCeldaCond(dni, campo, valor){
+  const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
+  if(idx<0) return;
+  CONDUCTORES[idx][campo] = valor.trim().toUpperCase();
+  await guardarEnSheets('CONDUCTORES', Object.keys(CONDUCTORES[idx]), Object.values(CONDUCTORES[idx]));
+  showToast('✓ Guardado','ok');
+  renderConductores();
+}
+
+function renderCondRow(r, num){
+  const dni = (r.dni||'').replace(/'/g,"\\'");
+  const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocCond('${dni}','${campo}')" title="Clic para marcar/desmarcar">
+    <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'}; user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
+  const editable = (campo, valor) => `<td data-dni="${dni}" data-campo="${campo}" onclick="editCeldaCond('${dni}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
+  return `<tr>
+    <td class="mono" style="color:var(--text3)">${num}</td>
+    <td class="mono">${r.dni||'—'}</td>
+    <td style="max-width:160px;white-space:normal;font-size:12px;font-weight:500">${r.conductor||'—'}</td>
+    <td>${badge(r.estado||'INACTIVO')}</td>
+    ${editable('proveedor', r.proveedor)}
+    ${editable('placa', r.placa)}
+    <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
+    <td><span class="badge blue">${r.catLic||'—'}</span></td>
+    <td>${badge(r.estadoLic||'—')}</td>
+    <td class="editable-cell" onclick="abrirEdit('conductor',${CONDUCTORES.indexOf(r)},'diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasLic)}</td>
+    <td>${badge(r.estadoSctr||'—')}</td>
+    <td class="editable-cell" onclick="abrirEdit('conductor',${CONDUCTORES.indexOf(r)},'diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasSctr)}</td>
+    ${chk(r.docDni,'docDni')}
+    ${chk(r.docLic,'docLic')}
+    ${chk(r.docRecord,'docRecord')}
+    ${chk(r.docSctr,'docSctr')}
+    ${chk(r.docEmo,'docEmo')}
+    <td>${barCumpl(r.cumpl||'—')}</td>
+  </tr>`;
+}
+
 function renderConductores(){
-  // ── MODO DÍA: mostrar solo conductores del reporte
-  if(COND_MODO_DIA && REP_ROWS.length>0){
-    const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
-    let rows=REP_ROWS.filter(r=>r.condBD).map(r=>r.condBD);
-    // deduplicar por DNI
-    const seen=new Set(); rows=rows.filter(c=>{if(seen.has(c.dni))return false;seen.add(c.dni);return true;});
-    if(search) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
-    document.getElementById('cond-count').textContent=rows.length+' del día';
-    const PS2=25; const pg=ST.conductores.page;
-    const sl=rows.slice((pg-1)*PS2,pg*PS2);
-    document.getElementById('cond-tbody').innerHTML=sl.length?sl.map((r,i)=>renderCondRow(r,(pg-1)*PS2+i+1)).join(''):'<tr><td colspan="18" class="empty-state">Sin conductores en el reporte del día</td></tr>';
-    renderPag('cond-pag','cond-info',pg,rows.length,v=>{ST.conductores.page=v;renderConductores();});
+  // Sin Excel cargado → tabla vacía con mensaje
+  if(!COND_MODO_DIA && REP_ROWS.length===0){
+    document.getElementById('cond-count').textContent='0 registros';
+    document.getElementById('cond-tbody').innerHTML='<tr><td colspan="19" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver los conductores</td></tr>';
+    document.getElementById('cond-info').textContent='—';
+    document.getElementById('cond-pag').innerHTML='';
     return;
   }
-  const {page,search,estado}=state.conductores;
-  const data=filterData(CONDUCTORES,search,estado);
-  document.getElementById('cond-count').textContent=data.length+' registros';
-  const slice=data.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
-  document.getElementById('cond-tbody').innerHTML=slice.length?slice.map((r,i)=>{
-    const idx=CONDUCTORES.indexOf(r);
-    const nom=(r.conductor||'').replace(/'/g,"\'");
-    return `<tr>
-      <td class="mono" style="color:var(--text3)">${(page-1)*PAGE_SIZE+i+1}</td>
-      <td class="mono">${r.dni||'—'}</td>
-      <td style="max-width:170px;white-space:normal;font-size:12px;font-weight:500">${r.conductor||'—'}</td>
-      <td>${badge(r.estado||'INACTIVO')}</td>
-      <td style="max-width:130px;font-size:11px">${r.proveedor||'—'}</td>
-      <td class="mono">${r.placa||'—'}</td>
-      <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
-      <td><span class="badge blue">${r.catLic||'—'}</span></td>
-      <td>${badge(r.estadoLic||'—')}</td>
-      <td class="editable-cell" onclick="abrirEdit('conductor',${idx},'diasLic','fechaLic','${nom}')" title="Clic para editar">${diasCell(r.diasLic)}</td>
-      <td>${badge(r.estadoSctr||'—')}</td>
-      <td class="editable-cell" onclick="abrirEdit('conductor',${idx},'diasSctr','fechaSctr','${nom}')" title="Clic para editar">${diasCell(r.diasSctr)}</td>
-      <td>${docPill(r.docDni,'DNI')}</td>
-      <td>${docPill(r.docLic,'Lic')}</td>
-      <td>${docPill(r.docRecord,'Rec')}</td>
-      <td>${docPill(r.docSctr,'SCTR')}</td>
-      <td class="editable-cell" onclick="abrirEdit('conductor',${idx},'diasEmo','fechaEmo','${nom}')" title="Clic para editar EMO">${docPill(r.docEmo,'EMO')}</td>
-      <td>${barCumpl(r.cumpl||'—')}</td>
-    </tr>`;}).join(''):'<tr><td colspan="18" class="empty-state">Sin datos</td></tr>';
-  renderPag('cond-pag','cond-info',page,data.length,v=>state.conductores.page=v);
+  // Modo día: solo los del Excel
+  const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
+  let rows;
+  if(COND_MODO_DIA && REP_ROWS.length>0){
+    rows = REP_ROWS.filter(r=>r.condBD).map(r=>r.condBD);
+    const seen=new Set(); rows=rows.filter(c=>{if(seen.has(c.dni))return false;seen.add(c.dni);return true;});
+  } else {
+    const {estado}=state.conductores;
+    rows = filterData(CONDUCTORES, search, estado);
+  }
+  if(search) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
+  document.getElementById('cond-count').textContent=rows.length+(COND_MODO_DIA?' del día':' registros');
+  const PS2=25; const pg=COND_MODO_DIA?(ST.conductores?.page||1):state.conductores.page;
+  const sl=rows.slice((pg-1)*PS2,pg*PS2);
+  document.getElementById('cond-tbody').innerHTML=sl.length
+    ? sl.map((r,i)=>renderCondRow(r,(pg-1)*PS2+i+1)).join('')
+    : '<tr><td colspan="19" class="empty-state">Sin conductores</td></tr>';
+  renderPag('cond-pag','cond-info',pg,rows.length,v=>{ if(COND_MODO_DIA){if(!ST.conductores)ST.conductores={};ST.conductores.page=v;}else state.conductores.page=v; renderConductores(); });
 }
 
 // ═══════════════════════════════════════════════
 // UNIDADES TABLE
 // ═══════════════════════════════════════════════
+
+async function toggleDocUnid(placa, campo){
+  const idx = UNIDADES.findIndex(u=>u.placa===placa);
+  if(idx<0) return;
+  const actual = UNIDADES[idx][campo];
+  UNIDADES[idx][campo] = (actual==='✓') ? '✗' : '✓';
+  const u = UNIDADES[idx];
+  const docs = [u.docTarjProp,u.docSoat,u.docRtv,u.docTc,u.docMnto,u.docBoletin,u.docPoliza].filter(v=>v==='✓').length;
+  UNIDADES[idx].cumpl = `${docs}/7 (${Math.round(docs/7*100)}%)`;
+  await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
+  renderUnidades();
+}
+
+function editCeldaUnid(placa, campo, valorActual){
+  const provOpts = PROVEEDORES.filter(p=>p.estado==='ACTIVO').map(p=>`<option>${p.nombre}</option>`).join('');
+  const input = campo==='proveedor'
+    ? `<select onblur="guardarCeldaUnid('${placa}','${campo}',this.value)" onchange="guardarCeldaUnid('${placa}','${campo}',this.value)" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px;font-size:11px">${provOpts}</select>`
+    : `<input value="${valorActual||''}" onblur="guardarCeldaUnid('${placa}','${campo}',this.value)" onkeydown="if(event.key==='Enter')guardarCeldaUnid('${placa}','${campo}',this.value)" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px;font-size:11px;text-transform:uppercase" />`;
+  const td = document.querySelector(`[data-placa="${placa}"][data-campo="${campo}"]`);
+  if(td){ td.innerHTML=input; td.querySelector('input,select')?.focus(); }
+}
+async function guardarCeldaUnid(placa, campo, valor){
+  const idx = UNIDADES.findIndex(u=>u.placa===placa);
+  if(idx<0) return;
+  UNIDADES[idx][campo] = valor.trim().toUpperCase();
+  await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
+  showToast('✓ Guardado','ok');
+  renderUnidades();
+}
+
+function renderUnidRow(r, num){
+  const placa = (r.placa||'').replace(/'/g,"\\'");
+  const idx = UNIDADES.indexOf(r);
+  const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocUnid('${placa}','${campo}')" title="Clic para marcar/desmarcar">
+    <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'};user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
+  const editable = (campo, valor) => `<td data-placa="${placa}" data-campo="${campo}" onclick="editCeldaUnid('${placa}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
+  return `<tr>
+    <td class="mono" style="color:var(--text3)">${num}</td>
+    <td class="mono" style="font-weight:700;color:var(--accent2)">${r.placa||'—'}</td>
+    <td>${badge(r.estado||'INACTIVO')}</td>
+    ${editable('proveedor', r.proveedor)}
+    <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
+    <td style="font-size:11px">${r.tipo||'—'}</td>
+    <td class="mono">${r.anio||'—'}</td>
+    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')" title="Editar SOAT">${badge(r.estadoSoat||'—')}</td>
+    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')">${diasCell(r.diasSoat)}</td>
+    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')" title="Editar RTV">${badge(r.estadoRtv||'—')}</td>
+    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')">${diasCell(r.diasRtv)}</td>
+    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasTc','fechaTc','${placa}')" title="Editar T.C.">${badge(r.estadoTc||'—')}</td>
+    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasTc','fechaTc','${placa}')">${diasCell(r.diasTc)}</td>
+    ${chk(r.docTarjProp,'docTarjProp')}
+    ${chk(r.docSoat,'docSoat')}
+    ${chk(r.docRtv,'docRtv')}
+    ${chk(r.docTc,'docTc')}
+    ${chk(r.docMnto,'docMnto')}
+    ${chk(r.docBoletin,'docBoletin')}
+    ${chk(r.docPoliza,'docPoliza')}
+    <td>${barCumpl(r.cumpl||'—')}</td>
+  </tr>`;
+}
+
 function renderUnidades(){
-  // ── MODO DÍA: mostrar solo unidades del reporte
-  if(UNID_MODO_DIA && REP_ROWS.length>0){
-    const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
-    let rows=REP_ROWS.filter(r=>r.unidBD).map(r=>r.unidBD);
-    const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
-    if(search) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
-    document.getElementById('unid-count').textContent=rows.length+' del día';
-    const PS2=25; const pg=ST.unidades.page;
-    const sl=rows.slice((pg-1)*PS2,pg*PS2);
-    document.getElementById('unid-tbody').innerHTML=sl.length?sl.map((r,i)=>renderUnidRow(r,(pg-1)*PS2+i+1)).join(''):'<tr><td colspan="21" class="empty-state">Sin unidades en el reporte del día</td></tr>';
-    renderPag('unid-pag','unid-info',pg,rows.length,v=>{ST.unidades.page=v;renderUnidades();});
+  // Sin Excel cargado → tabla vacía con mensaje
+  if(!UNID_MODO_DIA && REP_ROWS.length===0){
+    document.getElementById('unid-count').textContent='0 registros';
+    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="21" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver las unidades</td></tr>';
+    document.getElementById('unid-info').textContent='—';
+    document.getElementById('unid-pag').innerHTML='';
     return;
   }
-  const {page,search,estado}=state.unidades;
-  const data=filterData(UNIDADES,search,estado);
-  document.getElementById('unid-count').textContent=data.length+' registros';
-  const slice=data.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
-  document.getElementById('unid-tbody').innerHTML=slice.length?slice.map((r,i)=>{
-    const idx=UNIDADES.indexOf(r);
-    const placa=(r.placa||'').replace(/'/g,"\'");
-    return `<tr>
-      <td class="mono" style="color:var(--text3)">${(page-1)*PAGE_SIZE+i+1}</td>
-      <td class="mono" style="font-weight:700;color:var(--accent2)">${r.placa||'—'}</td>
-      <td>${badge(r.estado||'INACTIVO')}</td>
-      <td style="max-width:130px;font-size:11px">${r.proveedor||'—'}</td>
-      <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
-      <td style="font-size:11px">${r.tipo||'—'}</td>
-      <td class="mono">${r.anio||'—'}</td>
-      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')" title="Editar SOAT">${badge(r.estadoSoat||'—')}</td>
-      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')">${diasCell(r.diasSoat)}</td>
-      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')" title="Editar RTV">${badge(r.estadoRtv||'—')}</td>
-      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')">${diasCell(r.diasRtv)}</td>
-      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasTc','fechaTc','${placa}')" title="Editar T.C.">${badge(r.estadoTc||'—')}</td>
-      <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasTc','fechaTc','${placa}')">${diasCell(r.diasTc)}</td>
-      <td>${docPill(r.docTarjProp,'TP')}</td>
-      <td>${docPill(r.docSoat,'SOAT')}</td>
-      <td>${docPill(r.docRtv,'RTV')}</td>
-      <td>${docPill(r.docTc,'TC')}</td>
-      <td>${docPill(r.docMnto,'MNTO')}</td>
-      <td>${docPill(r.docBoletin,'Bol')}</td>
-      <td>${docPill(r.docPoliza,'Pól')}</td>
-      <td>${barCumpl(r.cumpl||'—')}</td>
-    </tr>`;}).join(''):'<tr><td colspan="21" class="empty-state">Sin datos</td></tr>';
-  renderPag('unid-pag','unid-info',page,data.length,v=>state.unidades.page=v);
+  const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
+  let rows;
+  if(UNID_MODO_DIA && REP_ROWS.length>0){
+    rows = REP_ROWS.filter(r=>r.unidBD).map(r=>r.unidBD);
+    const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
+  } else {
+    const {estado}=state.unidades;
+    rows = filterData(UNIDADES, search, estado);
+  }
+  if(search) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
+  document.getElementById('unid-count').textContent=rows.length+(UNID_MODO_DIA?' del día':' registros');
+  const PS2=25; const pg=UNID_MODO_DIA?(ST.unidades?.page||1):state.unidades.page;
+  const sl=rows.slice((pg-1)*PS2,pg*PS2);
+  document.getElementById('unid-tbody').innerHTML=sl.length
+    ? sl.map((r,i)=>renderUnidRow(r,(pg-1)*PS2+i+1)).join('')
+    : '<tr><td colspan="21" class="empty-state">Sin unidades</td></tr>';
+  renderPag('unid-pag','unid-info',pg,rows.length,v=>{ if(UNID_MODO_DIA){if(!ST.unidades)ST.unidades={};ST.unidades.page=v;}else state.unidades.page=v; renderUnidades(); });
 }
 
 // ═══════════════════════════════════════════════
