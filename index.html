@@ -2020,6 +2020,31 @@ async function leerReporte(){
       const unidBD=buscarPorPlaca(placa);
       const condBD=buscarConductorBD(conductor,dni);
       const estado=estadoGlobal(unidBD,condBD);
+
+      // ── AUTO-ACTIVO: si se encontró en la base y tiene al menos un doc vigente → ACTIVO
+      if(condBD){
+        const licOk = condBD.estadoLic==='VIGENTE'||condBD.estadoLic==='POR VENCER';
+        const sctrOk= condBD.estadoSctr==='VIGENTE'||condBD.estadoSctr==='POR VENCER';
+        if(licOk||sctrOk){
+          const ci=CONDUCTORES.findIndex(c=>c.dni===condBD.dni);
+          if(ci>=0 && CONDUCTORES[ci].estado!=='ACTIVO'){
+            CONDUCTORES[ci].estado='ACTIVO';
+            guardarEnSheets('CONDUCTORES',Object.keys(CONDUCTORES[ci]),Object.values(CONDUCTORES[ci]));
+          }
+        }
+      }
+      if(unidBD){
+        const soatOk= unidBD.estadoSoat==='VIGENTE'||unidBD.estadoSoat==='POR VENCER';
+        const rtvOk = unidBD.estadoRtv==='VIGENTE'||unidBD.estadoRtv==='POR VENCER';
+        if(soatOk||rtvOk){
+          const ui=UNIDADES.findIndex(u=>u.placa===unidBD.placa);
+          if(ui>=0 && UNIDADES[ui].estado!=='ACTIVO'){
+            UNIDADES[ui].estado='ACTIVO';
+            guardarEnSheets('UNIDADES',Object.keys(UNIDADES[ui]),Object.values(UNIDADES[ui]));
+          }
+        }
+      }
+
       return {placa,conductor,proveedor:row[cm.PROVEEDOR]||'',ruta:row[cm.RUTA]||'',
               centro:row[cm.CENTRO]||'',turno:row[cm.TURNO]||'',dni,unidBD,condBD,estado};
     }).filter(r=>r.placa||r.conductor);
@@ -2354,7 +2379,65 @@ function mostrarCargando(show){
 // ═══════════════════════════════════════════════
 document.getElementById('rep-fecha').value=new Date().toISOString().slice(0,10);
 
-// ── ARRANQUE: cargar base desde Google Sheets
+// ══════════════════════════════════════════════
+// MODO CONSULTA — debe declararse ANTES del init
+// ══════════════════════════════════════════════
+let COND_MODO_DIA = false;
+let UNID_MODO_DIA = false;
+const ST = { conductores:{page:1}, unidades:{page:1} };
+
+function _setBadgesModo(cond, unid){
+  const s = (id,v) => { const e=document.getElementById(id); if(e) e.style.display=v; };
+  const t = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  s('cond-modo-badge',      cond?'block':'none');
+  s('cond-modo-badge-base', cond?'none':'block');
+  t('btn-cond-modo',        cond?'Ver base completa':'Ver reporte del día');
+  s('unid-modo-badge',      unid?'block':'none');
+  s('unid-modo-badge-base', unid?'none':'block');
+  t('btn-unid-modo',        unid?'Ver base completa':'Ver reporte del día');
+}
+
+function toggleCondModo(){
+  if(!COND_MODO_DIA && REP_ROWS.length===0){
+    showToast('Primero carga el Excel del día en Reporte Diario','warn'); return;
+  }
+  COND_MODO_DIA = !COND_MODO_DIA;
+  _setBadgesModo(COND_MODO_DIA, UNID_MODO_DIA);
+  ST.conductores.page=1; renderConductores();
+}
+function toggleUnidModo(){
+  if(!UNID_MODO_DIA && REP_ROWS.length===0){
+    showToast('Primero carga el Excel del día en Reporte Diario','warn'); return;
+  }
+  UNID_MODO_DIA = !UNID_MODO_DIA;
+  _setBadgesModo(COND_MODO_DIA, UNID_MODO_DIA);
+  ST.unidades.page=1; renderUnidades();
+}
+
+// Al cargar Excel → activar modo día automáticamente
+function postCargarReporte(){
+  COND_MODO_DIA = true;
+  UNID_MODO_DIA = true;
+  ST.conductores.page=1;
+  ST.unidades.page=1;
+  _setBadgesModo(true, true);
+  renderDashboard();
+  renderConductores();
+  renderUnidades();
+}
+
+// Al limpiar reporte → volver a vacío
+const limpiarReporteOrig = limpiarReporte;
+limpiarReporte = function(){
+  limpiarReporteOrig();
+  COND_MODO_DIA = false;
+  UNID_MODO_DIA = false;
+  _setBadgesModo(false, false);
+  renderConductores();
+  renderUnidades();
+};
+
+// ── ARRANQUE
 if(!localStorage.getItem('gs_url') && GS_URL){
   localStorage.setItem('gs_url', GS_URL);
 }
@@ -2364,97 +2447,15 @@ if(GS_URL){
   if(lsEl) lsEl.style.display='';
   mostrarCargando(true);
   syncFromSheets()
-    .then(()=>{ renderDashboard(); })   // render DESPUÉS de cargar
-    .catch(e=>{ console.error(e); renderDashboard(); }) // igual renderizar aunque falle
+    .then(()=>{ renderDashboard(); renderConductores(); renderUnidades(); })
+    .catch(e=>{ console.error(e); renderDashboard(); renderConductores(); renderUnidades(); })
     .finally(()=>mostrarCargando(false));
 } else {
-  // Sin GS: abrir modal y mostrar dashboard vacío con aviso
   openGSModal();
   renderDashboard();
-}
-
-// ══════════════════════════════════════════════
-// MODO CONSULTA: BASE vs DÍA
-// ══════════════════════════════════════════════
-let COND_MODO_DIA = false;
-let UNID_MODO_DIA = false;
-
-function toggleCondModo(){
-  COND_MODO_DIA = !COND_MODO_DIA;
-  if(COND_MODO_DIA && REP_ROWS.length===0){
-    showToast('Primero carga el Excel del día en Reporte Diario','warn');
-    COND_MODO_DIA=false; return;
-  }
-  document.getElementById('cond-modo-badge').style.display=COND_MODO_DIA?'block':'none';
-  document.getElementById('cond-modo-badge-base').style.display=COND_MODO_DIA?'none':'block';
-  document.getElementById('btn-cond-modo').textContent=COND_MODO_DIA?'Ver base completa':'Ver reporte del día';
   renderConductores();
-}
-function toggleUnidModo(){
-  UNID_MODO_DIA = !UNID_MODO_DIA;
-  if(UNID_MODO_DIA && REP_ROWS.length===0){
-    showToast('Primero carga el Excel del día en Reporte Diario','warn');
-    UNID_MODO_DIA=false; return;
-  }
-  document.getElementById('unid-modo-badge').style.display=UNID_MODO_DIA?'block':'none';
-  document.getElementById('unid-modo-badge-base').style.display=UNID_MODO_DIA?'none':'block';
-  document.getElementById('btn-unid-modo').textContent=UNID_MODO_DIA?'Ver base completa':'Ver reporte del día';
   renderUnidades();
 }
-
-// Cuando se carga el reporte → activar automáticamente modo día en consultas
-function postCargarReporte(){
-  // Activar modo día automáticamente
-  COND_MODO_DIA = true;
-  UNID_MODO_DIA = true;
-
-  // Actualizar badges y botones de Conductores
-  const condBadge = document.getElementById('cond-modo-badge');
-  const condBadgeBase = document.getElementById('cond-modo-badge-base');
-  const btnCond = document.getElementById('btn-cond-modo');
-  if(condBadge) condBadge.style.display = 'block';
-  if(condBadgeBase) condBadgeBase.style.display = 'none';
-  if(btnCond) btnCond.textContent = 'Ver base completa';
-
-  // Actualizar badges y botones de Unidades
-  const unidBadge = document.getElementById('unid-modo-badge');
-  const unidBadgeBase = document.getElementById('unid-modo-badge-base');
-  const btnUnid = document.getElementById('btn-unid-modo');
-  if(unidBadge) unidBadge.style.display = 'block';
-  if(unidBadgeBase) unidBadgeBase.style.display = 'none';
-  if(btnUnid) btnUnid.textContent = 'Ver base completa';
-
-  // Actualizar dashboard y tablas de consultas
-  if(typeof renderDashboard==='function') renderDashboard();
-  if(typeof renderConductores==='function') renderConductores();
-  if(typeof renderUnidades==='function') renderUnidades();
-}
-
-// Al limpiar el reporte → volver a modo base completa
-const _origLimpiarReporte = typeof limpiarReporte === 'function' ? limpiarReporte : null;
-const limpiarReporteOrig = limpiarReporte;
-limpiarReporte = function(){
-  limpiarReporteOrig();
-  COND_MODO_DIA = false;
-  UNID_MODO_DIA = false;
-
-  const condBadge = document.getElementById('cond-modo-badge');
-  const condBadgeBase = document.getElementById('cond-modo-badge-base');
-  const btnCond = document.getElementById('btn-cond-modo');
-  if(condBadge) condBadge.style.display = 'none';
-  if(condBadgeBase) condBadgeBase.style.display = 'block';
-  if(btnCond) btnCond.textContent = 'Ver reporte del día';
-
-  const unidBadge = document.getElementById('unid-modo-badge');
-  const unidBadgeBase = document.getElementById('unid-modo-badge-base');
-  const btnUnid = document.getElementById('btn-unid-modo');
-  if(unidBadge) unidBadge.style.display = 'none';
-  if(unidBadgeBase) unidBadgeBase.style.display = 'block';
-  if(btnUnid) btnUnid.textContent = 'Ver reporte del día';
-
-  if(typeof renderConductores==='function') renderConductores();
-  if(typeof renderUnidades==='function') renderUnidades();
-};
 </script>
 </body>
 </html>
