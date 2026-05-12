@@ -765,7 +765,7 @@ td.mono{font-family:var(--mono);font-size:11px;}
         <div class="form-grid g4">
           <div class="form-group"><label class="form-label">DNI <span class="req">*</span></label><input class="form-input" type="text" id="c-dni" placeholder="12345678" oninput="buscarConductor(this.value)"></div>
           <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="c-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
-          <div class="form-group"><label class="form-label">Proveedor <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-proveedor" readonly></div>
+          <div class="form-group"><label class="form-label">Proveedor</label><input class="form-input" type="text" id="c-proveedor" placeholder="Nombre del proveedor" list="prov-list-cond" style="text-transform:uppercase"><datalist id="prov-list-cond"></datalist></div>
           <div class="form-group"><label class="form-label">Placa <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-placa" readonly></div>
         </div>
         <div class="form-group full"><label class="form-label">Conductor <span class="req">*</span></label><input class="form-input" type="text" id="c-nombre" placeholder="Apellidos y nombres completos" style="text-transform:uppercase"></div>
@@ -835,7 +835,7 @@ td.mono{font-family:var(--mono);font-size:11px;}
         <div class="form-grid g4">
           <div class="form-group"><label class="form-label">Placa <span class="req">*</span></label><input class="form-input" type="text" id="u-placa" placeholder="A1B234" style="text-transform:uppercase" oninput="buscarUnidad(this.value)"></div>
           <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="u-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
-          <div class="form-group"><label class="form-label">Proveedor <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-proveedor" readonly></div>
+          <div class="form-group"><label class="form-label">Proveedor</label><input class="form-input" type="text" id="u-proveedor" placeholder="Nombre del proveedor" list="prov-list-unid" style="text-transform:uppercase"><datalist id="prov-list-unid"></datalist></div>
           <div class="form-group"><label class="form-label">Centro</label><select class="form-select" id="u-centro"><option value="">— Seleccionar —</option><option value="4101">4101 — PLANTA CHINCHA</option><option value="4202">4202 — FUNDO ICA</option><option value="4208">4208 — OLMOS I</option><option value="4210">4210 — OLMOS II</option><option value="4205">4205 — FUNDO JAYANCA</option><option value="4109">4109 — PLANTA OLMOS</option><option value="4104">4104 — PLANTA JAYANCA</option><option value="4206">4206 — FUNDO PIURA</option></select></div>
           <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="u-tipo"><option>BUS</option><option>MINIBUS</option><option>COUSTER</option><option>COMBI</option><option>CAMIONETA</option><option>CAMION</option></select></div>
           <div class="form-group"><label class="form-label">Año Fab.</label><input class="form-input" type="number" id="u-anio" placeholder="2015" min="1980" max="2026" oninput="calcAntig()"></div>
@@ -1196,6 +1196,7 @@ async function syncFromSheets(){
       recalcular();
       updateGSStatus(true);
       render();
+      poblarDatalistProv();
       showToast(`✅ Sincronizado — ${condRaw.length} cond · ${unidRaw.length} unid · ${provRaw.length} prov`,'ok');
       const el=document.getElementById('gs-last-sync');
       const now=new Date().toLocaleTimeString('es-PE');
@@ -2081,6 +2082,63 @@ function actualizarCumplUnid(){
 }
 ['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo'].forEach(id=>document.getElementById(id)?.addEventListener('change',actualizarCumplCond));
 ['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'].forEach(id=>document.getElementById(id)?.addEventListener('change',actualizarCumplUnid));
+
+// ── AUTO-ACTIVO + AUTO-CHECKLIST al cambiar fechas ──
+// Conductor: al poner fecha licencia o SCTR vigente → ACTIVO + check automático
+function autoCheckCond(){
+  const estLic  = document.getElementById('c-est-lic')?.value  || '';
+  const estSctr = document.getElementById('c-est-sctr')?.value || '';
+  const estEmo  = document.getElementById('c-est-emo')?.value  || '';
+  // Checklist automático
+  const chLic  = document.getElementById('ch-lic');
+  const chSctr = document.getElementById('ch-sctr');
+  const chEmo  = document.getElementById('ch-emo');
+  if(chLic  && (estLic ==='VIGENTE'||estLic ==='POR VENCER')) chLic.checked  = true;
+  if(chSctr && (estSctr==='VIGENTE'||estSctr==='POR VENCER')) chSctr.checked = true;
+  if(chEmo  && (estEmo ==='VIGENTE'||estEmo ==='POR VENCER')) chEmo.checked  = true;
+  // Auto-ACTIVO si al menos licencia vigente
+  if(estLic==='VIGENTE'||estLic==='POR VENCER'){
+    const sel = document.getElementById('c-estado');
+    if(sel) sel.value = 'ACTIVO';
+  }
+  actualizarCumplCond();
+}
+// Unidad: al poner fecha SOAT o RTV vigente → ACTIVO + check automático
+function autoCheckUnid(){
+  const estSoat = document.getElementById('u-est-soat')?.value || '';
+  const estRtv  = document.getElementById('u-est-rtv')?.value  || '';
+  const estTc   = document.getElementById('u-est-tc')?.value   || '';
+  const chSoat = document.getElementById('uch-soat');
+  const chRtv  = document.getElementById('uch-rtv');
+  const chTc   = document.getElementById('uch-tc');
+  if(chSoat && (estSoat==='VIGENTE'||estSoat==='POR VENCER')) chSoat.checked = true;
+  if(chRtv  && (estRtv ==='VIGENTE'||estRtv ==='POR VENCER')) chRtv.checked  = true;
+  if(chTc   && (estTc  ==='VIGENTE'||estTc  ==='POR VENCER')) chTc.checked   = true;
+  // Auto-ACTIVO si SOAT vigente
+  if(estSoat==='VIGENTE'||estSoat==='POR VENCER'){
+    const sel = document.getElementById('u-estado');
+    if(sel) sel.value = 'ACTIVO';
+  }
+  actualizarCumplUnid();
+}
+// Enganchar a los campos de fecha
+document.getElementById('c-fecha-lic') ?.addEventListener('change', autoCheckCond);
+document.getElementById('c-fecha-sctr')?.addEventListener('change', autoCheckCond);
+document.getElementById('c-fecha-emo') ?.addEventListener('change', autoCheckCond);
+document.getElementById('u-fecha-soat')?.addEventListener('change', autoCheckUnid);
+document.getElementById('u-fecha-rtv') ?.addEventListener('change', autoCheckUnid);
+document.getElementById('u-fecha-tc')  ?.addEventListener('change', autoCheckUnid);
+
+// ── Poblar datalist de proveedores cuando cargue la base ──
+function poblarDatalistProv(){
+  const opts = PROVEEDORES
+    .filter(p=>p.nombre&&p.nombre.length>2&&p.estado==='ACTIVO')
+    .map(p=>`<option value="${p.nombre.toUpperCase()}">`).join('');
+  const dl1 = document.getElementById('prov-list-cond');
+  const dl2 = document.getElementById('prov-list-unid');
+  if(dl1) dl1.innerHTML = opts;
+  if(dl2) dl2.innerHTML = opts;
+}
 
 function buscarConductor(dni){
   if(!dni||dni.length<7)return;
