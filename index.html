@@ -2256,15 +2256,59 @@ function toggleUnidModo(){
   renderUnidades();
 }
 
-// Cuando se carga el reporte → actualizar el dashboard automáticamente
-const _origFinReporte = typeof finalizarReporte === 'function' ? finalizarReporte : null;
+// Cuando se carga el reporte → activar automáticamente modo día en consultas
 function postCargarReporte(){
-  // Actualizar badge del dashboard
+  // Activar modo día automáticamente
+  COND_MODO_DIA = true;
+  UNID_MODO_DIA = true;
+
+  // Actualizar badges y botones de Conductores
+  const condBadge = document.getElementById('cond-modo-badge');
+  const condBadgeBase = document.getElementById('cond-modo-badge-base');
+  const btnCond = document.getElementById('btn-cond-modo');
+  if(condBadge) condBadge.style.display = 'block';
+  if(condBadgeBase) condBadgeBase.style.display = 'none';
+  if(btnCond) btnCond.textContent = 'Ver base completa';
+
+  // Actualizar badges y botones de Unidades
+  const unidBadge = document.getElementById('unid-modo-badge');
+  const unidBadgeBase = document.getElementById('unid-modo-badge-base');
+  const btnUnid = document.getElementById('btn-unid-modo');
+  if(unidBadge) unidBadge.style.display = 'block';
+  if(unidBadgeBase) unidBadgeBase.style.display = 'none';
+  if(btnUnid) btnUnid.textContent = 'Ver base completa';
+
+  // Actualizar dashboard y tablas de consultas
   if(typeof renderDashboard==='function') renderDashboard();
-  // Si estaban en modo día, re-renderizar
-  if(COND_MODO_DIA && typeof renderConductores==='function') renderConductores();
-  if(UNID_MODO_DIA && typeof renderUnidades==='function') renderUnidades();
+  if(typeof renderConductores==='function') renderConductores();
+  if(typeof renderUnidades==='function') renderUnidades();
 }
+
+// Al limpiar el reporte → volver a modo base completa
+const _origLimpiarReporte = typeof limpiarReporte === 'function' ? limpiarReporte : null;
+const limpiarReporteOrig = limpiarReporte;
+limpiarReporte = function(){
+  limpiarReporteOrig();
+  COND_MODO_DIA = false;
+  UNID_MODO_DIA = false;
+
+  const condBadge = document.getElementById('cond-modo-badge');
+  const condBadgeBase = document.getElementById('cond-modo-badge-base');
+  const btnCond = document.getElementById('btn-cond-modo');
+  if(condBadge) condBadge.style.display = 'none';
+  if(condBadgeBase) condBadgeBase.style.display = 'block';
+  if(btnCond) btnCond.textContent = 'Ver reporte del día';
+
+  const unidBadge = document.getElementById('unid-modo-badge');
+  const unidBadgeBase = document.getElementById('unid-modo-badge-base');
+  const btnUnid = document.getElementById('btn-unid-modo');
+  if(unidBadge) unidBadge.style.display = 'none';
+  if(unidBadgeBase) unidBadgeBase.style.display = 'block';
+  if(btnUnid) btnUnid.textContent = 'Ver reporte del día';
+
+  if(typeof renderConductores==='function') renderConductores();
+  if(typeof renderUnidades==='function') renderUnidades();
+};
 </script>
 </body>
 </html>
