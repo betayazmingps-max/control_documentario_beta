@@ -1182,7 +1182,7 @@ async function syncFromSheets(){
       CONDUCTORES = condRaw.map(o=>({
         dni:           o.dni||o.n_doc||'',
         conductor:     o.conductor||o.nombre||'',
-        estado:        (o.estado||o.activo||'').toString().trim().toUpperCase()||'INACTIVO',
+        estado:        (o.estado||o.activo||'').toString().trim().toUpperCase()||'ACTIVO',
         proveedor:     o.proveedor||'',
         placa:         o.placa||'',
         tipoUnidad:    o.tipo_unidad||o.tipo_de_unidad||o.tipo||'',
@@ -1213,7 +1213,7 @@ async function syncFromSheets(){
     if(unidRaw.length>0){
       UNIDADES = unidRaw.map(o=>({
         placa:         o.placa||'',
-        estado:        (o.estado||o.activo||'').toString().trim().toUpperCase()||'INACTIVO',
+        estado:        (o.estado||o.activo||'').toString().trim().toUpperCase()||'ACTIVO',
         proveedor:     o.proveedor||'',
         centro:        o.centro||'',
         tipo:          o.tipo_de_unidad||o.tipo||'',
