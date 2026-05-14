@@ -3,46 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Control Documental — Flota Nacional 2026</title>
+<title>Control Documentario de Servicios Varios</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0f1117;--bg2:#161b27;--bg3:#1e2535;--bg4:#252e42;
-  --border:#2a3347;--border2:#354060;
-  --accent:#3b82f6;--accent2:#60a5fa;--accent3:rgba(59,130,246,0.12);
-  --green:#22c55e;--green2:rgba(34,197,94,0.12);
-  --warn:#f59e0b;--warn2:rgba(245,158,11,0.12);
-  --danger:#ef4444;--danger2:rgba(239,68,68,0.12);
-  --purple:#a78bfa;--purple2:rgba(167,139,250,0.12);
-  --text:#f0f4ff;--text2:#94a3b8;--text3:#4b5563;
+  --bg:#dde1e7;--bg2:#e8ebef;--bg3:#eef0f3;--bg4:#d4d8de;
+  --border:#c8cdd5;--border2:#b8bec8;
+  --sb-bg:#1c1f26;--sb-bg2:#252930;--sb-border:rgba(255,255,255,0.07);
+  --sb-text:rgba(255,255,255,0.55);--sb-text-act:#ffffff;
+  --sb-accent:#4f7ef8;--sb-hover:rgba(255,255,255,0.06);
+  --sb-active:rgba(79,126,248,0.18);
+  --accent:#4f7ef8;--accent2:#3b6ef0;--accent3:rgba(79,126,248,0.12);
+  --green:#16a34a;--green2:rgba(22,163,74,0.12);
+  --warn:#d97706;--warn2:rgba(217,119,6,0.12);
+  --danger:#dc2626;--danger2:rgba(220,38,38,0.12);
+  --purple:#7c3aed;--purple2:rgba(124,58,237,0.12);
+  --text:#0f1117;--text2:#374151;--text3:#6b7280;
   --radius:10px;--radius-sm:6px;
   --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --success:#16a34a;--success-bg:rgba(22,163,74,0.12);
+  --warning:#d97706;--warning-bg:rgba(217,119,6,0.12);
+  --danger-bg:rgba(220,38,38,0.12);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px;}
 
 /* SIDEBAR */
-.sidebar{width:220px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;}
-.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);}
-.logo-tag{font-size:9px;font-weight:700;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:5px;}
-.logo-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.2;}
-.logo-sub{font-size:10px;color:var(--text3);margin-top:3px;font-family:var(--mono);}
-.sidebar-nav{padding:10px 0;flex:1;overflow-y:auto;}
-.nav-section{padding:14px 18px 5px;font-size:9px;font-weight:700;letter-spacing:2.5px;color:var(--text3);text-transform:uppercase;}
-.nav-item{display:flex;align-items:center;gap:9px;padding:9px 18px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:400;border-left:2px solid transparent;transition:all 0.12s;}
-.nav-item:hover{color:var(--text);background:var(--bg3);}
-.nav-item.active{color:var(--accent2);background:var(--accent3);border-left-color:var(--accent);font-weight:500;}
-.nav-item .ico{font-size:14px;min-width:18px;text-align:center;}
-.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);}
-.gs-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;margin-bottom:4px;}
+.sidebar{width:240px;min-height:100vh;background:linear-gradient(180deg,#1a1d27 0%,#1e2130 60%,#1a1d27 100%);border-right:none;position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;box-shadow:3px 0 20px rgba(0,0,0,0.22);}
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:12px;}
+.logo-icon{flex-shrink:0;}
+.logo-text{}
+.logo-title{font-size:13px;font-weight:700;color:#ffffff;line-height:1.3;letter-spacing:0.1px;}
+.logo-sub{font-size:10px;color:rgba(255,255,255,0.38);margin-top:1px;font-weight:400;}
+.sidebar-nav{padding:8px 0;flex:1;overflow-y:auto;}
+.nav-section{padding:16px 20px 5px;font-size:9px;font-weight:700;letter-spacing:2.5px;color:rgba(255,255,255,0.22);text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;color:rgba(255,255,255,0.52);font-size:12.5px;font-weight:400;border-left:2px solid transparent;transition:all 0.14s;border-radius:0;}
+.nav-item:hover{color:rgba(255,255,255,0.88);background:rgba(255,255,255,0.05);}
+.nav-item.active{color:#ffffff;background:rgba(79,126,248,0.16);border-left-color:#4f7ef8;font-weight:600;}
+.nav-ico{width:15px;height:15px;flex-shrink:0;color:currentColor;}
+.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.06);font-size:10px;color:rgba(255,255,255,0.22);font-family:var(--mono);}
+.gs-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;margin-bottom:3px;}
 .gs-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
 .gs-dot.off{background:var(--danger);}
 
 /* MAIN */
-.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
-.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:11px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;background:#dde1e7;}
+.topbar{background:linear-gradient(90deg,#ffffff 0%,#f7f8fa 100%);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(15,17,23,0.08);}
 .topbar-left{display:flex;align-items:center;gap:12px;}
-.topbar-title{font-size:14px;font-weight:600;color:var(--text);}
+.topbar-title{font-size:22px;font-weight:800;color:#0f1117;letter-spacing:-0.5px;background:linear-gradient(90deg,#0f1117 0%,#374151 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .topbar-right{display:flex;align-items:center;gap:8px;}
 .tb-btn{border:1px solid var(--border2);background:var(--bg3);border-radius:var(--radius-sm);padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all 0.12s;display:flex;align-items:center;gap:5px;}
 .tb-btn:hover{border-color:var(--accent);color:var(--accent2);}
@@ -63,13 +71,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .kpi-grid.cols-6{grid-template-columns:repeat(6,1fr);}
 .kpi-grid.cols-5{grid-template-columns:repeat(5,1fr);}
 .kpi-grid.cols-4{grid-template-columns:repeat(4,1fr);}
-.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;}
+.kpi-card{background:linear-gradient(135deg,#ffffff 0%,#f9fafb 100%);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(15,17,23,0.07);transition:transform 0.15s,box-shadow 0.15s;}
 .kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
 .kpi-card.blue::after{background:var(--accent);}
 .kpi-card.green::after{background:var(--green);}
 .kpi-card.warn::after{background:var(--warn);}
 .kpi-card.danger::after{background:var(--danger);}
 .kpi-card.purple::after{background:var(--purple);}
+.kpi-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(15,17,23,0.11);}
 .kpi-label{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
 .kpi-value{font-size:28px;font-weight:700;color:var(--text);line-height:1;margin-bottom:3px;font-family:var(--mono);}
 .kpi-sub{font-size:11px;color:var(--text2);}
@@ -85,12 +94,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .count-tag{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--text2);font-family:var(--mono);}
 
 /* TABLE */
-.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;}
+.tbl-wrap{background:#ffffff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 8px rgba(15,17,23,0.07);}
 .tbl-scroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
-thead th{text-align:left;padding:9px 12px;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:var(--bg3);border-bottom:1px solid var(--border);white-space:nowrap;}
-tbody tr{border-bottom:1px solid rgba(42,51,71,0.7);transition:background 0.1s;}
-tbody tr:hover{background:rgba(59,130,246,0.04);}
+thead th{text-align:left;padding:9px 12px;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:#f0f2f5;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid #eaedf2;transition:background 0.1s;}
+tbody tr:hover{background:rgba(79,126,248,0.04);}
 tbody tr:last-child{border-bottom:none;}
 td{padding:8px 12px;color:var(--text);font-size:12px;vertical-align:middle;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
 td.mono{font-family:var(--mono);font-size:11px;}
@@ -146,7 +155,7 @@ td.mono{font-family:var(--mono);font-size:11px;}
 .modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
 .modal-info{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
 .modal-info code{background:var(--bg4);padding:1px 5px;border-radius:3px;font-family:var(--mono);color:var(--accent2);}
-.script-box{background:#0a0f1a;color:#7dd3fc;padding:12px;border-radius:var(--radius-sm);font-size:10px;font-family:var(--mono);white-space:pre-wrap;margin-bottom:12px;max-height:160px;overflow-y:auto;border:1px solid var(--border);}
+.script-box{background:#1c1f26;color:#7eb3f5;padding:12px;border-radius:var(--radius-sm);font-size:10px;font-family:var(--mono);white-space:pre-wrap;margin-bottom:12px;max-height:160px;overflow-y:auto;border:1px solid var(--border);}
 
 /* EDIT FECHA MODAL */
 .edit-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:24px;width:380px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,0.5);}
@@ -193,7 +202,7 @@ td.mono{font-family:var(--mono);font-size:11px;}
 .alert-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
 .alert-card-hd{padding:9px 13px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text);display:flex;align-items:center;justify-content:space-between;}
 .alert-card-body{max-height:210px;overflow-y:auto;}
-.alert-item{padding:8px 13px;border-bottom:1px solid rgba(42,51,71,0.5);}
+.alert-item{padding:8px 13px;border-bottom:1px solid #eaedf2;}
 .alert-item:last-child{border-bottom:none;}
 .alert-name{font-size:12px;color:var(--text);font-weight:500;}
 .alert-meta{font-size:11px;color:var(--text2);display:flex;gap:8px;margin-top:2px;}
@@ -222,12 +231,34 @@ td.mono{font-family:var(--mono);font-size:11px;}
 
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px;}
+::-webkit-scrollbar-thumb{background:#cbd0da;border-radius:2px;}
 
 .empty-state{text-align:center;padding:32px;color:var(--text3);font-size:12px;}
 .pulse-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);position:relative;}
 .pulse-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid var(--accent);animation:pr 2s ease-out infinite;opacity:0;}
 @keyframes pr{0%{transform:scale(0.6);opacity:0.8}100%{transform:scale(1.8);opacity:0}}
+
+/* ── ANTHRACITE GRAY THEME OVERRIDES ── */
+.card,.kpi-card,.modal-content,.modal-box,.table-container,.table-wrap,.script-box-wrap{background:#e8ebef!important;box-shadow:0 1px 6px rgba(0,0,0,0.10)!important;border:1px solid #c8cdd5!important;}
+.form-input,.form-select,.search-input{background:#dde1e7!important;color:#0f1117!important;border-color:#b8bec8!important;}
+.form-label{color:#374151!important;}
+.section-title,.card-title,.page-title{color:#0f1117!important;}
+.main,.content-area,.page{background:#dde1e7!important;}
+tbody{background:#e8ebef!important;}
+tbody td{color:#1f2937!important;}
+tbody td.mono{color:#374151!important;}
+thead th{background:#d4d8de!important;color:#4b5563!important;}
+tbody tr{border-bottom:1px solid #c8cdd5!important;}
+tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
+.empty-state{color:#6b7280!important;}
+.editable-cell:hover{background:rgba(79,126,248,0.08)!important;}
+.badge{border-radius:5px!important;font-size:10px!important;font-weight:700!important;padding:2px 8px!important;}
+.badge.ok,.badge.active{background:rgba(22,163,74,0.15)!important;color:#15803d!important;}
+.badge.warn,.badge.warning{background:rgba(217,119,6,0.15)!important;color:#b45309!important;}
+.badge.danger,.badge.inactive,.badge.vencido{background:rgba(220,38,38,0.15)!important;color:#b91c1c!important;}
+.badge.blue{background:rgba(79,126,248,0.15)!important;color:#2563eb!important;}
+.badge.inactive{background:rgba(107,114,128,0.15)!important;color:#4b5563!important;}
+.topbar{background:#dde1e7!important;border-bottom:1px solid #c8cdd5!important;box-shadow:none!important;}
 </style>
 </head>
 <body>
@@ -235,30 +266,64 @@ td.mono{font-family:var(--mono);font-size:11px;}
 <!-- SIDEBAR -->
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <div class="logo-tag">Sistema</div>
-    <div class="logo-title">Control<br>Documental</div>
-    <div class="logo-sub">Flota Nacional 2026</div>
+    <div class="logo-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#4f7ef8" fill-opacity="0.18"/><rect x="6" y="7" width="10" height="2" rx="1" fill="#4f7ef8"/><rect x="6" y="11" width="16" height="2" rx="1" fill="#4f7ef8"/><rect x="6" y="15" width="13" height="2" rx="1" fill="#4f7ef8" opacity=".7"/><rect x="6" y="19" width="8" height="2" rx="1" fill="#4f7ef8" opacity=".4"/></svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-title">Control Documentario</div>
+      <div class="logo-sub">de Servicios Varios</div>
+    </div>
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">Principal</div>
-    <div class="nav-item active" onclick="goPage('dashboard',this)"><span class="ico">📊</span> Dashboard</div>
+    <div class="nav-item active" onclick="goPage('dashboard',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="currentColor" opacity=".9"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="currentColor" opacity=".6"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity=".6"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity=".4"/></svg>
+      Dashboard
+    </div>
     <div class="nav-section">Registro</div>
-    <div class="nav-item" onclick="goPage('reg-conductor',this)"><span class="ico">👤</span> Conductor</div>
-    <div class="nav-item" onclick="goPage('reg-unidad',this)"><span class="ico">🚛</span> Unidad</div>
-    <div class="nav-item" onclick="goPage('reg-proveedor',this)"><span class="ico">🏢</span> Proveedor</div>
+    <div class="nav-item" onclick="goPage('reg-conductor',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3.5" fill="currentColor" opacity=".8"/><path d="M2 16c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".7"/></svg>
+      Conductor
+    </div>
+    <div class="nav-item" onclick="goPage('reg-unidad',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="6" width="13" height="7" rx="1.5" fill="currentColor" opacity=".7"/><rect x="14" y="8" width="3" height="4" rx="1" fill="currentColor" opacity=".5"/><circle cx="4" cy="14" r="2" fill="currentColor"/><circle cx="11" cy="14" r="2" fill="currentColor"/></svg>
+      Unidad
+    </div>
+    <div class="nav-item" onclick="goPage('reg-proveedor',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="3" y="7" width="12" height="9" rx="1.5" fill="currentColor" opacity=".7"/><path d="M6 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.6" fill="none" opacity=".6"/></svg>
+      Proveedor
+    </div>
     <div class="nav-section">Consultas</div>
-    <div class="nav-item" onclick="goPage('conductores',this)"><span class="ico">📋</span> Conductores</div>
-    <div class="nav-item" onclick="goPage('unidades',this)"><span class="ico">🚌</span> Unidades</div>
-    <div class="nav-item" onclick="goPage('proveedores',this)"><span class="ico">🏢</span> Proveedores</div>
+    <div class="nav-item" onclick="goPage('conductores',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="3" width="16" height="2" rx="1" fill="currentColor" opacity=".8"/><rect x="1" y="8" width="16" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="1" y="13" width="10" height="2" rx="1" fill="currentColor" opacity=".4"/></svg>
+      Conductores
+    </div>
+    <div class="nav-item" onclick="goPage('unidades',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="3" width="16" height="2" rx="1" fill="currentColor" opacity=".8"/><rect x="1" y="8" width="16" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="1" y="13" width="10" height="2" rx="1" fill="currentColor" opacity=".4"/></svg>
+      Unidades
+    </div>
+    <div class="nav-item" onclick="goPage('proveedores',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="3" width="16" height="2" rx="1" fill="currentColor" opacity=".8"/><rect x="1" y="8" width="16" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="1" y="13" width="10" height="2" rx="1" fill="currentColor" opacity=".4"/></svg>
+      Proveedores
+    </div>
     <div class="nav-section">Operaciones</div>
-    <div class="nav-item" onclick="goPage('alertas',this)"><span class="ico">⚠️</span> Alertas</div>
-    <div class="nav-item" onclick="goPage('reporte',this)"><span class="ico">📑</span> Reporte Diario</div>
+    <div class="nav-item" onclick="goPage('alertas',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><path d="M9 2l1.8 5.5H17l-4.9 3.6 1.9 5.7L9 13.4l-5 3.4 1.9-5.7L1 7.5h6.2z" fill="currentColor" opacity=".7"/></svg>
+      Alertas
+    </div>
+    <div class="nav-item" onclick="goPage('reporte',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="3" y="1" width="12" height="16" rx="2" fill="currentColor" opacity=".2"/><rect x="3" y="1" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.4" fill="none" opacity=".8"/><rect x="6" y="5" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".7"/><rect x="6" y="8" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".5"/><rect x="6" y="11" width="4" height="1.5" rx=".75" fill="currentColor" opacity=".4"/></svg>
+      Reporte Diario
+    </div>
     <div class="nav-section">Configuración</div>
-    <div class="nav-item" onclick="openGSModal()"><span class="ico">🔗</span> Google Sheets</div>
+    <div class="nav-item" onclick="openGSModal()">
+      <svg class="nav-ico" viewBox="0 0 18 18"><circle cx="9" cy="9" r="3" fill="currentColor" opacity=".8"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>
+      Google Sheets
+    </div>
   </div>
   <div class="sidebar-footer">
     <div class="gs-badge"><div class="gs-dot off" id="gs-dot"></div><span id="gs-status">Sin conectar</span></div>
-    v2026.2 · Nacional
+    <div style="margin-top:4px;opacity:.4">v2026.2</div>
   </div>
 </nav>
 
@@ -1524,12 +1589,14 @@ async function toggleDocCond(dni, campo){
 function editCeldaCond(dni, campo, valorActual){
   const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
   if(idx<0) return;
-  const provOpts = PROVEEDORES.filter(p=>p.estado==='ACTIVO').map(p=>`<option>${p.nombre}</option>`).join('');
-  const input = campo==='proveedor'
-    ? `<select onblur="guardarCeldaCond('${dni}','${campo}',this.value)" onchange="guardarCeldaCond('${dni}','${campo}',this.value)" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px;font-size:11px">${provOpts}</select>`
-    : `<input value="${valorActual||''}" onblur="guardarCeldaCond('${dni}','${campo}',this.value)" onkeydown="if(event.key==='Enter')guardarCeldaCond('${dni}','${campo}',this.value)" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px;font-size:11px;text-transform:uppercase" />`;
+  if(campo==='proveedor'){
+    abrirModalProv(valorActual||'', (v)=>guardarCeldaCond(dni,campo,v));
+    return;
+  }
   const td = document.querySelector(`[data-dni="${dni}"][data-campo="${campo}"]`);
-  if(td){ td.innerHTML=input; td.querySelector('input,select')?.focus(); }
+  if(!td) return;
+  td.innerHTML=`<input value="${(valorActual||'').replace(/"/g,'&quot;')}" onblur="guardarCeldaCond('${dni}','${campo}',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" style="width:100%;min-width:80px;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px 6px;font-size:11px;text-transform:uppercase;outline:none" />`;
+  td.querySelector('input')?.focus();
 }
 async function guardarCeldaCond(dni, campo, valor){
   const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
@@ -1541,10 +1608,26 @@ async function guardarCeldaCond(dni, campo, valor){
 }
 
 function renderCondRow(r, num){
-  const dni = (r.dni||'').replace(/'/g,"\\'");
+  const dni = (r.dni||'').replace(/'/g,"\'");
+  if(!r._enBD){
+    const nom = (r.conductor||'').replace(/'/g,"\'");
+    const prov= (r.proveedor||'').replace(/'/g,"\'");
+    const plc = (r.placa||'').replace(/'/g,"\'");
+    return `<tr style="background:rgba(245,158,11,0.06)">
+      <td class="mono" style="color:var(--text3)">${num}</td>
+      <td class="mono" style="color:var(--warn)">${r.dni||'—'}</td>
+      <td style="max-width:160px;white-space:normal;font-size:12px;font-weight:600;color:var(--warn)">${r.conductor||'—'}</td>
+      <td><span class="badge warn">SIN REG.</span></td>
+      <td style="font-size:11px">${r.proveedor||'—'}</td>
+      <td class="mono">${r.placa||'—'}</td>
+      <td colspan="13" style="text-align:center">
+        <button onclick="irRegistrarConductor('${nom}','${dni}','${prov}','${plc}')" style="background:var(--warn);color:#000;border:none;border-radius:5px;padding:4px 14px;font-size:11px;font-weight:700;cursor:pointer">✚ Registrar</button>
+      </td>
+    </tr>`;
+  }
   const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocCond('${dni}','${campo}')" title="Clic para marcar/desmarcar">
     <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'}; user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
-  const editable = (campo, valor) => `<td data-dni="${dni}" data-campo="${campo}" onclick="editCeldaCond('${dni}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
+  const editable = (campo, valor) => `<td data-dni="${dni}" data-campo="${campo}" onclick="editCeldaCond('${dni}','${campo}','${(valor||'').replace(/'/g,"\'")}'" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
   return `<tr>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono">${r.dni||'—'}</td>
@@ -1555,9 +1638,9 @@ function renderCondRow(r, num){
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td><span class="badge blue">${r.catLic||'—'}</span></td>
     <td>${badge(r.estadoLic||'—')}</td>
-    <td class="editable-cell" onclick="abrirEdit('conductor',${CONDUCTORES.indexOf(r)},'diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasLic)}</td>
+    <td class="editable-cell" onclick="abrirEdit('conductor',${CONDUCTORES.indexOf(r)},'diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\'")}'" title="Clic para editar">${diasCell(r.diasLic)}</td>
     <td>${badge(r.estadoSctr||'—')}</td>
-    <td class="editable-cell" onclick="abrirEdit('conductor',${CONDUCTORES.indexOf(r)},'diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasSctr)}</td>
+    <td class="editable-cell" onclick="abrirEdit('conductor',${CONDUCTORES.indexOf(r)},'diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\'")}'" title="Clic para editar">${diasCell(r.diasSctr)}</td>
     ${chk(r.docDni,'docDni')}
     ${chk(r.docLic,'docLic')}
     ${chk(r.docRecord,'docRecord')}
@@ -1567,33 +1650,54 @@ function renderCondRow(r, num){
   </tr>`;
 }
 
+function irRegistrarConductor(nombre, dni, proveedor, placa){
+  goPage('reg-conductor', document.querySelector('.nav-item[onclick*="reg-conductor"]'));
+  setTimeout(()=>{
+    const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v;};
+    set('c-dni',dni); set('c-nombre',nombre.toUpperCase());
+    set('c-proveedor',proveedor.toUpperCase()); set('c-placa',placa.toUpperCase());
+    set('c-estado','ACTIVO');
+  },100);
+}
+
 function renderConductores(){
   // Sin Excel cargado → tabla vacía con mensaje
-  if(!COND_MODO_DIA && REP_ROWS.length===0){
+  if(REP_ROWS.length===0){
     document.getElementById('cond-count').textContent='0 registros';
     document.getElementById('cond-tbody').innerHTML='<tr><td colspan="19" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver los conductores</td></tr>';
     document.getElementById('cond-info').textContent='—';
     document.getElementById('cond-pag').innerHTML='';
     return;
   }
-  // Modo día: solo los del Excel
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
-  let rows;
-  if(COND_MODO_DIA && REP_ROWS.length>0){
-    rows = REP_ROWS.filter(r=>r.condBD).map(r=>r.condBD);
-    const seen=new Set(); rows=rows.filter(c=>{if(seen.has(c.dni))return false;seen.add(c.dni);return true;});
-  } else {
-    const {estado}=state.conductores;
-    rows = filterData(CONDUCTORES, search, estado);
-  }
+  // Construir filas: conductores encontrados en BD + los NO encontrados del Excel
+  const seen=new Set();
+  let rows=[];
+  REP_ROWS.forEach(r=>{
+    if(r.condBD){
+      if(!seen.has(r.condBD.dni)){ seen.add(r.condBD.dni); rows.push({...r.condBD, _enBD:true}); }
+    } else if(r.conductor||r.dni){
+      // No está en BD: crear fila provisional para registrar
+      const key=(r.dni||r.conductor||'').toUpperCase();
+      if(!seen.has(key)){
+        seen.add(key);
+        rows.push({
+          dni:r.dni||'',conductor:r.conductor||'',proveedor:r.proveedor||'',
+          placa:r.placa||'',estado:'—',catLic:'—',estadoLic:'—',diasLic:'',
+          estadoSctr:'—',diasSctr:'',docDni:'✗',docLic:'✗',docRecord:'✗',docSctr:'✗',docEmo:'✗',
+          cumpl:'0/5 (0%)', _enBD:false
+        });
+      }
+    }
+  });
   if(search) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
-  document.getElementById('cond-count').textContent=rows.length+(COND_MODO_DIA?' del día':' registros');
-  const PS2=25; const pg=COND_MODO_DIA?(ST.conductores?.page||1):state.conductores.page;
+  document.getElementById('cond-count').textContent=rows.length+' del día';
+  const PS2=25; const pg=ST.conductores?.page||1;
   const sl=rows.slice((pg-1)*PS2,pg*PS2);
   document.getElementById('cond-tbody').innerHTML=sl.length
     ? sl.map((r,i)=>renderCondRow(r,(pg-1)*PS2+i+1)).join('')
     : '<tr><td colspan="19" class="empty-state">Sin conductores</td></tr>';
-  renderPag('cond-pag','cond-info',pg,rows.length,v=>{ if(COND_MODO_DIA){if(!ST.conductores)ST.conductores={};ST.conductores.page=v;}else state.conductores.page=v; renderConductores(); });
+  renderPag('cond-pag','cond-info',pg,rows.length,v=>{ if(!ST.conductores)ST.conductores={};ST.conductores.page=v; renderConductores(); });
 }
 
 // ═══════════════════════════════════════════════
@@ -1613,12 +1717,14 @@ async function toggleDocUnid(placa, campo){
 }
 
 function editCeldaUnid(placa, campo, valorActual){
-  const provOpts = PROVEEDORES.filter(p=>p.estado==='ACTIVO').map(p=>`<option>${p.nombre}</option>`).join('');
-  const input = campo==='proveedor'
-    ? `<select onblur="guardarCeldaUnid('${placa}','${campo}',this.value)" onchange="guardarCeldaUnid('${placa}','${campo}',this.value)" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px;font-size:11px">${provOpts}</select>`
-    : `<input value="${valorActual||''}" onblur="guardarCeldaUnid('${placa}','${campo}',this.value)" onkeydown="if(event.key==='Enter')guardarCeldaUnid('${placa}','${campo}',this.value)" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px;font-size:11px;text-transform:uppercase" />`;
+  if(campo==='proveedor'){
+    abrirModalProv(valorActual||'', (v)=>guardarCeldaUnid(placa,campo,v));
+    return;
+  }
   const td = document.querySelector(`[data-placa="${placa}"][data-campo="${campo}"]`);
-  if(td){ td.innerHTML=input; td.querySelector('input,select')?.focus(); }
+  if(!td) return;
+  td.innerHTML=`<input value="${(valorActual||'').replace(/"/g,'&quot;')}" onblur="guardarCeldaUnid('${placa}','${campo}',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" style="width:100%;min-width:80px;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px 6px;font-size:11px;text-transform:uppercase;outline:none" />`;
+  td.querySelector('input')?.focus();
 }
 async function guardarCeldaUnid(placa, campo, valor){
   const idx = UNIDADES.findIndex(u=>u.placa===placa);
@@ -1705,6 +1811,16 @@ function updProvResp(n,v){const d=getPD(n);d.resp=v;PD[n]=d;savePD();}
 let PV_MAP = []; // PV_MAP[i] = nombre del proveedor en la página actual
 
 function renderProveedores(){
+  // Sin Excel cargado → tabla vacía con mensaje
+  if(REP_ROWS.length===0){
+    const tbody=document.getElementById('prov-tbody');
+    if(tbody) tbody.innerHTML='<tr><td colspan="23" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver los proveedores</td></tr>';
+    document.getElementById('prov-count').textContent='0 proveedores';
+    return;
+  }
+  // Filtrar solo proveedores del Excel del día
+  const provDelDia = new Set(REP_ROWS.map(r=>(r.proveedor||r.unidBD?.proveedor||'').trim().toUpperCase()).filter(Boolean));
+
   // Filtros propios de la tabla de proveedores
   const search = (document.getElementById('pv-srch')||{value:''}).value.toLowerCase();
   const estado  = (document.getElementById('pv-est')||{value:''}).value;
@@ -1727,6 +1843,8 @@ function renderProveedores(){
 
   let data=PROVEEDORES.filter(p=>{
     if(esInvalida(p)) return false;
+    // Solo mostrar proveedores que aparecen en el Excel del día
+    if(provDelDia.size>0 && !provDelDia.has((p.nombre||'').trim().toUpperCase())) return false;
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
     if(zona&&p.zona!==zona) return false;
@@ -2013,41 +2131,93 @@ async function leerReporte(){
       const found=Object.keys(rows[0]||{}).find(h=>h.toUpperCase().includes(k));
       if(found)cm[k]=found;
     });
+    const nuevosRegistros=[];
     REP_ROWS=rows.map(row=>{
-      const placa=(row[cm.PLACA]||'').toUpperCase().trim();
-      const conductor=(row[cm.CONDUCTOR]||'').trim();
-      const dni=(row[cm.DNI]||'').trim();
-      const unidBD=buscarPorPlaca(placa);
-      const condBD=buscarConductorBD(conductor,dni);
-      const estado=estadoGlobal(unidBD,condBD);
+      const placa      = (row[cm.PLACA]     ||'').toUpperCase().trim();
+      const conductor  = (row[cm.CONDUCTOR] ||'').trim();
+      const dni        = (row[cm.DNI]       ||'').trim();
+      const provExcel  = (row[cm.PROVEEDOR] ||'').trim(); // proveedor del Excel → no se sobreescribe
+      const ruta       = row[cm.RUTA]  ||'';
+      const centro     = row[cm.CENTRO]||'';
+      const turno      = row[cm.TURNO] ||'';
 
-      // ── AUTO-ACTIVO: si se encontró en la base y tiene al menos un doc vigente → ACTIVO
+      // Buscar en BD — solo para jalar documentación
+      let unidBD = buscarPorPlaca(placa);
+      let condBD = buscarConductorBD(conductor, dni);
+
+      // ── Si conductor NO está en BD → crear registro nuevo automáticamente
+      if(!condBD && (conductor||dni)){
+        const nuevo = {
+          dni, conductor:conductor.toUpperCase(), proveedor:provExcel.toUpperCase(),
+          placa, centro, estado:'ACTIVO',
+          catLic:'', fechaLic:'', diasLic:'', estadoLic:'PENDIENTE',
+          fechaSctr:'', diasSctr:'', estadoSctr:'PENDIENTE',
+          fechaEmo:'', diasEmo:'', estadoEmo:'PENDIENTE',
+          docDni:'✗', docLic:'✗', docRecord:'✗', docSctr:'✗', docEmo:'✗',
+          cumpl:'0/5 (0%)', obs:''
+        };
+        CONDUCTORES.push(nuevo);
+        condBD = nuevo;
+        nuevosRegistros.push({tipo:'conductor', nombre:conductor||dni});
+        guardarEnSheets('CONDUCTORES', Object.keys(nuevo), Object.values(nuevo));
+      }
+
+      // ── Si unidad NO está en BD → crear registro nuevo automáticamente
+      if(!unidBD && placa){
+        const nuevo = {
+          placa, proveedor:provExcel.toUpperCase(), centro, estado:'ACTIVO',
+          tipo:'', anio:'', marca:'',
+          fechaSoat:'', diasSoat:'', estadoSoat:'PENDIENTE',
+          fechaRtv:'', diasRtv:'', estadoRtv:'PENDIENTE',
+          fechaTc:'', diasTc:'', estadoTc:'PENDIENTE',
+          docTarjProp:'✗', docSoat:'✗', docRtv:'✗', docTc:'✗',
+          docMnto:'✗', docBoletin:'✗', docPoliza:'✗',
+          cumpl:'0/7 (0%)', obs:''
+        };
+        UNIDADES.push(nuevo);
+        unidBD = nuevo;
+        nuevosRegistros.push({tipo:'unidad', nombre:placa});
+        guardarEnSheets('UNIDADES', Object.keys(nuevo), Object.values(nuevo));
+      }
+
+      // ── AUTO-ACTIVO si tiene docs vigentes
       if(condBD){
-        const licOk = condBD.estadoLic==='VIGENTE'||condBD.estadoLic==='POR VENCER';
-        const sctrOk= condBD.estadoSctr==='VIGENTE'||condBD.estadoSctr==='POR VENCER';
+        const licOk  = condBD.estadoLic ==='VIGENTE'||condBD.estadoLic ==='POR VENCER';
+        const sctrOk = condBD.estadoSctr==='VIGENTE'||condBD.estadoSctr==='POR VENCER';
         if(licOk||sctrOk){
           const ci=CONDUCTORES.findIndex(c=>c.dni===condBD.dni);
-          if(ci>=0 && CONDUCTORES[ci].estado!=='ACTIVO'){
+          if(ci>=0&&CONDUCTORES[ci].estado!=='ACTIVO'){
             CONDUCTORES[ci].estado='ACTIVO';
             guardarEnSheets('CONDUCTORES',Object.keys(CONDUCTORES[ci]),Object.values(CONDUCTORES[ci]));
           }
         }
       }
       if(unidBD){
-        const soatOk= unidBD.estadoSoat==='VIGENTE'||unidBD.estadoSoat==='POR VENCER';
-        const rtvOk = unidBD.estadoRtv==='VIGENTE'||unidBD.estadoRtv==='POR VENCER';
+        const soatOk = unidBD.estadoSoat==='VIGENTE'||unidBD.estadoSoat==='POR VENCER';
+        const rtvOk  = unidBD.estadoRtv ==='VIGENTE'||unidBD.estadoRtv ==='POR VENCER';
         if(soatOk||rtvOk){
           const ui=UNIDADES.findIndex(u=>u.placa===unidBD.placa);
-          if(ui>=0 && UNIDADES[ui].estado!=='ACTIVO'){
+          if(ui>=0&&UNIDADES[ui].estado!=='ACTIVO'){
             UNIDADES[ui].estado='ACTIVO';
             guardarEnSheets('UNIDADES',Object.keys(UNIDADES[ui]),Object.values(UNIDADES[ui]));
           }
         }
       }
 
-      return {placa,conductor,proveedor:row[cm.PROVEEDOR]||'',ruta:row[cm.RUTA]||'',
-              centro:row[cm.CENTRO]||'',turno:row[cm.TURNO]||'',dni,unidBD,condBD,estado};
+      // ── Construir fila del reporte manteniendo relación Excel
+      // condBD y unidBD solo se usan para documentación — NO para proveedor/placa
+      const condVista = condBD ? {...condBD, placa, proveedor:provExcel||condBD.proveedor, _enBD:true} : null;
+      const unidVista = unidBD ? {...unidBD, proveedor:provExcel||unidBD.proveedor, _enBD:true} : null;
+      const estado = estadoGlobal(unidVista, condVista);
+
+      return {placa, conductor, proveedor:provExcel, ruta, centro, turno, dni,
+              unidBD:unidVista, condBD:condVista, estado};
     }).filter(r=>r.placa||r.conductor);
+    if(nuevosRegistros.length>0){
+      const nc=nuevosRegistros.filter(r=>r.tipo==='conductor').length;
+      const nu=nuevosRegistros.filter(r=>r.tipo==='unidad').length;
+      setTimeout(()=>showToast(`✚ ${nc} conductor(es) y ${nu} unidad(es) nuevos registrados en BD`,'ok'),600);
+    }
     renderReporte();
     document.getElementById('rep-kpi-row').style.display='';
     document.getElementById('rep-filtros').style.display='flex';
@@ -2424,6 +2594,7 @@ function postCargarReporte(){
   renderDashboard();
   renderConductores();
   renderUnidades();
+  renderProveedores();
 }
 
 // Al limpiar reporte → volver a vacío
@@ -2436,6 +2607,67 @@ limpiarReporte = function(){
   renderConductores();
   renderUnidades();
 };
+
+
+// ── MODAL SELECTOR DE PROVEEDOR ──
+let _provModalCb = null;
+function abrirModalProv(valorActual, callback){
+  _provModalCb = callback;
+  let modal = document.getElementById('modal-prov-sel');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'modal-prov-sel';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)';
+    modal.innerHTML=`
+      <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:22px;width:420px;max-width:94vw;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px">Seleccionar Proveedor</div>
+        <input id="mprov-srch" placeholder="Buscar proveedor..." style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:8px 12px;font-size:13px;color:var(--text);outline:none;margin-bottom:10px" oninput="filtrarModalProv(this.value)"/>
+        <div id="mprov-list" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:6px"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+          <button onclick="cerrarModalProv()" style="background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer">Cancelar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e=>{ if(e.target===modal) cerrarModalProv(); });
+  }
+  document.getElementById('mprov-srch').value = valorActual||'';
+  filtrarModalProv(valorActual||'');
+  modal.style.display='flex';
+  setTimeout(()=>document.getElementById('mprov-srch')?.focus(),80);
+}
+function filtrarModalProv(q){
+  const list = document.getElementById('mprov-list');
+  if(!list) return;
+  const provs = PROVEEDORES.filter(p=>{
+    const n=(p.nombre||'').trim();
+    if(n.length<3) return false;
+    if(!['ACTIVO','INACTIVO'].includes((p.estado||'').toUpperCase())) return false;
+    if(q && !n.toUpperCase().includes(q.toUpperCase())) return false;
+    return true;
+  });
+  if(!provs.length){
+    list.innerHTML='<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">Sin resultados</div>';
+    return;
+  }
+  list.innerHTML = provs.map(p=>{
+    const safeName = (p.nombre||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div onclick="seleccionarProv('${safeName}')" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);transition:background 0.1s"
+      onmouseover="this.style.background='var(--accent3)'" onmouseout="this.style.background=''">
+      <span style="font-weight:500">${p.nombre}</span>
+      <span style="font-size:10px;color:var(--text3);margin-left:8px">${p.ruc||''}</span>
+      <span style="float:right;font-size:10px;color:${p.estado==='ACTIVO'?'var(--green)':'var(--text3)'}">${p.estado||''}</span>
+    </div>`;
+  }).join('');
+}
+function seleccionarProv(nombre){
+  if(_provModalCb) _provModalCb(nombre);
+  cerrarModalProv();
+}
+function cerrarModalProv(){
+  const m=document.getElementById('modal-prov-sel');
+  if(m) m.style.display='none';
+  _provModalCb=null;
+}
 
 // ── ARRANQUE
 if(!localStorage.getItem('gs_url') && GS_URL){
