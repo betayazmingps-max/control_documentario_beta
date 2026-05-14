@@ -772,6 +772,7 @@ tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
           <button class="btn btn-primary" onclick="leerReporte()">🔍 Analizar</button>
           <button class="btn btn-secondary" onclick="limpiarReporte()">🗑 Limpiar</button>
           <button class="btn btn-secondary" id="btn-rep-export" onclick="exportarReporteCsv()" style="display:none">⬇ Exportar CSV</button>
+          <button class="btn btn-primary" id="btn-guardar-reporte" onclick="guardarReporteEnSheets()" style="display:none;background:var(--green);border-color:var(--green)">💾 Guardar reporte del día</button>
         </div>
       </div>
       <div style="margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 13px;font-size:11px;color:var(--text2);line-height:1.8;">
@@ -1181,7 +1182,7 @@ async function syncFromSheets(){
       CONDUCTORES = condRaw.map(o=>({
         dni:           o.dni||o.n_doc||'',
         conductor:     o.conductor||o.nombre||'',
-        estado:        (o.estado||'INACTIVO').toUpperCase(),
+        estado:        (o.estado||o.activo||'').toString().trim().toUpperCase()||'INACTIVO',
         proveedor:     o.proveedor||'',
         placa:         o.placa||'',
         tipoUnidad:    o.tipo_unidad||o.tipo_de_unidad||o.tipo||'',
@@ -1191,7 +1192,7 @@ async function syncFromSheets(){
         catLic:        o.categoria_lic||o.categoria||o.cat_lic||'',
         fechaLic:      o.fecha_vto_lic||o.fecha_revalidaci_n||o.fecha_lic||'',
         diasLic:       o.dias_lic||o.d_as_vencimiento||o.d_as_lic||'',
-        estadoLic:     o.estado_lic||o.alerta_licencia||'',
+        estadoLic:     (o.estado_lic||o.alerta_licencia||'').toString().toUpperCase(),
         restriccion:   o.restriccion||'',
         cantPapeletas: o.cant_papeletas||o.papeletas||'0',
         puntosTotal:   o.puntos_total||o.puntos||'0',
@@ -1199,7 +1200,7 @@ async function syncFromSheets(){
         asegSctr:      o.aseguradora_sctr||o.aseguradora||'',
         fechaSctr:     o.fecha_vto_sctr||o.fecha_sctr||'',
         diasSctr:      o.dias_sctr||o.d_as_sctr||'',
-        estadoSctr:    o.estado_sctr||o.alerta_sctr||'',
+        estadoSctr:    (o.estado_sctr||o.alerta_sctr||'').toString().toUpperCase(),
         fechaEmo:      o.fecha_vto_emo||o.fecha_emo||'',
         diasEmo:       o.dias_emo||o.d_as_emo||'',
         estadoEmo:     o.estado_emo||o.alerta_emo||'',
@@ -1212,7 +1213,7 @@ async function syncFromSheets(){
     if(unidRaw.length>0){
       UNIDADES = unidRaw.map(o=>({
         placa:         o.placa||'',
-        estado:        (o.estado||'INACTIVO').toUpperCase(),
+        estado:        (o.estado||o.activo||'').toString().trim().toUpperCase()||'INACTIVO',
         proveedor:     o.proveedor||'',
         centro:        o.centro||'',
         tipo:          o.tipo_de_unidad||o.tipo||'',
@@ -1222,10 +1223,10 @@ async function syncFromSheets(){
         aseguradora:   o.aseguradora||'',
         fechaSoat:     o.fecha_vto_soat||o.fecha_soat||'',
         diasSoat:      o.dias_soat||o.d_as_soat||'',
-        estadoSoat:    o.estado_soat||o.alerta_soat||'',
+        estadoSoat:    (o.estado_soat||o.alerta_soat||'').toString().toUpperCase(),
         fechaRtv:      o.fecha_vto_rtv||o.fecha_rtv||'',
         diasRtv:       o.dias_rtv||o.d_as_rtv||'',
-        estadoRtv:     o.estado_rtv||o.alerta_rtv||'',
+        estadoRtv:     (o.estado_rtv||o.alerta_rtv||'').toString().toUpperCase(),
         fechaTc:       o.fecha_vto_tc||o.fecha_tc||'',
         diasTc:        o.dias_tc||o.d_as_tc||'',
         estadoTc:      o.estado_tc||o.alerta_t_c_||'',
@@ -1452,16 +1453,21 @@ function renderDashboard(){
   const pAct=PROVEEDORES.filter(p=>p.estado==='ACTIVO'&&p.nombre&&p.nombre.length>2&&p.nombre!=='PROVEEDOR').length;
   const pInact=PROVEEDORES.filter(p=>p.estado==='INACTIVO'&&p.nombre&&p.nombre.length>2).length;
   const pTot=pAct+pInact;
-  const cAct=CONDUCTORES.filter(c=>c.estado==='ACTIVO').length;
+  // Normalizar estado para comparación (evita problemas de mayúsculas/espacios desde Sheets)
+  const isActivo = v => (v||'').toString().trim().toUpperCase()==='ACTIVO';
+  const isVencido = v => (v||'').toString().trim().toUpperCase()==='VENCIDO';
+  const isPorVencer = v => (v||'').toString().trim().toUpperCase()==='POR VENCER';
+
+  const cAct=CONDUCTORES.filter(c=>isActivo(c.estado)).length;
   const cInact=CONDUCTORES.length-cAct;
-  const uAct=UNIDADES.filter(u=>u.estado==='ACTIVO').length;
+  const uAct=UNIDADES.filter(u=>isActivo(u.estado)).length;
   const uInact=UNIDADES.length-uAct;
-  const soatV=UNIDADES.filter(u=>u.estadoSoat==='VENCIDO').length;
-  const soatW=UNIDADES.filter(u=>{const d=parseInt(u.diasSoat);return !isNaN(d)&&d>=0&&d<=30&&u.estadoSoat!=='VENCIDO';}).length;
-  const rtvV=UNIDADES.filter(u=>u.estadoRtv==='VENCIDO').length;
-  const rtvW=UNIDADES.filter(u=>{const d=parseInt(u.diasRtv);return !isNaN(d)&&d>=0&&d<=30&&u.estadoRtv!=='VENCIDO';}).length;
-  const sctrV=CONDUCTORES.filter(c=>c.estadoSctr==='VENCIDO').length;
-  const sctrW=CONDUCTORES.filter(c=>{const d=parseInt(c.diasSctr);return !isNaN(d)&&d>=0&&d<=30&&c.estadoSctr!=='VENCIDO';}).length;
+  const soatV=UNIDADES.filter(u=>isVencido(u.estadoSoat)).length;
+  const soatW=UNIDADES.filter(u=>{const d=parseInt(u.diasSoat);return !isNaN(d)&&d>=0&&d<=30&&!isVencido(u.estadoSoat);}).length;
+  const rtvV=UNIDADES.filter(u=>isVencido(u.estadoRtv)).length;
+  const rtvW=UNIDADES.filter(u=>{const d=parseInt(u.diasRtv);return !isNaN(d)&&d>=0&&d<=30&&!isVencido(u.estadoRtv);}).length;
+  const sctrV=CONDUCTORES.filter(c=>isVencido(c.estadoSctr)).length;
+  const sctrW=CONDUCTORES.filter(c=>{const d=parseInt(c.diasSctr);return !isNaN(d)&&d>=0&&d<=30&&!isVencido(c.estadoSctr);}).length;
 
   const s=id=>document.getElementById(id);
   // Bloque 1: valor grande = ACTIVOS, subtítulo = inactivos + total
@@ -2180,27 +2186,19 @@ async function leerReporte(){
         guardarEnSheets('UNIDADES', Object.keys(nuevo), Object.values(nuevo));
       }
 
-      // ── AUTO-ACTIVO si tiene docs vigentes
+      // ── AUTO-ACTIVO: si aparece en el Excel → ACTIVO sin importar docs
       if(condBD){
-        const licOk  = condBD.estadoLic ==='VIGENTE'||condBD.estadoLic ==='POR VENCER';
-        const sctrOk = condBD.estadoSctr==='VIGENTE'||condBD.estadoSctr==='POR VENCER';
-        if(licOk||sctrOk){
-          const ci=CONDUCTORES.findIndex(c=>c.dni===condBD.dni);
-          if(ci>=0&&CONDUCTORES[ci].estado!=='ACTIVO'){
-            CONDUCTORES[ci].estado='ACTIVO';
-            guardarEnSheets('CONDUCTORES',Object.keys(CONDUCTORES[ci]),Object.values(CONDUCTORES[ci]));
-          }
+        const ci=CONDUCTORES.findIndex(c=>c.dni===condBD.dni);
+        if(ci>=0&&CONDUCTORES[ci].estado!=='ACTIVO'){
+          CONDUCTORES[ci].estado='ACTIVO';
+          guardarEnSheets('CONDUCTORES',Object.keys(CONDUCTORES[ci]),Object.values(CONDUCTORES[ci]));
         }
       }
       if(unidBD){
-        const soatOk = unidBD.estadoSoat==='VIGENTE'||unidBD.estadoSoat==='POR VENCER';
-        const rtvOk  = unidBD.estadoRtv ==='VIGENTE'||unidBD.estadoRtv ==='POR VENCER';
-        if(soatOk||rtvOk){
-          const ui=UNIDADES.findIndex(u=>u.placa===unidBD.placa);
-          if(ui>=0&&UNIDADES[ui].estado!=='ACTIVO'){
-            UNIDADES[ui].estado='ACTIVO';
-            guardarEnSheets('UNIDADES',Object.keys(UNIDADES[ui]),Object.values(UNIDADES[ui]));
-          }
+        const ui=UNIDADES.findIndex(u=>u.placa===unidBD.placa);
+        if(ui>=0&&UNIDADES[ui].estado!=='ACTIVO'){
+          UNIDADES[ui].estado='ACTIVO';
+          guardarEnSheets('UNIDADES',Object.keys(UNIDADES[ui]),Object.values(UNIDADES[ui]));
         }
       }
 
@@ -2224,6 +2222,7 @@ async function leerReporte(){
     document.getElementById('rep-tabla-wrap').style.display='';
     document.getElementById('rep-empty').style.display='none';
     document.getElementById('btn-rep-export').style.display='';
+    document.getElementById('btn-guardar-reporte').style.display='';
     showToast(`✓ ${REP_ROWS.length} unidades cargadas`,'ok');
     postCargarReporte(); // actualizar dashboard + consultas del día
   } catch(e){showToast('Error al leer: '+e.message,'err');}
@@ -2288,6 +2287,7 @@ function limpiarReporte(){
   document.getElementById('rep-tabla-wrap').style.display='none';
   document.getElementById('rep-empty').style.display='';
   document.getElementById('btn-rep-export').style.display='none';
+  document.getElementById('btn-guardar-reporte').style.display='none';
   document.querySelectorAll('.rep-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('.rep-btn[data-f="todos"]')?.classList.add('active');
 }
@@ -2582,6 +2582,62 @@ function toggleUnidModo(){
   UNID_MODO_DIA = !UNID_MODO_DIA;
   _setBadgesModo(COND_MODO_DIA, UNID_MODO_DIA);
   ST.unidades.page=1; renderUnidades();
+}
+
+
+// ══════════════════════════════════════════════
+// GUARDAR REPORTE DEL DÍA EN SHEETS → pestaña REPORTES
+// ══════════════════════════════════════════════
+async function guardarReporteEnSheets(){
+  if(!REP_ROWS.length){ showToast('No hay reporte cargado','err'); return; }
+  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
+
+  const btn = document.getElementById('btn-guardar-reporte');
+  if(btn){ btn.textContent='⏳ Guardando...'; btn.disabled=true; }
+
+  const fecha = document.getElementById('rep-fecha').value || new Date().toISOString().slice(0,10);
+  const headers = ['FECHA','PLACA','CONDUCTOR','DNI','PROVEEDOR','RUTA','CENTRO','TURNO',
+                   'EST_LIC','DIAS_LIC','EST_SCTR','EST_SOAT','DIAS_SOAT','EST_RTV','DIAS_RTV','ESTADO_OP'];
+
+  const rows = REP_ROWS.map(r => [
+    fecha,
+    r.placa||'',
+    r.conductor||'',
+    r.dni||'',
+    r.proveedor||'',
+    r.ruta||'',
+    r.centro||'',
+    r.turno||'',
+    r.condBD?.estadoLic||'',
+    r.condBD?.diasLic||'',
+    r.condBD?.estadoSctr||'',
+    r.unidBD?.estadoSoat||'',
+    r.unidBD?.diasSoat||'',
+    r.unidBD?.estadoRtv||'',
+    r.unidBD?.diasRtv||'',
+    r.estado==='ok'?'APTA':r.estado==='warn'?'ALERTA':r.estado==='bad'?'NO APTA':'SIN REG'
+  ]);
+
+  try {
+    // Send each row to REPORTES sheet
+    let guardados = 0;
+    for(const row of rows){
+      const res = await fetch(GS_URL, {
+        method:'POST',
+        body: JSON.stringify({ hoja:'REPORTES', headers, row })
+      });
+      const data = await res.json();
+      if(data.ok) guardados++;
+    }
+    showToast(`✅ ${guardados} filas guardadas en pestaña REPORTES`,'ok');
+    if(btn){ btn.textContent='✅ Guardado'; btn.style.background='var(--green)'; }
+    setTimeout(()=>{
+      if(btn){ btn.textContent='💾 Guardar reporte del día'; btn.disabled=false; }
+    }, 3000);
+  } catch(e){
+    showToast('Error al guardar: '+e.message,'err');
+    if(btn){ btn.textContent='💾 Guardar reporte del día'; btn.disabled=false; }
+  }
 }
 
 // Al cargar Excel → activar modo día automáticamente
