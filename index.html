@@ -1179,12 +1179,6 @@ async function syncFromSheets(){
     const provRaw  = await leerHoja('PROVEEDORES');
 
     if(condRaw.length>0){
-      // DEBUG: ver qué keys y valores de estado llegan del Sheet
-      if(condRaw.length>0){
-        const sample = condRaw[0];
-        console.log('🔑 Keys conductor[0]:', Object.keys(sample));
-        console.log('📋 Estado conductor[0]:', JSON.stringify(sample.estado), '| raw:', sample);
-      }
       CONDUCTORES = condRaw.map(o=>({
         dni:           o.dni||o.n_doc||'',
         conductor:     o.conductor||o.nombre||'',
@@ -1217,11 +1211,6 @@ async function syncFromSheets(){
     }
 
     if(unidRaw.length>0){
-      if(unidRaw.length>0){
-        const sample2 = unidRaw[0];
-        console.log('🔑 Keys unidad[0]:', Object.keys(sample2));
-        console.log('📋 Estado unidad[0]:', JSON.stringify(sample2.estado), '| raw:', sample2);
-      }
       UNIDADES = unidRaw.map(o=>({
         placa:         o.placa||'',
         estado:        (o.estado||o.activo||'').toString().trim().toUpperCase()||'ACTIVO',
