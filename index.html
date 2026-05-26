@@ -1067,19 +1067,22 @@ recalcular();
 // GOOGLE SHEETS SYNC
 // ═══════════════════════════════════════════════
 function updateGSStatus(ok) {
-  GS_CONNECTED = ok;
-  document.getElementById('gs-dot').className = 'gs-dot'+(ok?'':' off');
-  document.getElementById('gs-status').textContent = ok ? 'Conectado' : 'Sin conectar';
-  document.getElementById('btn-sync').style.display = GS_URL ? '' : 'none';
+  GS_CONNECTED = ok===true;
+  const dot = document.getElementById('gs-dot');
+  const sta = document.getElementById('gs-status');
+  if(dot) dot.className = 'gs-dot'+(GS_CONNECTED?'':' off');
+  if(sta) sta.textContent = ok===true ? 'Conectado' : ok==='syncing' ? 'Sincronizando...' : ok==='empty' ? 'Sin datos' : 'Sin conectar';
+  const btnSync = document.getElementById('btn-sync');
+  if(btnSync) btnSync.style.display = GS_URL ? '' : 'none';
 }
 // ══ GOOGLE SHEETS — JSONP (sin CORS) ══
 
 // Normalizar cabeceras del Sheet
 function normKey(h){
   return (h||'').toString().trim().toLowerCase()
-    .replace(/[áäà]/g,'a').replace(/[éëè]/g,'e')
-    .replace(/[íïì]/g,'i').replace(/[óöò]/g,'o')
-    .replace(/[úüù]/g,'u').replace(/ñ/g,'n')
+    .replace(/[áäàâ]/g,'a').replace(/[éëèê]/g,'e')
+    .replace(/[íïìî]/g,'i').replace(/[óöòô]/g,'o')
+    .replace(/[úüùû]/g,'u').replace(/ñ/g,'n')
     .replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_')
     .replace(/^_|_$/g,'');
 }
@@ -1189,22 +1192,27 @@ async function syncFromSheets(){
         centro:        o.centro||'',
         ruta:          o.ruta||'',
         turno:         o.turno||'',
-        catLic:        o.categoria_lic||o.categoria||o.cat_lic||'',
-        fechaLic:      o.fecha_vto_lic||o.fecha_revalidaci_n||o.fecha_lic||'',
-        diasLic:       o.dias_lic||o.d_as_vencimiento||o.d_as_lic||'',
-        estadoLic:     (o.estado_lic||o.alerta_licencia||'').toString().toUpperCase(),
+        catLic:        o.catlic||o.categoria_lic||o.categoria||o.cat_lic||'',
+        fechaLic:      o.fechalic||o.fecha_vto_lic||o.fecha_revalidaci_n||o.fecha_lic||'',
+        diasLic:       o.diaslic||o.dias_lic||o.d_as_vencimiento||o.d_as_lic||'',
+        estadoLic:     (o.estadolic||o.estado_lic||o.alerta_licencia||'').toString().toUpperCase(),
         restriccion:   o.restriccion||'',
         cantPapeletas: o.cant_papeletas||o.papeletas||'0',
         puntosTotal:   o.puntos_total||o.puntos||'0',
         alertaPuntos:  o.alerta_puntos||'',
         asegSctr:      o.aseguradora_sctr||o.aseguradora||'',
-        fechaSctr:     o.fecha_vto_sctr||o.fecha_sctr||'',
-        diasSctr:      o.dias_sctr||o.d_as_sctr||'',
-        estadoSctr:    (o.estado_sctr||o.alerta_sctr||'').toString().toUpperCase(),
+        fechaSctr:     o.fechasctr||o.fecha_vto_sctr||o.fecha_sctr||'',
+        diasSctr:      o.diassctr||o.dias_sctr||o.d_as_sctr||'',
+        estadoSctr:    (o.estadosctr||o.estado_sctr||o.alerta_sctr||'').toString().toUpperCase(),
         fechaEmo:      o.fecha_vto_emo||o.fecha_emo||'',
         diasEmo:       o.dias_emo||o.d_as_emo||'',
         estadoEmo:     o.estado_emo||o.alerta_emo||'',
         record:        o.record_conducir||o.r_cord_conducir||o.record||'',
+        docDni:        o.docdni||o.doc_dni||'✗',
+        docLic:        o.doclic||o.doc_lic||'✗',
+        docRecord:     o.docrecord||o.doc_record||'✗',
+        docSctr:       o.docsctr||o.doc_sctr||'✗',
+        docEmo:        o.docemo||o.doc_emo||'✗',
         cumpl:         o.cumpl||'—',
         pctCumpl:      o.pct_cumpl||'',
       }));
@@ -1221,21 +1229,28 @@ async function syncFromSheets(){
         antiguedad:    o.antiguedad||o.antig_edad||'',
         marca:         o.marca||'',
         aseguradora:   o.aseguradora||'',
-        fechaSoat:     o.fecha_vto_soat||o.fecha_soat||'',
-        diasSoat:      o.dias_soat||o.d_as_soat||'',
-        estadoSoat:    (o.estado_soat||o.alerta_soat||'').toString().toUpperCase(),
-        fechaRtv:      o.fecha_vto_rtv||o.fecha_rtv||'',
-        diasRtv:       o.dias_rtv||o.d_as_rtv||'',
-        estadoRtv:     (o.estado_rtv||o.alerta_rtv||'').toString().toUpperCase(),
-        fechaTc:       o.fecha_vto_tc||o.fecha_tc||'',
-        diasTc:        o.dias_tc||o.d_as_tc||'',
-        estadoTc:      o.estado_tc||o.alerta_t_c_||'',
+        fechaSoat:     o.fecha_vto_soat||o.fecha_soat||o.fechasoat||'',
+        diasSoat:      o.dias_soat||o.d_as_soat||o.diassoat||'',
+        estadoSoat:    (o.estado_soat||o.alerta_soat||o.estadosoat||'').toString().toUpperCase(),
+        fechaRtv:      o.fecha_vto_rtv||o.fecha_rtv||o.fechartv||'',
+        diasRtv:       o.dias_rtv||o.d_as_rtv||o.diasrtv||'',
+        estadoRtv:     (o.estado_rtv||o.alerta_rtv||o.estadortv||'').toString().toUpperCase(),
+        fechaTc:       o.fecha_vto_tc||o.fecha_tc||o.fechatc||'',
+        diasTc:        o.dias_tc||o.d_as_tc||o.diastc||'',
+        estadoTc:      (o.estado_tc||o.alerta_t_c_||o.estadotc||'').toString().toUpperCase(),
         fechaPoliza:   o.fecha_vto_poliza||o.fecha_p_liza||'',
         diasPoliza:    o.dias_poliza||o.d_as_p_liza||o.dias_p_liza||'',
         estadoPoliza:  o.estado_poliza||o.estado_p_liza||'',
         tieneBoletin:  o.tiene_boletin||o.boletin||'',
         mnto:          o.prog_mnto||o.mnto||'',
         responsable:   o.responsable||'',
+        docTarjProp:   o.doctarjprop||o.tarj_prop||o.doc_tarj_prop||'✗',
+        docSoat:       o.docsoat||o.doc_soat||((o.estadosoat||o.estado_soat||'').toUpperCase()==='VIGENTE'?'✓':'✗'),
+        docRtv:        o.docrtv||o.doc_rtv||((o.estadortv||o.estado_rtv||'').toUpperCase()==='VIGENTE'?'✓':'✗'),
+        docTc:         o.doctc||o.doc_tc||'✗',
+        docMnto:       o.docmnto||o.doc_mnto||'✗',
+        docBoletin:    o.docboletin||o.doc_boletin||'✗',
+        docPoliza:     o.docpoliza||o.doc_poliza||'✗',
         cumpl:         o.cumpl||'—',
       }));
     }
@@ -1262,6 +1277,7 @@ async function syncFromSheets(){
       recalcular();
       updateGSStatus(true);
       render();
+      renderAlertas();
       poblarDatalistProv();
       showToast(`✅ Sincronizado — ${condRaw.length} cond · ${unidRaw.length} unid · ${provRaw.length} prov`,'ok');
       const el=document.getElementById('gs-last-sync');
@@ -1450,8 +1466,8 @@ function renderDashboard(){
   if(ndWarn) ndWarn.style.display = sinDatos ? 'block' : 'none';
 
   // ── BASE GENERAL
-  const pAct=PROVEEDORES.filter(p=>p.estado==='ACTIVO'&&p.nombre&&p.nombre.length>2&&p.nombre!=='PROVEEDOR').length;
-  const pInact=PROVEEDORES.filter(p=>p.estado==='INACTIVO'&&p.nombre&&p.nombre.length>2).length;
+  const pAct=PROVEEDORES.filter(p=>(p.estado||'').toUpperCase()==='ACTIVO'&&(p.nombre||'').length>2&&p.nombre!=='PROVEEDOR').length;
+  const pInact=PROVEEDORES.filter(p=>(p.estado||'').toUpperCase()==='INACTIVO'&&(p.nombre||'').length>2).length;
   const pTot=pAct+pInact;
   // Normalizar estado para comparación (evita problemas de mayúsculas/espacios desde Sheets)
   const isActivo = v => (v||'').toString().trim().toUpperCase()==='ACTIVO';
@@ -1614,6 +1630,8 @@ async function guardarCeldaCond(dni, campo, valor){
 }
 
 function renderCondRow(r, num){
+  // ensure _enBD is set for rows coming from CONDUCTORES array directly
+  if(r._enBD === undefined) r = {...r, _enBD: true};
   const dni = (r.dni||'').replace(/'/g,"\'");
   if(!r._enBD){
     const nom = (r.conductor||'').replace(/'/g,"\'");
@@ -1667,8 +1685,22 @@ function irRegistrarConductor(nombre, dni, proveedor, placa){
 }
 
 function renderConductores(){
-  // Sin Excel cargado → tabla vacía con mensaje
-  if(REP_ROWS.length===0){
+  // Si no hay modo día activo y hay datos en BD → mostrar BD completa
+  if(!COND_MODO_DIA && CONDUCTORES.length > 0) {
+    const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
+    const {estado}=state.conductores;
+    let rows = filterData(CONDUCTORES, search, estado);
+    document.getElementById('cond-count').textContent=rows.length+' registros';
+    const PS2=25; const pg=state.conductores.page;
+    const sl=rows.slice((pg-1)*PS2,pg*PS2);
+    document.getElementById('cond-tbody').innerHTML=sl.length
+      ? sl.map((r,i)=>renderCondRow(r,(pg-1)*PS2+i+1)).join('')
+      : '<tr><td colspan="19" class="empty-state">Sin conductores</td></tr>';
+    renderPag('cond-pag','cond-info',pg,rows.length,v=>{ state.conductores.page=v; renderConductores(); });
+    return;
+  }
+  // Sin Excel cargado y modo día activo → tabla vacía con mensaje
+  if(COND_MODO_DIA && REP_ROWS.length===0){
     document.getElementById('cond-count').textContent='0 registros';
     document.getElementById('cond-tbody').innerHTML='<tr><td colspan="19" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver los conductores</td></tr>';
     document.getElementById('cond-info').textContent='—';
@@ -1773,10 +1805,24 @@ function renderUnidRow(r, num){
 }
 
 function renderUnidades(){
-  // Sin Excel cargado → tabla vacía con mensaje
+  // Si no hay modo día activo y hay datos en BD → mostrar BD completa
+  if(!UNID_MODO_DIA && UNIDADES.length > 0){
+    const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
+    const {estado}=state.unidades;
+    let rows = filterData(UNIDADES, search, estado);
+    document.getElementById('unid-count').textContent=rows.length+' registros';
+    const PS2=25; const pg=state.unidades.page;
+    const sl=rows.slice((pg-1)*PS2,pg*PS2);
+    document.getElementById('unid-tbody').innerHTML=sl.length
+      ? sl.map((r,i)=>renderUnidRow(r,(pg-1)*PS2+i+1)).join('')
+      : '<tr><td colspan="21" class="empty-state">Sin unidades</td></tr>';
+    renderPag('unid-pag','unid-info',pg,rows.length,v=>{ state.unidades.page=v; renderUnidades(); });
+    return;
+  }
+  // Sin Excel cargado y modo día → mensaje
   if(!UNID_MODO_DIA && REP_ROWS.length===0){
     document.getElementById('unid-count').textContent='0 registros';
-    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="21" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver las unidades</td></tr>';
+    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="21" class="empty-state">📋 Conecta Google Sheets para cargar las unidades</td></tr>';
     document.getElementById('unid-info').textContent='—';
     document.getElementById('unid-pag').innerHTML='';
     return;
@@ -1817,16 +1863,12 @@ function updProvResp(n,v){const d=getPD(n);d.resp=v;PD[n]=d;savePD();}
 let PV_MAP = []; // PV_MAP[i] = nombre del proveedor en la página actual
 
 function renderProveedores(){
-  // Sin Excel cargado → tabla vacía con mensaje
-  if(REP_ROWS.length===0){
+  if(PROVEEDORES.length===0){
     const tbody=document.getElementById('prov-tbody');
-    if(tbody) tbody.innerHTML='<tr><td colspan="23" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver los proveedores</td></tr>';
+    if(tbody) tbody.innerHTML='<tr><td colspan="23" class="empty-state">📋 Conecta Google Sheets o sincroniza para ver los proveedores</td></tr>';
     document.getElementById('prov-count').textContent='0 proveedores';
     return;
   }
-  // Filtrar solo proveedores del Excel del día
-  const provDelDia = new Set(REP_ROWS.map(r=>(r.proveedor||r.unidBD?.proveedor||'').trim().toUpperCase()).filter(Boolean));
-
   // Filtros propios de la tabla de proveedores
   const search = (document.getElementById('pv-srch')||{value:''}).value.toLowerCase();
   const estado  = (document.getElementById('pv-est')||{value:''}).value;
@@ -1837,11 +1879,8 @@ function renderProveedores(){
   const esInvalida = p => {
     const n = (p.nombre||'').trim();
     if(n.length < 3) return true;
-    // Fila de cabecera exacta
     if(['PROVEEDOR','NOMBRE','EMPRESA','RAZÓN SOCIAL','RAZON SOCIAL','N°','#','RUC','ESTADO'].includes(n.toUpperCase())) return true;
-    // Fila de resumen: contiene "Activos:", "Inactivos:", "B1 =", "Actualizado:"
     if(/activos\s*:/i.test(n)||/inactivos\s*:/i.test(n)||/actualizado\s*:/i.test(n)||/B[12]\s*=/i.test(n)) return true;
-    // No tiene estado ACTIVO/INACTIVO (probable basura si tampoco tiene RUC)
     const est = (p.estado||'').trim().toUpperCase();
     if(!['ACTIVO','INACTIVO'].includes(est)) return true;
     return false;
@@ -1849,8 +1888,6 @@ function renderProveedores(){
 
   let data=PROVEEDORES.filter(p=>{
     if(esInvalida(p)) return false;
-    // Solo mostrar proveedores que aparecen en el Excel del día
-    if(provDelDia.size>0 && !provDelDia.has((p.nombre||'').trim().toUpperCase())) return false;
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
     if(zona&&p.zona!==zona) return false;
@@ -2547,7 +2584,6 @@ function mostrarCargando(show){
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
-document.getElementById('rep-fecha').value=new Date().toISOString().slice(0,10);
 
 // ══════════════════════════════════════════════
 // MODO CONSULTA — debe declararse ANTES del init
@@ -2642,6 +2678,7 @@ async function guardarReporteEnSheets(){
 
 // Al cargar Excel → activar modo día automáticamente
 function postCargarReporte(){
+  recalcular();
   COND_MODO_DIA = true;
   UNID_MODO_DIA = true;
   ST.conductores.page=1;
@@ -2651,6 +2688,7 @@ function postCargarReporte(){
   renderConductores();
   renderUnidades();
   renderProveedores();
+  renderAlertas();
 }
 
 // Al limpiar reporte → volver a vacío
@@ -2729,20 +2767,23 @@ function cerrarModalProv(){
 if(!localStorage.getItem('gs_url') && GS_URL){
   localStorage.setItem('gs_url', GS_URL);
 }
+// Set today's date on report
+document.getElementById('rep-fecha').value = new Date().toISOString().slice(0,10);
+
 if(GS_URL){
   updateGSStatus('syncing');
   const lsEl=document.getElementById('gs-last-sync');
   if(lsEl) lsEl.style.display='';
   mostrarCargando(true);
   syncFromSheets()
-    .then(()=>{ renderDashboard(); renderConductores(); renderUnidades(); })
-    .catch(e=>{ console.error(e); renderDashboard(); renderConductores(); renderUnidades(); })
+    .then(()=>{ recalcular(); render(); })
+    .catch(e=>{ console.error(e); renderDashboard(); })
     .finally(()=>mostrarCargando(false));
 } else {
-  openGSModal();
   renderDashboard();
   renderConductores();
   renderUnidades();
+  renderProveedores();
 }
 </script>
 </body>
