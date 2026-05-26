@@ -352,52 +352,27 @@ tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
   <div class="page active" id="page-dashboard">
     <div id="gs-banner-wrap"></div>
 
-    <!-- ── BLOQUE 1: BASE GENERAL ── -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <div style="width:3px;height:14px;background:linear-gradient(var(--accent),var(--green));border-radius:2px"></div>
-      <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)">Base General — Google Sheets</span>
-      <span id="gs-sync-time" style="font-size:10px;color:var(--text3);margin-left:4px"></span>
-    </div>
-    <div class="kpi-grid cols-6" style="margin-bottom:6px">
-      <!-- Aviso si no hay conexión GS -->
-      <div id="kd-nodata-warn" style="display:none;grid-column:1/-1;background:rgba(124,58,237,.08);border:1.5px dashed var(--accent);border-radius:8px;padding:12px 16px;text-align:center;font-size:12.5px;color:var(--accent)">
-        ⚡ <b>Sin datos</b> — conecta Google Sheets para cargar conductores, unidades y proveedores
-        <button onclick="openGSModal()" style="margin-left:10px;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;font-weight:600">Conectar Sheets</button>
-      </div>
-      <div class="kpi-card blue">
-        <div class="kpi-label">Proveedores</div>
-        <div class="kpi-value" id="kd-act-prov">—</div>
-        <div class="kpi-sub">activos · <span class="bad" id="kd-inact-prov">—</span> inactivos · <span id="kd-total-prov" style="color:var(--text3)">— total</span></div>
-      </div>
-      <div class="kpi-card blue">
-        <div class="kpi-label">Conductores</div>
-        <div class="kpi-value" id="kd-act-cond">—</div>
-        <div class="kpi-sub">activos · <span class="bad" id="kd-inact-cond">—</span> inactivos · <span id="kd-total-cond" style="color:var(--text3)">— total</span></div>
-      </div>
-      <div class="kpi-card blue">
-        <div class="kpi-label">Unidades</div>
-        <div class="kpi-value" id="kd-act-unid">—</div>
-        <div class="kpi-sub">activas · <span class="bad" id="kd-inact-unid">—</span> inactivas · <span id="kd-total-unid" style="color:var(--text3)">— total</span></div>
-      </div>
-      <div class="kpi-card danger">
-        <div class="kpi-label">SOAT Vencidos</div>
-        <div class="kpi-value" id="kd-soat-venc">—</div>
-        <div class="kpi-sub"><span class="wu" id="kd-soat-warn">—</span> por vencer ≤30d</div>
-      </div>
-      <div class="kpi-card danger">
-        <div class="kpi-label">RTV Vencidos</div>
-        <div class="kpi-value" id="kd-rtv-venc">—</div>
-        <div class="kpi-sub"><span class="wu" id="kd-rtv-warn">—</span> por vencer ≤30d</div>
-      </div>
-      <div class="kpi-card danger">
-        <div class="kpi-label">SCTR Vencidos</div>
-        <div class="kpi-value" id="kd-sctr-venc">—</div>
-        <div class="kpi-sub"><span class="wu" id="kd-sctr-warn">—</span> por vencer ≤30d</div>
-      </div>
-    </div>
+    <!-- IDs ocultos para compatibilidad con JS base general (no se muestran) -->
+    <span id="gs-sync-time" style="display:none"></span>
+    <span id="kd-nodata-warn" style="display:none"></span>
+    <span id="kd-act-prov" style="display:none"></span>
+    <span id="kd-inact-prov" style="display:none"></span>
+    <span id="kd-total-prov" style="display:none"></span>
+    <span id="kd-act-cond" style="display:none"></span>
+    <span id="kd-inact-cond" style="display:none"></span>
+    <span id="kd-total-cond" style="display:none"></span>
+    <span id="kd-act-unid" style="display:none"></span>
+    <span id="kd-inact-unid" style="display:none"></span>
+    <span id="kd-total-unid" style="display:none"></span>
+    <span id="kd-soat-venc" style="display:none"></span>
+    <span id="kd-soat-warn" style="display:none"></span>
+    <span id="kd-rtv-venc" style="display:none"></span>
+    <span id="kd-rtv-warn" style="display:none"></span>
+    <span id="kd-sctr-venc" style="display:none"></span>
+    <span id="kd-sctr-warn" style="display:none"></span>
 
-    <!-- ── BLOQUE 2: OPERACIÓN DEL DÍA ── -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;margin-top:18px">
+    <!-- ── OPERACIÓN DEL DÍA ── -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <div style="width:3px;height:14px;background:linear-gradient(var(--green),var(--accent));border-radius:2px"></div>
       <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)">Operación del día — Excel cargado</span>
       <span id="kd-fecha-rep" style="font-size:11px;color:var(--text3);margin-left:4px"></span>
