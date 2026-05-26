@@ -280,19 +280,7 @@ tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
       <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="currentColor" opacity=".9"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="currentColor" opacity=".6"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity=".6"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity=".4"/></svg>
       Dashboard
     </div>
-    <div class="nav-section">Registro</div>
-    <div class="nav-item" onclick="goPage('reg-conductor',this)">
-      <svg class="nav-ico" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3.5" fill="currentColor" opacity=".8"/><path d="M2 16c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".7"/></svg>
-      Conductor
-    </div>
-    <div class="nav-item" onclick="goPage('reg-unidad',this)">
-      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="6" width="13" height="7" rx="1.5" fill="currentColor" opacity=".7"/><rect x="14" y="8" width="3" height="4" rx="1" fill="currentColor" opacity=".5"/><circle cx="4" cy="14" r="2" fill="currentColor"/><circle cx="11" cy="14" r="2" fill="currentColor"/></svg>
-      Unidad
-    </div>
-    <div class="nav-item" onclick="goPage('reg-proveedor',this)">
-      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="3" y="7" width="12" height="9" rx="1.5" fill="currentColor" opacity=".7"/><path d="M6 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.6" fill="none" opacity=".6"/></svg>
-      Proveedor
-    </div>
+
     <div class="nav-section">Consultas</div>
     <div class="nav-item" onclick="goPage('conductores',this)">
       <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="3" width="16" height="2" rx="1" fill="currentColor" opacity=".8"/><rect x="1" y="8" width="16" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="1" y="13" width="10" height="2" rx="1" fill="currentColor" opacity=".4"/></svg>
@@ -1157,8 +1145,18 @@ async function syncFromSheets(){
     const provRaw  = await leerHoja('PROVEEDORES');
 
     if(condRaw.length>0){
-      CONDUCTORES = condRaw.map(o=>({
-        dni:           o.dni||o.n_doc||'',
+      CONDUCTORES = condRaw.map(o=>{
+        // Helper: convierte TRUE/FALSE/VERDADERO/FALSO/1/0 → '✓' o '✗'
+        const boolDoc = v => {
+          const s = String(v||'').trim().toUpperCase();
+          if(s==='TRUE'||s==='VERDADERO'||s==='1'||s==='SI'||s==='SÍ') return '✓';
+          if(s==='FALSE'||s==='FALSO'||s==='0'||s==='NO') return '✗';
+          if(s==='✓'||s==='✔') return '✓';
+          if(s==='✗'||s==='✘') return '✗';
+          return '✗';
+        };
+        return {
+        dni:           o.dni_||o.dni||o.n_doc||'',
         conductor:     o.conductor||o.nombre||'',
         estado:        (o.estado||o.activo||'').toString().trim().toUpperCase()||'ACTIVO',
         proveedor:     o.proveedor||'',
@@ -1167,67 +1165,75 @@ async function syncFromSheets(){
         centro:        o.centro||'',
         ruta:          o.ruta||'',
         turno:         o.turno||'',
-        catLic:        o.catlic||o.categoria_lic||o.categoria||o.cat_lic||'',
-        fechaLic:      o.fechalic||o.fecha_vto_lic||o.fecha_revalidaci_n||o.fecha_lic||'',
-        diasLic:       o.diaslic||o.dias_lic||o.d_as_vencimiento||o.d_as_lic||'',
-        estadoLic:     (o.estadolic||o.estado_lic||o.alerta_licencia||'').toString().toUpperCase(),
-        restriccion:   o.restriccion||'',
-        cantPapeletas: o.cant_papeletas||o.papeletas||'0',
-        puntosTotal:   o.puntos_total||o.puntos||'0',
-        alertaPuntos:  o.alerta_puntos||'',
+        catLic:        o.categor_a_licencia||o.catlic||o.categoria_lic||o.categoria||o.cat_lic||'',
+        fechaLic:      o.fecha_de_revalidaci_n||o.fechalic||o.fecha_vto_lic||o.fecha_revalidaci_n||o.fecha_lic||'',
+        diasLic:       o.d_as_vencimiento_lic_||o.diaslic||o.dias_lic||o.d_as_vencimiento||o.d_as_lic||'',
+        estadoLic:     (o.estado_licencia||o.estadolic||o.estado_lic||o.alerta_licencia||'').toString().toUpperCase(),
+        restriccion:   o.restricci_n||o.restriccion||'',
+        cantPapeletas: o.cantidad_papeletas||o.cant_papeletas||o.papeletas||'0',
+        puntosTotal:   o.puntos_en_total||o.puntos_total||o.puntos||'0',
+        alertaPuntos:  o.alerta_puntos_mtc_||o.alerta_puntos||'',
         asegSctr:      o.aseguradora_sctr||o.aseguradora||'',
-        fechaSctr:     o.fechasctr||o.fecha_vto_sctr||o.fecha_sctr||'',
-        diasSctr:      o.diassctr||o.dias_sctr||o.d_as_sctr||'',
-        estadoSctr:    (o.estadosctr||o.estado_sctr||o.alerta_sctr||'').toString().toUpperCase(),
+        fechaSctr:     o.fecha_vencimiento_sctr||o.fechasctr||o.fecha_vto_sctr||o.fecha_sctr||'',
+        diasSctr:      o.d_as_vencimiento_sctr||o.diassctr||o.dias_sctr||o.d_as_sctr||'',
+        estadoSctr:    (o.estado_sctr||o.estadosctr||o.alerta_sctr||'').toString().toUpperCase(),
         fechaEmo:      o.fecha_vto_emo||o.fecha_emo||'',
         diasEmo:       o.dias_emo||o.d_as_emo||'',
         estadoEmo:     o.estado_emo||o.alerta_emo||'',
-        record:        o.record_conducir||o.r_cord_conducir||o.record||'',
-        docDni:        o.docdni||o.doc_dni||'✗',
-        docLic:        o.doclic||o.doc_lic||'✗',
-        docRecord:     o.docrecord||o.doc_record||'✗',
-        docSctr:       o.docsctr||o.doc_sctr||'✗',
-        docEmo:        o.docemo||o.doc_emo||'✗',
-        cumpl:         o.cumpl||'—',
+        record:        o.record_papeletas_mtc_||o.record_conducir||o.record||'',
+        docDni:        boolDoc(o.dni||o.docdni||o.doc_dni),
+        docLic:        boolDoc(o.licencia_de_conducir||o.doclic||o.doc_lic),
+        docRecord:     boolDoc(o.record_de_conductor||o.docrecord||o.doc_record),
+        docSctr:       boolDoc(o.sctr||o.docsctr||o.doc_sctr),
+        docEmo:        boolDoc(o.emo___examen_m_dico_ocupacional||o.docemo||o.doc_emo),
+        cumpl:         o.cumplimiento||o.cumpl||'—',
         pctCumpl:      o.pct_cumpl||'',
-      }));
+        };
+      });
     }
 
     if(unidRaw.length>0){
-      UNIDADES = unidRaw.map(o=>({
+      UNIDADES = unidRaw.map(o=>{
+        const boolDoc = v => {
+          const s = String(v||'').trim().toUpperCase();
+          if(s==='TRUE'||s==='VERDADERO'||s==='1'||s==='SI'||s==='SÍ') return '✓';
+          if(s==='FALSE'||s==='FALSO'||s==='0'||s==='NO') return '✗';
+          if(s==='✓'||s==='✔') return '✓';
+          if(s==='NO APLICA'||s==='NA') return 'N/A';
+          return '✗';
+        };
+        return {
         placa:         o.placa||'',
         estado:        (o.estado||o.activo||'').toString().trim().toUpperCase()||'ACTIVO',
         proveedor:     o.proveedor||'',
         centro:        o.centro||'',
         tipo:          o.tipo_de_unidad||o.tipo||'',
-        anio:          o.a_o_fab||o.anio||o.a_o||'',
-        antiguedad:    o.antiguedad||o.antig_edad||'',
+        anio:          o.a_o_fab_||o.a_o_fab||o.anio||o.a_o||'',
+        antiguedad:    o.antig_edad||o.antiguedad||'',
         marca:         o.marca||'',
         aseguradora:   o.aseguradora||'',
-        fechaSoat:     o.fecha_vto_soat||o.fecha_soat||o.fechasoat||'',
-        diasSoat:      o.dias_soat||o.d_as_soat||o.diassoat||'',
-        estadoSoat:    (o.estado_soat||o.alerta_soat||o.estadosoat||'').toString().toUpperCase(),
-        fechaRtv:      o.fecha_vto_rtv||o.fecha_rtv||o.fechartv||'',
-        diasRtv:       o.dias_rtv||o.d_as_rtv||o.diasrtv||'',
-        estadoRtv:     (o.estado_rtv||o.alerta_rtv||o.estadortv||'').toString().toUpperCase(),
-        fechaTc:       o.fecha_vto_tc||o.fecha_tc||o.fechatc||'',
-        diasTc:        o.dias_tc||o.d_as_tc||o.diastc||'',
-        estadoTc:      (o.estado_tc||o.alerta_t_c_||o.estadotc||'').toString().toUpperCase(),
-        fechaPoliza:   o.fecha_vto_poliza||o.fecha_p_liza||'',
-        diasPoliza:    o.dias_poliza||o.d_as_p_liza||o.dias_p_liza||'',
-        estadoPoliza:  o.estado_poliza||o.estado_p_liza||'',
-        tieneBoletin:  o.tiene_boletin||o.boletin||'',
+        fechaSoat:     o.fecha_vencimiento_soat||o.fecha_vto_soat||o.fecha_soat||o.fechasoat||'',
+        diasSoat:      o.d_as_vencimiento_soat||o.dias_soat||o.d_as_soat||o.diassoat||'',
+        estadoSoat:    (o.alerta_soat||o.estado_soat||o.estadosoat||'').toString().toUpperCase(),
+        fechaRtv:      o.fecha_vencimiento_rtv||o.fecha_vto_rtv||o.fecha_rtv||o.fechartv||'',
+        diasRtv:       o.d_as_vencimiento_rtv||o.dias_rtv||o.d_as_rtv||o.diasrtv||'',
+        estadoRtv:     (o.alerta_rtv||o.estado_rtv||o.estadortv||'').toString().toUpperCase(),
+        fechaTc:       o.fecha_vencimiento_t_c_||o.fecha_vto_tc||o.fecha_tc||o.fechatc||'',
+        diasTc:        o.d_as_vencimiento_t_c_||o.dias_tc||o.d_as_tc||o.diastc||'',
+        estadoTc:      (o.alerta_t_c_||o.estado_tc||o.estadotc||'').toString().toUpperCase(),
+        tieneBoletin:  o.tiene_boletin_informativo||o.tiene_boletin||o.boletin||'',
         mnto:          o.prog_mnto||o.mnto||'',
         responsable:   o.responsable||'',
-        docTarjProp:   o.doctarjprop||o.tarj_prop||o.doc_tarj_prop||'✗',
-        docSoat:       o.docsoat||o.doc_soat||((o.estadosoat||o.estado_soat||'').toUpperCase()==='VIGENTE'?'✓':'✗'),
-        docRtv:        o.docrtv||o.doc_rtv||((o.estadortv||o.estado_rtv||'').toUpperCase()==='VIGENTE'?'✓':'✗'),
-        docTc:         o.doctc||o.doc_tc||'✗',
-        docMnto:       o.docmnto||o.doc_mnto||'✗',
-        docBoletin:    o.docboletin||o.doc_boletin||'✗',
-        docPoliza:     o.docpoliza||o.doc_poliza||'✗',
-        cumpl:         o.cumpl||'—',
-      }));
+        docTarjProp:   boolDoc(o.tarj_prop_||o.tarj_prop||o.doctarjprop||o.doc_tarj_prop),
+        docSoat:       boolDoc(o.soat||o.docsoat||o.doc_soat),
+        docRtv:        boolDoc(o.rev_tec_||o.rev_tec||o.docrtv||o.doc_rtv),
+        docTc:         boolDoc(o.tarj_circ_||o.tarj_circ||o.doctc||o.doc_tc),
+        docMnto:       boolDoc(o.program_mnto||o.docmnto||o.doc_mnto),
+        docBoletin:    boolDoc(o.bolet_n_informativo___sunarp||o.docboletin||o.doc_boletin),
+        docPoliza:     boolDoc(o.p_liza||o.poliza||o.docpoliza||o.doc_poliza),
+        cumpl:         o.cumplimiento||o.cumpl||'—',
+        };
+      });
     }
 
     if(provRaw.length>0){
