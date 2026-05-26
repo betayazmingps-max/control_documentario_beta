@@ -1643,9 +1643,9 @@ function renderCondRow(r, num){
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td><span class="badge blue">${r.catLic||'—'}</span></td>
     <td>${badge(r.estadoLic||'—')}</td>
-    <td class="editable-cell" onclick="abrirEdit('conductor',${CONDUCTORES.indexOf(r)},'diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\'")}'" title="Clic para editar">${diasCell(r.diasLic)}</td>
+    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\'")}'" title="Clic para editar">${diasCell(r.diasLic)}</td>
     <td>${badge(r.estadoSctr||'—')}</td>
-    <td class="editable-cell" onclick="abrirEdit('conductor',${CONDUCTORES.indexOf(r)},'diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\'")}'" title="Clic para editar">${diasCell(r.diasSctr)}</td>
+    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\'")}'" title="Clic para editar">${diasCell(r.diasSctr)}</td>
     ${chk(r.docDni,'docDni')}
     ${chk(r.docLic,'docLic')}
     ${chk(r.docRecord,'docRecord')}
@@ -1860,8 +1860,13 @@ function renderProveedores(){
   const esInvalida = p => {
     const n = (p.nombre||'').trim();
     if(n.length < 3) return true;
-    if(['PROVEEDOR','NOMBRE','EMPRESA','RAZÓN SOCIAL','RAZON SOCIAL','N°','#','RUC','ESTADO'].includes(n.toUpperCase())) return true;
-    if(/activos\s*:/i.test(n)||/inactivos\s*:/i.test(n)||/actualizado\s*:/i.test(n)||/B[12]\s*=/i.test(n)) return true;
+    // Filtrar cabeceras o valores numéricos puros en nombre
+    if(!isNaN(Number(n)) && n !== '') return true;
+    const upperN = n.toUpperCase();
+    if(['PROVEEDOR','NOMBRE','EMPRESA','RAZÓN SOCIAL','RAZON SOCIAL','N°','#','RUC','ESTADO',
+        'TOTAL','CANTIDAD','CANT','RESUMEN','SUB TOTAL','SUBTOTAL'].includes(upperN)) return true;
+    if(/^(activos|inactivos|actualizado|total|b[12])[\s:=]/i.test(n)) return true;
+    if(/^\d+$/.test(n)) return true; // solo números
     const est = (p.estado||'').trim().toUpperCase();
     if(!['ACTIVO','INACTIVO'].includes(est)) return true;
     return false;
@@ -2108,9 +2113,21 @@ function renderAlertas(){
 let REP_ROWS=[], REP_FILTRO='todos';
 function previewRepNombre(i){document.getElementById('rep-nombre').textContent=i.files[0]?.name||'Ningún archivo';}
 function buscarPorPlaca(p){return UNIDADES.find(u=>u.placa&&u.placa.toUpperCase()===p.toUpperCase())||null;}
+function normText(s){
+  return (s||'').toString().toUpperCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ');
+}
 function buscarConductorBD(nombre,dni){
-  if(dni)return CONDUCTORES.find(c=>c.dni===String(dni))||null;
-  if(nombre)return CONDUCTORES.find(c=>c.conductor&&c.conductor.toUpperCase()===nombre.toUpperCase())||null;
+  if(dni){
+    const dniStr=String(dni).trim();
+    const found=CONDUCTORES.find(c=>c.dni&&c.dni.trim()===dniStr);
+    if(found) return found;
+  }
+  if(nombre){
+    const nNorm=normText(nombre);
+    return CONDUCTORES.find(c=>c.conductor&&normText(c.conductor)===nNorm)||null;
+  }
   return null;
 }
 function estadoGlobal(u,c){
@@ -2357,6 +2374,12 @@ function guardarEdit(){
   cerrarEdit(); render(); showToast('Fecha actualizada ✓','ok');
 }
 function cerrarEdit(){ document.getElementById('edit-modal').classList.remove('open'); editTarget=null; }
+// Variant that finds conductor by DNI instead of array index (safe with object copies)
+function abrirEditDni(dni, diasCampo, fechaCampo, nombre){
+  const idx = CONDUCTORES.findIndex(c=>c.dni===String(dni).trim());
+  if(idx<0){ showToast('Conductor no encontrado en BD','err'); return; }
+  abrirEdit('conductor', idx, diasCampo, fechaCampo, nombre);
+}
 
 // ═══════════════════════════════════════════════
 // FORMULARIOS REGISTRO
