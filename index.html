@@ -1632,7 +1632,7 @@ function renderCondRow(r, num){
   }
   const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocCond('${dni}','${campo}')" title="Clic para marcar/desmarcar">
     <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'}; user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
-  const editable = (campo, valor) => `<td data-dni="${dni}" data-campo="${campo}" onclick="editCeldaCond('${dni}','${campo}','${(valor||'').replace(/'/g,"\'")}'" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
+  const editable = (campo, valor) => `<td data-dni="${dni}" data-campo="${campo}" onclick="editCeldaCond('${dni}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
   return `<tr>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono">${r.dni||'—'}</td>
@@ -1643,9 +1643,9 @@ function renderCondRow(r, num){
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td><span class="badge blue">${r.catLic||'—'}</span></td>
     <td>${badge(r.estadoLic||'—')}</td>
-    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\'")}'" title="Clic para editar">${diasCell(r.diasLic)}</td>
+    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasLic)}</td>
     <td>${badge(r.estadoSctr||'—')}</td>
-    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\'")}'" title="Clic para editar">${diasCell(r.diasSctr)}</td>
+    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasSctr)}</td>
     ${chk(r.docDni,'docDni')}
     ${chk(r.docLic,'docLic')}
     ${chk(r.docRecord,'docRecord')}
@@ -2166,91 +2166,50 @@ async function leerReporte(){
         return obj;
       });
     }
-    // normalize keys
-    const cm={};
-    ['PLACA','CONDUCTOR','PROVEEDOR','RUTA','CENTRO','TURNO','DNI','CELULAR'].forEach(k=>{
-      const found=Object.keys(rows[0]||{}).find(h=>h.toUpperCase().includes(k));
-      if(found)cm[k]=found;
-    });
-    const nuevosRegistros=[];
+    // normalize keys — busca columna que contenga la palabra clave
+    const hkeys=Object.keys(rows[0]||{});
+    const col=(key,alts=[])=>{
+      const all=[key,...alts];
+      for(const k of all){
+        const f=hkeys.find(h=>h.toUpperCase().includes(k.toUpperCase()));
+        if(f) return f;
+      }
+      return null;
+    };
+    const COL={
+      placa:    col('PLACA'),
+      conductor:col('CONDUCTOR',['NOMBRE CONDUCTOR']),
+      dni:      col('DNI',['DOC','DOCUMENTO']),
+      proveedor:col('PROVEEDOR',['EMPRESA']),
+      ruta:     col('RUTA'),
+      centro:   col('CENTRO',['COSTO','PLANTA']),
+      turno:    col('TURNO'),
+    };
     REP_ROWS=rows.map(row=>{
-      const placa      = (row[cm.PLACA]     ||'').toUpperCase().trim();
-      const conductor  = (row[cm.CONDUCTOR] ||'').trim();
-      const dni        = (row[cm.DNI]       ||'').trim();
-      const provExcel  = (row[cm.PROVEEDOR] ||'').trim(); // proveedor del Excel → no se sobreescribe
-      const ruta       = row[cm.RUTA]  ||'';
-      const centro     = row[cm.CENTRO]||'';
-      const turno      = row[cm.TURNO] ||'';
+      const placa     = COL.placa     ? (row[COL.placa]    ||'').toUpperCase().trim() : '';
+      const conductor = COL.conductor ? (row[COL.conductor]||'').trim()               : '';
+      const dni       = COL.dni       ? String(row[COL.dni]||'').trim()               : '';
+      const provExcel = COL.proveedor ? (row[COL.proveedor]||'').trim()               : '';
+      const ruta      = COL.ruta      ? (row[COL.ruta]     ||'').trim()               : '';
+      const centro    = COL.centro    ? (row[COL.centro]   ||'').trim()               : '';
+      const turno     = COL.turno     ? (row[COL.turno]    ||'').trim()               : '';
 
-      // Buscar en BD — solo para jalar documentación
-      let unidBD = buscarPorPlaca(placa);
-      let condBD = buscarConductorBD(conductor, dni);
+      if(!placa && !conductor && !dni) return null;
 
-      // ── Si conductor NO está en BD → crear registro nuevo automáticamente
-      if(!condBD && (conductor||dni)){
-        const nuevo = {
-          dni, conductor:conductor.toUpperCase(), proveedor:provExcel.toUpperCase(),
-          placa, centro, estado:'ACTIVO',
-          catLic:'', fechaLic:'', diasLic:'', estadoLic:'PENDIENTE',
-          fechaSctr:'', diasSctr:'', estadoSctr:'PENDIENTE',
-          fechaEmo:'', diasEmo:'', estadoEmo:'PENDIENTE',
-          docDni:'✗', docLic:'✗', docRecord:'✗', docSctr:'✗', docEmo:'✗',
-          cumpl:'0/5 (0%)', obs:''
-        };
-        CONDUCTORES.push(nuevo);
-        condBD = nuevo;
-        nuevosRegistros.push({tipo:'conductor', nombre:conductor||dni});
-        guardarEnSheets('CONDUCTORES', Object.keys(nuevo), Object.values(nuevo));
-      }
+      // Solo buscar en BD para jalar datos — NO modificar ni crear nada
+      const unidBD = buscarPorPlaca(placa);
+      const condBD = buscarConductorBD(conductor, dni);
 
-      // ── Si unidad NO está en BD → crear registro nuevo automáticamente
-      if(!unidBD && placa){
-        const nuevo = {
-          placa, proveedor:provExcel.toUpperCase(), centro, estado:'ACTIVO',
-          tipo:'', anio:'', marca:'',
-          fechaSoat:'', diasSoat:'', estadoSoat:'PENDIENTE',
-          fechaRtv:'', diasRtv:'', estadoRtv:'PENDIENTE',
-          fechaTc:'', diasTc:'', estadoTc:'PENDIENTE',
-          docTarjProp:'✗', docSoat:'✗', docRtv:'✗', docTc:'✗',
-          docMnto:'✗', docBoletin:'✗', docPoliza:'✗',
-          cumpl:'0/7 (0%)', obs:''
-        };
-        UNIDADES.push(nuevo);
-        unidBD = nuevo;
-        nuevosRegistros.push({tipo:'unidad', nombre:placa});
-        guardarEnSheets('UNIDADES', Object.keys(nuevo), Object.values(nuevo));
-      }
-
-      // ── AUTO-ACTIVO: si aparece en el Excel → ACTIVO sin importar docs
-      if(condBD){
-        const ci=CONDUCTORES.findIndex(c=>c.dni===condBD.dni);
-        if(ci>=0&&CONDUCTORES[ci].estado!=='ACTIVO'){
-          CONDUCTORES[ci].estado='ACTIVO';
-          guardarEnSheets('CONDUCTORES',Object.keys(CONDUCTORES[ci]),Object.values(CONDUCTORES[ci]));
-        }
-      }
-      if(unidBD){
-        const ui=UNIDADES.findIndex(u=>u.placa===unidBD.placa);
-        if(ui>=0&&UNIDADES[ui].estado!=='ACTIVO'){
-          UNIDADES[ui].estado='ACTIVO';
-          guardarEnSheets('UNIDADES',Object.keys(UNIDADES[ui]),Object.values(UNIDADES[ui]));
-        }
-      }
-
-      // ── Construir fila del reporte manteniendo relación Excel
-      // condBD y unidBD solo se usan para documentación — NO para proveedor/placa
-      const condVista = condBD ? {...condBD, placa, proveedor:provExcel||condBD.proveedor, _enBD:true} : null;
-      const unidVista = unidBD ? {...unidBD, proveedor:provExcel||unidBD.proveedor, _enBD:true} : null;
+      const condVista = condBD ? {...condBD, _enBD:true} : null;
+      const unidVista = unidBD ? {...unidBD, _enBD:true} : null;
       const estado = estadoGlobal(unidVista, condVista);
 
-      return {placa, conductor, proveedor:provExcel, ruta, centro, turno, dni,
-              unidBD:unidVista, condBD:condVista, estado};
-    }).filter(r=>r.placa||r.conductor);
-    if(nuevosRegistros.length>0){
-      const nc=nuevosRegistros.filter(r=>r.tipo==='conductor').length;
-      const nu=nuevosRegistros.filter(r=>r.tipo==='unidad').length;
-      setTimeout(()=>showToast(`✚ ${nc} conductor(es) y ${nu} unidad(es) nuevos registrados en BD`,'ok'),600);
-    }
+      return {
+        placa, conductor, provExcel, ruta, centro, turno, dni,
+        proveedor: provExcel || condBD?.proveedor || unidBD?.proveedor || '',
+        unidBD:unidVista, condBD:condVista, estado
+      };
+    }).filter(Boolean);
     renderReporte();
     document.getElementById('rep-kpi-row').style.display='';
     document.getElementById('rep-filtros').style.display='flex';
