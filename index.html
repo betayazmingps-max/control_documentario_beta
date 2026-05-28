@@ -472,11 +472,11 @@ tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>#</th><th>DNI</th><th>Conductor</th><th title="Clic para cambiar">Estado ✏️</th><th>Proveedor ✏️</th>
-            <th>Placa ✏️</th><th>Centro ✏️</th><th>Cat. Lic ✏️</th>
-            <th title="Clic para cambiar">Est. Lic ✏️</th><th title="Clic para editar fecha">Días Lic</th>
-            <th title="Clic para cambiar">Est. SCTR ✏️</th><th title="Clic para editar fecha">Días SCTR</th>
-            <th>DNI</th><th>Lic</th><th>Récord</th><th>SCTR</th><th>EMO</th>
+            <th>#</th><th>DNI</th><th>Conductor</th><th>Estado</th><th>Proveedor</th>
+            <th>Placa</th><th>Centro</th><th>Cat. Lic</th>
+            <th>Est. Lic</th><th>Días Lic ✏️</th>
+            <th>Est. SCTR</th><th>Días SCTR ✏️</th>
+            <th>DNI</th><th>Lic</th><th>Récord</th><th>SCTR</th><th>EMO ✏️</th>
             <th>Cumpl.</th>
           </tr></thead>
           <tbody id="cond-tbody"><tr><td colspan="18" class="empty-state">Cargando...</td></tr></tbody>
@@ -503,10 +503,10 @@ tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>#</th><th>Placa</th><th title="Clic para cambiar">Estado ✏️</th><th>Proveedor ✏️</th><th>Centro ✏️</th><th>Tipo ✏️</th><th>Año ✏️</th>
-            <th title="Clic para cambiar estado">SOAT ✏️</th><th title="Clic para editar fecha">Días SOAT</th>
-            <th title="Clic para cambiar estado">RTV ✏️</th><th title="Clic para editar fecha">Días RTV</th>
-            <th title="Clic para cambiar estado">T.C. ✏️</th><th title="Clic para editar fecha">Días T.C.</th>
+            <th>#</th><th>Placa</th><th>Estado</th><th>Proveedor</th><th>Centro</th><th>Tipo</th><th>Año</th>
+            <th>SOAT ✏️</th><th>Días SOAT</th>
+            <th>RTV ✏️</th><th>Días RTV</th>
+            <th>T.C. ✏️</th><th>Días T.C.</th>
             <th>T.Prop</th><th>SOAT</th><th>RTV</th><th>T.C.</th><th>MNTO</th><th>Boletín</th><th>Póliza</th>
             <th>Cumpl.</th>
           </tr></thead>
@@ -1609,11 +1609,6 @@ async function guardarCeldaCond(dni, campo, valor){
   showToast('✓ Guardado','ok');
   renderConductores();
 }
-async function ciclarCeldaCond(dni, campo, valorActual, opts){
-  const idx = opts.indexOf(valorActual);
-  const siguiente = opts[(idx+1) % opts.length];
-  await guardarCeldaCond(dni, campo, siguiente);
-}
 
 function renderCondRow(r, num){
   // ensure _enBD is set for rows coming from CONDUCTORES array directly
@@ -1638,26 +1633,19 @@ function renderCondRow(r, num){
   const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocCond('${dni}','${campo}')" title="Clic para marcar/desmarcar">
     <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'}; user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
   const editable = (campo, valor) => `<td data-dni="${dni}" data-campo="${campo}" onclick="editCeldaCond('${dni}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
-  // Click-ciclo para campos con opciones fijas
-  const ciclo = (campo, valor, opts) => {
-    const cur = (valor||opts[0]).toUpperCase();
-    const safeOpts = JSON.stringify(opts).replace(/"/g,'&quot;');
-    return `<td class="editable-cell" title="Clic para cambiar" style="cursor:pointer"
-      onclick="ciclarCeldaCond('${dni}','${campo}','${cur}',${safeOpts})">${badge(cur)}</td>`;
-  };
   return `<tr>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono">${r.dni||'—'}</td>
     <td style="max-width:160px;white-space:normal;font-size:12px;font-weight:500">${r.conductor||'—'}</td>
-    ${ciclo('estado', r.estado, ['ACTIVO','INACTIVO'])}
+    <td>${badge(r.estado||'INACTIVO')}</td>
     ${editable('proveedor', r.proveedor)}
     ${editable('placa', r.placa)}
-    ${editable('centro', r.centro)}
-    ${editable('catLic', r.catLic)}
-    ${ciclo('estadoLic', r.estadoLic, ['VIGENTE','POR VENCER','VENCIDO'])}
-    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Editar fecha licencia">${diasCell(r.diasLic)}</td>
-    ${ciclo('estadoSctr', r.estadoSctr, ['VIGENTE','POR VENCER','VENCIDO'])}
-    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Editar fecha SCTR">${diasCell(r.diasSctr)}</td>
+    <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
+    <td><span class="badge blue">${r.catLic||'—'}</span></td>
+    <td>${badge(r.estadoLic||'—')}</td>
+    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasLic)}</td>
+    <td>${badge(r.estadoSctr||'—')}</td>
+    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasSctr)}</td>
     ${chk(r.docDni,'docDni')}
     ${chk(r.docLic,'docLic')}
     ${chk(r.docRecord,'docRecord')}
@@ -1765,38 +1753,26 @@ async function guardarCeldaUnid(placa, campo, valor){
   showToast('✓ Guardado','ok');
   renderUnidades();
 }
-async function ciclarCeldaUnid(placa, campo, valorActual, opts){
-  const idx = opts.indexOf(valorActual);
-  const siguiente = opts[(idx+1) % opts.length];
-  await guardarCeldaUnid(placa, campo, siguiente);
-}
 
 function renderUnidRow(r, num){
   const placa = (r.placa||'').replace(/'/g,"\\'");
-  const idx = UNIDADES.indexOf(r);
   const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocUnid('${placa}','${campo}')" title="Clic para marcar/desmarcar">
     <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'};user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
   const editable = (campo, valor) => `<td data-placa="${placa}" data-campo="${campo}" onclick="editCeldaUnid('${placa}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
-  const ciclo = (campo, valor, opts) => {
-    const cur = (valor||opts[0]).toUpperCase();
-    const safeOpts = JSON.stringify(opts).replace(/"/g,'&quot;');
-    return `<td class="editable-cell" title="Clic para cambiar" style="cursor:pointer"
-      onclick="ciclarCeldaUnid('${placa}','${campo}','${cur}',${safeOpts})">${badge(cur)}</td>`;
-  };
   return `<tr>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2)">${r.placa||'—'}</td>
-    ${ciclo('estado', r.estado, ['ACTIVO','INACTIVO'])}
+    <td>${badge(r.estado||'INACTIVO')}</td>
     ${editable('proveedor', r.proveedor)}
-    ${editable('centro', r.centro)}
-    ${editable('tipo', r.tipo)}
-    ${editable('anio', r.anio)}
-    ${ciclo('estadoSoat', r.estadoSoat, ['VIGENTE','POR VENCER','VENCIDO'])}
-    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')" title="Editar fecha SOAT">${diasCell(r.diasSoat)}</td>
-    ${ciclo('estadoRtv', r.estadoRtv, ['VIGENTE','POR VENCER','VENCIDO'])}
-    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')" title="Editar fecha RTV">${diasCell(r.diasRtv)}</td>
-    ${ciclo('estadoTc', r.estadoTc, ['VIGENTE','POR VENCER','VENCIDO'])}
-    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasTc','fechaTc','${placa}')" title="Editar fecha T.C.">${diasCell(r.diasTc)}</td>
+    <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
+    <td style="font-size:11px">${r.tipo||'—'}</td>
+    <td class="mono">${r.anio||'—'}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasSoat','fechaSoat')" title="Editar SOAT">${badge(r.estadoSoat||'—')}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasSoat','fechaSoat')">${diasCell(r.diasSoat)}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasRtv','fechaRtv')" title="Editar RTV">${badge(r.estadoRtv||'—')}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasRtv','fechaRtv')">${diasCell(r.diasRtv)}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasTc','fechaTc')" title="Editar T.C.">${badge(r.estadoTc||'—')}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasTc','fechaTc')">${diasCell(r.diasTc)}</td>
     ${chk(r.docTarjProp,'docTarjProp')}
     ${chk(r.docSoat,'docSoat')}
     ${chk(r.docRtv,'docRtv')}
@@ -1873,17 +1849,6 @@ function renderProveedores(){
     document.getElementById('prov-count').textContent='0 proveedores';
     return;
   }
-
-  // Si hay modo día activo, filtrar solo proveedores que aparecen en el reporte
-  let baseData = PROVEEDORES;
-  if((typeof COND_MODO_DIA !== 'undefined' && COND_MODO_DIA) && REP_ROWS && REP_ROWS.length > 0){
-    const provsDelDia = new Set(
-      REP_ROWS.map(r => (r.proveedor || r.provExcel || r.unidBD?.proveedor || '').trim().toUpperCase()).filter(Boolean)
-    );
-    baseData = PROVEEDORES.filter(p => provsDelDia.has((p.nombre||'').trim().toUpperCase()));
-    // Si no hay coincidencias exactas, mostrar todos para no dejar vacío
-    if(baseData.length === 0) baseData = PROVEEDORES;
-  }
   // Filtros propios de la tabla de proveedores
   const search = (document.getElementById('pv-srch')||{value:''}).value.toLowerCase();
   const estado  = (document.getElementById('pv-est')||{value:''}).value;
@@ -1906,7 +1871,7 @@ function renderProveedores(){
     return false;
   };
 
-  let data=baseData.filter(p=>{
+  let data=PROVEEDORES.filter(p=>{
     if(esInvalida(p)) return false;
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
@@ -2333,12 +2298,36 @@ function exportarReporteCsv(){
 // EDICIÓN INLINE DE FECHAS
 // ═══════════════════════════════════════════════
 let editTarget=null;
+
+// Abre el modal de edición de fecha buscando por placa (unidades) o por DNI (conductores)
+function abrirEditPlaca(placa, diasCampo, fechaCampo){
+  const idx = UNIDADES.findIndex(u=>u.placa===(placa||'').replace(/\\'/g,"'"));
+  if(idx<0){ showToast('Unidad no encontrada en BD','err'); return; }
+  const label = {fechaSoat:'SOAT',fechaRtv:'RTV',fechaTc:'T.C.'}[fechaCampo]||fechaCampo;
+  editTarget={tipo:'unidad',idx,diasCampo,fechaCampo};
+  document.getElementById('edit-title').textContent=`✏️ Editar ${label} — ${UNIDADES[idx].placa}`;
+  document.getElementById('edit-fecha').value=UNIDADES[idx][fechaCampo]||'';
+  previewEdit();
+  document.getElementById('edit-modal').classList.add('open');
+}
+function abrirEditDni(dni, diasCampo, fechaCampo, nombre){
+  const idx = CONDUCTORES.findIndex(c=>c.dni===String(dni).trim());
+  if(idx<0){ showToast('Conductor no encontrado en BD','err'); return; }
+  const label = {fechaLic:'Licencia',fechaSctr:'SCTR',fechaEmo:'EMO'}[fechaCampo]||fechaCampo;
+  editTarget={tipo:'conductor',idx,diasCampo,fechaCampo};
+  document.getElementById('edit-title').textContent=`✏️ Editar ${label} — ${nombre}`;
+  document.getElementById('edit-fecha').value=CONDUCTORES[idx][fechaCampo]||'';
+  previewEdit();
+  document.getElementById('edit-modal').classList.add('open');
+}
+// Mantener compatibilidad con llamadas antiguas por índice
 function abrirEdit(tipo,idx,diasCampo,fechaCampo,nombre){
   const data=tipo==='conductor'?CONDUCTORES:UNIDADES;
+  if(idx<0||idx>=data.length){ showToast('Registro no encontrado','err'); return; }
   editTarget={tipo,idx,diasCampo,fechaCampo};
-  const reg=data[idx];
-  document.getElementById('edit-title').textContent=`✏️ Editar ${fechaCampo.replace('fecha','').replace('Lic','Licencia').replace('Sctr','SCTR').replace('Soat','SOAT').replace('Rtv','RTV').replace('Tc','T.C.')} — ${nombre}`;
-  document.getElementById('edit-fecha').value=reg[fechaCampo]||'';
+  const label={fechaSoat:'SOAT',fechaRtv:'RTV',fechaTc:'T.C.',fechaLic:'Licencia',fechaSctr:'SCTR',fechaEmo:'EMO'}[fechaCampo]||fechaCampo;
+  document.getElementById('edit-title').textContent=`✏️ Editar ${label} — ${nombre}`;
+  document.getElementById('edit-fecha').value=data[idx][fechaCampo]||'';
   previewEdit();
   document.getElementById('edit-modal').classList.add('open');
 }
@@ -2351,7 +2340,7 @@ function previewEdit(){
     document.getElementById('edit-preview').innerHTML=`<span class="${cls}">${dias>0?'+':''}${dias} días</span> — <strong>${est}</strong>`;
   } else document.getElementById('edit-preview').textContent='—';
 }
-function guardarEdit(){
+async function guardarEdit(){
   if(!editTarget)return;
   const {tipo,idx,diasCampo,fechaCampo}=editTarget;
   const data=tipo==='conductor'?CONDUCTORES:UNIDADES;
@@ -2362,17 +2351,12 @@ function guardarEdit(){
   if(dias!==null){
     reg[diasCampo]=String(dias);
     const mapaEst={diasLic:'estadoLic',diasSctr:'estadoSctr',diasEmo:'estadoEmo',diasSoat:'estadoSoat',diasRtv:'estadoRtv',diasTc:'estadoTc'};
-    if(mapaEst[diasCampo])reg[mapaEst[diasCampo]]=estadoDesde(dias);
+    if(mapaEst[diasCampo]) reg[mapaEst[diasCampo]]=estadoDesde(dias);
   }
-  cerrarEdit(); render(); showToast('Fecha actualizada ✓','ok');
+  await guardarEnSheets(tipo==='conductor'?'CONDUCTORES':'UNIDADES', Object.keys(reg), Object.values(reg));
+  cerrarEdit(); render(); showToast('✓ Fecha actualizada','ok');
 }
 function cerrarEdit(){ document.getElementById('edit-modal').classList.remove('open'); editTarget=null; }
-// Variant that finds conductor by DNI instead of array index (safe with object copies)
-function abrirEditDni(dni, diasCampo, fechaCampo, nombre){
-  const idx = CONDUCTORES.findIndex(c=>c.dni===String(dni).trim());
-  if(idx<0){ showToast('Conductor no encontrado en BD','err'); return; }
-  abrirEdit('conductor', idx, diasCampo, fechaCampo, nombre);
-}
 
 // ═══════════════════════════════════════════════
 // FORMULARIOS REGISTRO
@@ -2737,16 +2721,7 @@ function filtrarModalProv(q){
     return true;
   });
   if(!provs.length){
-    const qClean = (q||'').trim();
-    list.innerHTML='<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">Sin resultados</div>'
-      +(qClean.length>=3?`<div style="padding:10px 14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:8px">¿No existe? Agrégalo directamente:</div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <input id="mprov-nuevo-nombre" value="${qClean.replace(/"/g,'&quot;')}" placeholder="Nombre del proveedor"
-            style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:6px 10px;font-size:12px;color:var(--text);outline:none"/>
-          <button onclick="agregarProvDesdeModal()" style="background:var(--accent);color:#fff;border:none;border-radius:5px;padding:7px 13px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap">+ Agregar</button>
-        </div>
-      </div>`:'');
+    list.innerHTML='<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">Sin resultados</div>';
     return;
   }
   list.innerHTML = provs.map(p=>{
@@ -2761,19 +2736,6 @@ function filtrarModalProv(q){
 }
 function seleccionarProv(nombre){
   if(_provModalCb) _provModalCb(nombre);
-  cerrarModalProv();
-}
-function agregarProvDesdeModal(){
-  const inp = document.getElementById('mprov-nuevo-nombre');
-  if(!inp) return;
-  const nom = inp.value.trim().toUpperCase();
-  if(nom.length < 3){ inp.style.borderColor='var(--danger)'; return; }
-  const existe = PROVEEDORES.find(p=>(p.nombre||'').trim().toUpperCase()===nom);
-  if(!existe){
-    PROVEEDORES.push({ nombre:nom, estado:'ACTIVO', zona:'', tipo:'', ruc:'', codigo:'', contacto:'', responsable:'', fechaReg:new Date().toLocaleDateString('es-PE') });
-    showToast&&showToast('Proveedor "'+nom+'" agregado ✓','ok');
-  }
-  if(_provModalCb) _provModalCb(nom);
   cerrarModalProv();
 }
 function cerrarModalProv(){
