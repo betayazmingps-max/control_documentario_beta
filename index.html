@@ -503,14 +503,17 @@ tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>#</th><th>Placa</th><th>Estado</th><th>Proveedor</th><th>Centro</th><th>Tipo</th><th>Año</th>
+            <th>#</th><th>Placa</th><th>Estado</th><th>Proveedor ✏️</th><th>Centro</th><th>Tipo</th><th>Año</th>
+            <th title="Ejes">Ejes ✏️</th><th title="Ruedas">Ruedas ✏️</th>
+            <th title="Peso Bruto">P.Bruto ✏️</th><th title="Peso Neto">P.Neto ✏️</th>
+            <th title="Tipo de Seguro">Tipo Seguro ✏️</th><th title="Tipo SOAT">Tipo SOAT ✏️</th>
             <th>SOAT ✏️</th><th>Días SOAT</th>
             <th>RTV ✏️</th><th>Días RTV</th>
             <th>T.C. ✏️</th><th>Días T.C.</th>
             <th>T.Prop</th><th>SOAT</th><th>RTV</th><th>T.C.</th><th>MNTO</th><th>Boletín</th><th>Póliza</th>
             <th>Cumpl.</th>
           </tr></thead>
-          <tbody id="unid-tbody"><tr><td colspan="21" class="empty-state">Cargando...</td></tr></tbody>
+          <tbody id="unid-tbody"><tr><td colspan="27" class="empty-state">Cargando...</td></tr></tbody>
         </table>
       </div>
       <div class="tbl-footer">
@@ -1256,13 +1259,19 @@ async function syncFromSheets(){
         carroceria:    o['carrocería']||'',
         asientos:      o['n° asientos']||'',
         pasajeros:     o['n° pasajeros']||'',
+        ejes:          o.ejes||'',
+        ruedas:        o.ruedas||'',
+        pesoBruto:     o['peso bruto']||'',
+        pesoNeto:      o['peso neto']||'',
         reacondicionado: o.reacondicionado||'',
         tieneTarjProp: o['tiene tarj. prop.']||'',
         fechaSoat:     o['fecha vencimiento soat']||'',
         diasSoat:      o['días vencimiento soat']||'',
         estadoSoat:    (o['alerta soat']||'').toString().toUpperCase(),
         usoSoat:       o['uso soat']||'',
+        tipoSeguro:    o['tipo de seguro']||'',
         aseguradora:   o.aseguradora||'',
+        tipoSoat:      o['tipo soat']||'',
         fechaRtv:      o['fecha vencimiento rtv']||'',
         diasRtv:       o['días vencimiento rtv']||'',
         estadoRtv:     (o['alerta rtv']||'').toString().toUpperCase(),
@@ -1813,13 +1822,14 @@ function renderConductores(){
 
 async function toggleDocUnid(placa, campo){
   const idx = UNIDADES.findIndex(u=>u.placa===placa);
-  if(idx<0) return;
+  if(idx<0){ showToast('Unidad no encontrada','err'); return; }
   const actual = UNIDADES[idx][campo];
   UNIDADES[idx][campo] = (actual==='✓') ? '✗' : '✓';
   const u = UNIDADES[idx];
   const docs = [u.docTarjProp,u.docSoat,u.docRtv,u.docTc,u.docMnto,u.docBoletin,u.docPoliza].filter(v=>v==='✓').length;
   UNIDADES[idx].cumpl = `${docs}/7 (${Math.round(docs/7*100)}%)`;
-  await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
+  showToast(UNIDADES[idx][campo]==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
+  if(GS_URL) await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
   renderUnidades();
 }
 
@@ -1830,23 +1840,30 @@ function editCeldaUnid(placa, campo, valorActual){
   }
   const td = document.querySelector(`[data-placa="${placa}"][data-campo="${campo}"]`);
   if(!td) return;
-  td.innerHTML=`<input value="${(valorActual||'').replace(/"/g,'&quot;')}" onblur="guardarCeldaUnid('${placa}','${campo}',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" style="width:100%;min-width:80px;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px 6px;font-size:11px;text-transform:uppercase;outline:none" />`;
-  td.querySelector('input')?.focus();
+  const inp = document.createElement('input');
+  inp.value = valorActual||'';
+  inp.style.cssText = 'width:100%;min-width:80px;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px 6px;font-size:11px;text-transform:uppercase;outline:none';
+  inp.addEventListener('blur', () => guardarCeldaUnid(placa, campo, inp.value));
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ renderUnidades(); } });
+  td.innerHTML = '';
+  td.appendChild(inp);
+  inp.focus();
 }
 async function guardarCeldaUnid(placa, campo, valor){
   const idx = UNIDADES.findIndex(u=>u.placa===placa);
   if(idx<0) return;
   UNIDADES[idx][campo] = valor.trim().toUpperCase();
-  await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
+  if(GS_URL) await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
   showToast('✓ Guardado','ok');
   renderUnidades();
 }
 
 function renderUnidRow(r, num){
-  const placa = (r.placa||'').replace(/'/g,"\\'");
-  const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocUnid('${placa}','${campo}')" title="Clic para marcar/desmarcar">
-    <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'};user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
-  const editable = (campo, valor) => `<td data-placa="${placa}" data-campo="${campo}" onclick="editCeldaUnid('${placa}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
+  // usar data-attr para evitar problemas de escape en onclick
+  const placaEsc = (r.placa||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" data-placa-chk="${placaEsc}" data-campo-chk="${campo}" onclick="toggleDocUnidClick(this)" title="Clic para marcar/desmarcar">
+    <span style="font-size:15px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'};user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
+  const editable = (campo, valor) => `<td data-placa="${placaEsc}" data-campo="${campo}" onclick="editCeldaUnidClick(this)" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${(valor||'—')}</td>`;
   return `<tr>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2)">${r.placa||'—'}</td>
@@ -1855,12 +1872,18 @@ function renderUnidRow(r, num){
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td style="font-size:11px">${r.tipo||'—'}</td>
     <td class="mono">${r.anio||'—'}</td>
-    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasSoat','fechaSoat')" title="Editar SOAT">${badge(r.estadoSoat||'—')}</td>
-    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasSoat','fechaSoat')">${diasCell(r.diasSoat)}</td>
-    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasRtv','fechaRtv')" title="Editar RTV">${badge(r.estadoRtv||'—')}</td>
-    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasRtv','fechaRtv')">${diasCell(r.diasRtv)}</td>
-    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasTc','fechaTc')" title="Editar T.C.">${badge(r.estadoTc||'—')}</td>
-    <td class="editable-cell" onclick="abrirEditPlaca('${placa}','diasTc','fechaTc')">${diasCell(r.diasTc)}</td>
+    ${editable('ejes', r.ejes)}
+    ${editable('ruedas', r.ruedas)}
+    ${editable('pesoBruto', r.pesoBruto)}
+    ${editable('pesoNeto', r.pesoNeto)}
+    ${editable('tipoSeguro', r.tipoSeguro)}
+    ${editable('tipoSoat', r.tipoSoat)}
+    <td class="editable-cell" onclick="abrirEditPlaca('${r.placa||''}','diasSoat','fechaSoat')" title="Editar SOAT">${badge(r.estadoSoat||'—')}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${r.placa||''}','diasSoat','fechaSoat')">${diasCell(r.diasSoat)}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${r.placa||''}','diasRtv','fechaRtv')" title="Editar RTV">${badge(r.estadoRtv||'—')}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${r.placa||''}','diasRtv','fechaRtv')">${diasCell(r.diasRtv)}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${r.placa||''}','diasTc','fechaTc')" title="Editar T.C.">${badge(r.estadoTc||'—')}</td>
+    <td class="editable-cell" onclick="abrirEditPlaca('${r.placa||''}','diasTc','fechaTc')">${diasCell(r.diasTc)}</td>
     ${chk(r.docTarjProp,'docTarjProp')}
     ${chk(r.docSoat,'docSoat')}
     ${chk(r.docRtv,'docRtv')}
@@ -1870,6 +1893,19 @@ function renderUnidRow(r, num){
     ${chk(r.docPoliza,'docPoliza')}
     <td>${barCumpl(r.cumpl||'—')}</td>
   </tr>`;
+}
+
+// Helpers para evitar problemas de escape en onclick
+function toggleDocUnidClick(td){
+  const placa = td.getAttribute('data-placa-chk');
+  const campo = td.getAttribute('data-campo-chk');
+  toggleDocUnid(placa, campo);
+}
+function editCeldaUnidClick(td){
+  const placa = td.getAttribute('data-placa');
+  const campo = td.getAttribute('data-campo');
+  const valor = td.textContent.trim();
+  editCeldaUnid(placa, campo, valor==='—'?'':valor);
 }
 
 function renderUnidades(){
