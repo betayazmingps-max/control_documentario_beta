@@ -1032,7 +1032,10 @@ function calcDiasDesde(fechaStr) {
     const hoy = new Date(); hoy.setHours(0,0,0,0);
     const fv = new Date(fechaStr); fv.setHours(0,0,0,0);
     if (isNaN(fv.getTime())) return null;
-    return Math.round((fv-hoy)/86400000);
+    // ✅ CORREGIDO: Usar Math.floor en lugar de Math.round para mayor precisión
+    // Calcula días desde hoy hasta la fecha de vencimiento
+    const diff = fv.getTime() - hoy.getTime();
+    return Math.floor(diff / 86400000);
   } catch(e){ return null; }
 }
 function estadoDesde(dias) {
@@ -2355,37 +2358,21 @@ async function leerReporte(){
 
     // ── Detectar columnas flexiblemente ──────────────────────────────────────
     const hkeys=Object.keys(rows[0]||{});
-    // colExact: busca coincidencia EXACTA primero, luego parcial (excluyendo columnas con prefijos como Id_Prov)
-    const colExact=(exactNames, fallbackKw=[])=>{
-      // 1) Coincidencia exacta (case-insensitive)
-      for(const name of exactNames){
-        const f=hkeys.find(h=>h.toUpperCase()===name.toUpperCase());
-        if(f) return f;
-      }
-      // 2) Coincidencia parcial, pero sólo si el header NO es otra columna conocida a excluir
-      const EXCLUIR=['ID_PROV','IDPROV','SEDE ORIGEN','SEDEOR','ID_'];
-      for(const kw of fallbackKw){
-        const f=hkeys.find(h=>{
-          const hu=h.toUpperCase();
-          if(EXCLUIR.some(ex=>hu.includes(ex))) return false;
-          return hu.includes(kw.toUpperCase());
-        });
+    const col=(keywords)=>{
+      for(const kw of (Array.isArray(keywords)?keywords:[keywords])){
+        const f=hkeys.find(h=>h.toUpperCase().includes(kw.toUpperCase()));
         if(f) return f;
       }
       return null;
     };
     const COL={
-      placa:      colExact(['PLACA'],['PLACA','MATRICULA','PATENTE']),
-      conductor:  colExact(['CONDUCTOR'],['CONDUCTOR','CHOFER','OPERADOR']),
-      // DNI: buscar exactamente "DNI" o "Dni" — nunca "Id_Prov"
-      dni:        colExact(['DNI','Dni'],['DNI']),
-      proveedor:  colExact(['PROVEEDOR','Proveedor'],['PROVEEDOR','EMPRESA','TRANSPORTISTA']),
-      ruta:       colExact(['DESTINO','RUTA'],['RUTA','DESTINO','ITINERARIO']),
-      centro:     colExact(['CENTRO','Centro'],['CENTRO','COSTO','PLANTA']),
-      turno:      colExact(['TURNO','Turno'],['TURNO','JORNADA','HORARIO']),
-      modalidad:  colExact(['MODALIDAD','Modalidad'],['MODALIDAD']),
-      tipoUnidad: colExact(['TIPO UNIDAD','TIPOUNIDAD','TIPO_UNIDAD'],['TIPO UNIDAD','TIPO_UNIDAD']),
-      fecha:      colExact(['FECHA','Fecha'],['FECHA']),
+      placa:     col(['PLACA','MATRICULA','PATENTE']),
+      conductor: col(['CONDUCTOR','NOMBRE CONDUCTOR','CHOFER','OPERADOR']),
+      dni:       col(['DNI','DOC','DOCUMENTO','CI','CEDULA','ID']),
+      proveedor: col(['PROVEEDOR','EMPRESA','TRANSPORTISTA','RAZON']),
+      ruta:      col(['RUTA','ITINERARIO','DESTINO']),
+      centro:    col(['CENTRO','COSTO','PLANTA','SEDE']),
+      turno:     col(['TURNO','JORNADA','HORARIO']),
     };
 
     // Validar que al menos existan placa o conductor
@@ -2402,19 +2389,16 @@ async function leerReporte(){
     REP_ROWS=rows.map(row=>{
       const placa     = COL.placa     ? (row[COL.placa]    ||'').toString().toUpperCase().trim().replace(/[\s\-]/g,'') : '';
       const conductor = COL.conductor ? (row[COL.conductor]||'').toString().trim() : '';
-      // DNI: normalizar número (quitar decimales .0 de Excel, preservar ceros a la izquierda)
-      const dniRaw    = COL.dni       ? String(row[COL.dni]||'').trim() : '';
-      const dni       = dniRaw.replace(/\.0+$/, '');
+      const dni       = COL.dni       ? String(row[COL.dni]||'').trim().replace(/\.0$/,'') : '';
       const provExcel = COL.proveedor ? (row[COL.proveedor]||'').toString().trim() : '';
       const ruta      = COL.ruta      ? (row[COL.ruta]     ||'').toString().trim() : '';
       const centro    = COL.centro    ? (row[COL.centro]   ||'').toString().trim() : '';
       const turno     = COL.turno     ? (row[COL.turno]    ||'').toString().trim() : '';
-      const modalidad = COL.modalidad ? (row[COL.modalidad]||'').toString().trim() : '';
-      const tipoUnidad= COL.tipoUnidad? (row[COL.tipoUnidad]||'').toString().trim() : '';
-      const fecha     = COL.fecha     ? (row[COL.fecha]    ||'').toString().trim() : '';
 
-      // Omitir filas completamente vacías (ningún campo clave tiene valor)
+      // Omitir filas completamente vacías
       if(!placa && !conductor && !dni && !provExcel) return null;
+      // Omitir filas que parecen ser subtítulos/totales
+      if(!placa && !conductor && !dni) return null;
 
       // Buscar en BD con normalización robusta
       const unidBD = buscarPorPlaca(placa);
@@ -2428,7 +2412,6 @@ async function leerReporte(){
 
       const condVista = condBD ? {...condBD, _enBD:true} : null;
       const unidVista = unidBD ? {...unidBD, _enBD:true} : null;
-      // SIEMPRE calcular estado — nunca descartar fila por no estar en BD
       const estado = estadoGlobal(unidVista, condVista);
 
       return {
@@ -2436,7 +2419,6 @@ async function leerReporte(){
         provExcel,
         proveedor: provExcel || condBD?.proveedor || unidBD?.proveedor || '',
         ruta, centro, turno,
-        modalidad, tipoUnidad, fecha,
         unidBD: unidVista,
         condBD: condVista,
         estado,
