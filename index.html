@@ -1606,12 +1606,12 @@ function renderDashboard(){
       return !p||(p.estado||'').toUpperCase()==='ACTIVO'; // si no está en BD, lo cuenta igual
     }).length;
     // conductores únicos
-    const condHoy=new Set(REP_ROWS.map(r=>r.conductor).filter(Boolean)).size;
-    s('kd-dia-unid').textContent=REP_ROWS.length;
+    const condHoy= window._REP_COND_COUNT ?? new Set(REP_ROWS.map(r=>r.conductor||r.dni).filter(Boolean)).size;
+    s('kd-dia-unid').textContent= window._REP_UNID_COUNT ?? REP_ROWS.length;
     s('kd-dia-unid-sub').textContent=`${ok} aptas · ${bad} no aptas`;
     s('kd-dia-cond').textContent=condHoy;
     s('kd-dia-cond-sub').textContent=`únicos en ruta`;
-    s('kd-dia-prov').textContent=provHoy;
+    s('kd-dia-prov').textContent= window._REP_PROV_COUNT ?? provHoy;
     s('kd-dia-warn').textContent=wn;
     s('kd-dia-bad').textContent=bad;
     // fecha
@@ -2266,7 +2266,14 @@ function renderAlertas(){
 // ═══════════════════════════════════════════════
 let REP_ROWS=[], REP_FILTRO='todos';
 function previewRepNombre(i){document.getElementById('rep-nombre').textContent=i.files[0]?.name||'Ningún archivo';}
-function buscarPorPlaca(p){return UNIDADES.find(u=>u.placa&&u.placa.toUpperCase()===p.toUpperCase())||null;}
+function normPlaca(p){
+  return (p||'').toString().toUpperCase().trim().replace(/[\s\-\.]/g,'');
+}
+function buscarPorPlaca(p){
+  const pn=normPlaca(p);
+  if(!pn) return null;
+  return UNIDADES.find(u=>normPlaca(u.placa)===pn)||null;
+}
 function normText(s){
   return (s||'').toString().toUpperCase().trim()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -2274,13 +2281,28 @@ function normText(s){
 }
 function buscarConductorBD(nombre,dni){
   if(dni){
-    const dniStr=String(dni).trim();
-    const found=CONDUCTORES.find(c=>c.dni&&c.dni.trim()===dniStr);
+    // DNI: quitar decimales .0, espacios y ceros iniciales en comparación
+    const dniStr=String(dni).trim().replace(/\.0+$/,'').replace(/^0+/,'');
+    const found=CONDUCTORES.find(c=>{
+      const cd=String(c.dni||'').trim().replace(/\.0+$/,'').replace(/^0+/,'');
+      return cd && cd===dniStr;
+    });
     if(found) return found;
   }
   if(nombre){
     const nNorm=normText(nombre);
-    return CONDUCTORES.find(c=>c.conductor&&normText(c.conductor)===nNorm)||null;
+    // Búsqueda exacta primero
+    const exact=CONDUCTORES.find(c=>c.conductor&&normText(c.conductor)===nNorm);
+    if(exact) return exact;
+    // Búsqueda parcial: todos los tokens del Excel están en el nombre BD
+    const tokens=nNorm.split(' ').filter(t=>t.length>2);
+    if(tokens.length>=2){
+      return CONDUCTORES.find(c=>{
+        if(!c.conductor) return false;
+        const cn=normText(c.conductor);
+        return tokens.every(t=>cn.includes(t));
+      })||null;
+    }
   }
   return null;
 }
@@ -2313,57 +2335,100 @@ async function leerReporte(){
       const wb=XLSX.read(buf);
       const ws=wb.Sheets[wb.SheetNames[0]];
       const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-      if(raw.length<2){showToast('Excel vacío','err');return;}
-      const headers=raw[0].map(h=>String(h).toUpperCase().trim());
-      rows=raw.slice(1).filter(r=>r.some(v=>v)).map(r=>{
-        const obj={};headers.forEach((h,i)=>obj[h]=String(r[i]||'').trim());
-        return obj;
-      });
+      if(raw.length<2){showToast('Excel vacío o sin cabecera','err');return;}
+      // Buscar fila de cabecera — la primera fila no vacía con texto
+      let headerRowIdx=0;
+      for(let i=0;i<Math.min(5,raw.length);i++){
+        if(raw[i].some(v=>v&&String(v).trim())){headerRowIdx=i;break;}
+      }
+      const headers=raw[headerRowIdx].map(h=>String(h||'').toUpperCase().trim());
+      rows=raw.slice(headerRowIdx+1)
+        .filter(r=>r.some(v=>v!==null&&v!==undefined&&String(v).trim()!==''))
+        .map(r=>{
+          const obj={};
+          headers.forEach((h,i)=>obj[h]=String(r[i]!==null&&r[i]!==undefined?r[i]:'').trim());
+          return obj;
+        });
     }
-    // normalize keys — busca columna que contenga la palabra clave
+
+    if(rows.length===0){showToast('No se encontraron filas de datos','err');return;}
+
+    // ── Detectar columnas flexiblemente ──────────────────────────────────────
     const hkeys=Object.keys(rows[0]||{});
-    const col=(key,alts=[])=>{
-      const all=[key,...alts];
-      for(const k of all){
-        const f=hkeys.find(h=>h.toUpperCase().includes(k.toUpperCase()));
+    const col=(keywords)=>{
+      for(const kw of (Array.isArray(keywords)?keywords:[keywords])){
+        const f=hkeys.find(h=>h.toUpperCase().includes(kw.toUpperCase()));
         if(f) return f;
       }
       return null;
     };
     const COL={
-      placa:    col('PLACA'),
-      conductor:col('CONDUCTOR',['NOMBRE CONDUCTOR']),
-      dni:      col('DNI',['DOC','DOCUMENTO']),
-      proveedor:col('PROVEEDOR',['EMPRESA']),
-      ruta:     col('RUTA'),
-      centro:   col('CENTRO',['COSTO','PLANTA']),
-      turno:    col('TURNO'),
+      placa:     col(['PLACA','MATRICULA','PATENTE']),
+      conductor: col(['CONDUCTOR','NOMBRE CONDUCTOR','CHOFER','OPERADOR']),
+      dni:       col(['DNI','DOC','DOCUMENTO','CI','CEDULA','ID']),
+      proveedor: col(['PROVEEDOR','EMPRESA','TRANSPORTISTA','RAZON']),
+      ruta:      col(['RUTA','ITINERARIO','DESTINO']),
+      centro:    col(['CENTRO','COSTO','PLANTA','SEDE']),
+      turno:     col(['TURNO','JORNADA','HORARIO']),
     };
-    REP_ROWS=rows.map(row=>{
-      const placa     = COL.placa     ? (row[COL.placa]    ||'').toUpperCase().trim() : '';
-      const conductor = COL.conductor ? (row[COL.conductor]||'').trim()               : '';
-      const dni       = COL.dni       ? String(row[COL.dni]||'').trim()               : '';
-      const provExcel = COL.proveedor ? (row[COL.proveedor]||'').trim()               : '';
-      const ruta      = COL.ruta      ? (row[COL.ruta]     ||'').trim()               : '';
-      const centro    = COL.centro    ? (row[COL.centro]   ||'').trim()               : '';
-      const turno     = COL.turno     ? (row[COL.turno]    ||'').trim()               : '';
 
+    // Validar que al menos existan placa o conductor
+    if(!COL.placa && !COL.conductor){
+      showToast('No se detectó columna PLACA ni CONDUCTOR en el archivo','err');
+      return;
+    }
+
+    // ── Parsear filas ────────────────────────────────────────────────────────
+    const seenPlacas=new Set();
+    const seenConds=new Set();
+    const seenProvs=new Set();
+
+    REP_ROWS=rows.map(row=>{
+      const placa     = COL.placa     ? (row[COL.placa]    ||'').toString().toUpperCase().trim().replace(/[\s\-]/g,'') : '';
+      const conductor = COL.conductor ? (row[COL.conductor]||'').toString().trim() : '';
+      const dni       = COL.dni       ? String(row[COL.dni]||'').trim().replace(/\.0$/,'') : '';
+      const provExcel = COL.proveedor ? (row[COL.proveedor]||'').toString().trim() : '';
+      const ruta      = COL.ruta      ? (row[COL.ruta]     ||'').toString().trim() : '';
+      const centro    = COL.centro    ? (row[COL.centro]   ||'').toString().trim() : '';
+      const turno     = COL.turno     ? (row[COL.turno]    ||'').toString().trim() : '';
+
+      // Omitir filas completamente vacías
+      if(!placa && !conductor && !dni && !provExcel) return null;
+      // Omitir filas que parecen ser subtítulos/totales
       if(!placa && !conductor && !dni) return null;
 
-      // Solo buscar en BD para jalar datos — NO modificar ni crear nada
+      // Buscar en BD con normalización robusta
       const unidBD = buscarPorPlaca(placa);
       const condBD = buscarConductorBD(conductor, dni);
+
+      // Contar únicos reales
+      if(placa) seenPlacas.add(placa);
+      if(conductor||dni) seenConds.add(dni||normText(conductor));
+      const provNom=(provExcel||condBD?.proveedor||unidBD?.proveedor||'').trim().toUpperCase();
+      if(provNom) seenProvs.add(provNom);
 
       const condVista = condBD ? {...condBD, _enBD:true} : null;
       const unidVista = unidBD ? {...unidBD, _enBD:true} : null;
       const estado = estadoGlobal(unidVista, condVista);
 
       return {
-        placa, conductor, provExcel, ruta, centro, turno, dni,
+        placa, conductor, dni,
+        provExcel,
         proveedor: provExcel || condBD?.proveedor || unidBD?.proveedor || '',
-        unidBD:unidVista, condBD:condVista, estado
+        ruta, centro, turno,
+        unidBD: unidVista,
+        condBD: condVista,
+        estado,
+        _nuevaConductor: !condBD && (conductor||dni),
+        _nuevaUnidad:    !unidBD && placa,
       };
     }).filter(Boolean);
+
+    // ── Guardar conteos reales para el dashboard ─────────────────────────────
+    window._REP_UNID_COUNT  = seenPlacas.size  || REP_ROWS.filter(r=>r.placa).length;
+    window._REP_COND_COUNT  = seenConds.size   || REP_ROWS.filter(r=>r.conductor||r.dni).length;
+    window._REP_PROV_COUNT  = seenProvs.size;
+
     renderReporte();
     document.getElementById('rep-kpi-row').style.display='';
     document.getElementById('rep-filtros').style.display='flex';
@@ -2371,9 +2436,20 @@ async function leerReporte(){
     document.getElementById('rep-empty').style.display='none';
     document.getElementById('btn-rep-export').style.display='';
     document.getElementById('btn-guardar-reporte').style.display='';
-    showToast(`✓ ${REP_ROWS.length} unidades cargadas`,'ok');
-    postCargarReporte(); // actualizar dashboard + consultas del día
-  } catch(e){showToast('Error al leer: '+e.message,'err');}
+
+    // Mostrar aviso de registros nuevos
+    const nuevasCond=REP_ROWS.filter(r=>r._nuevaConductor).length;
+    const nuevasUnid=REP_ROWS.filter(r=>r._nuevaUnidad).length;
+    let msg=`✓ ${REP_ROWS.length} filas cargadas`;
+    if(nuevasCond>0) msg+=` · ${nuevasCond} conductor(es) nuevos`;
+    if(nuevasUnid>0) msg+=` · ${nuevasUnid} unidad(es) nuevas`;
+    showToast(msg,'ok');
+
+    postCargarReporte();
+  } catch(e){
+    console.error(e);
+    showToast('Error al leer: '+e.message,'err');
+  }
 }
 function filtrarRep(f,btn){
   REP_FILTRO=f;
@@ -2406,23 +2482,36 @@ function renderReporte(){
   };
   document.getElementById('rep-tbody').innerHTML=rows.length?rows.map((r,i)=>{
     const u=r.unidBD,c=r.condBD;
-    const rowStyle=r.estado==='bad'?'style="background:rgba(239,68,68,0.04)"':r.estado==='warn'?'style="background:rgba(245,158,11,0.04)"':'';
+    const rowStyle=r.estado==='bad'?'style="background:rgba(239,68,68,0.05)"':r.estado==='warn'?'style="background:rgba(245,158,11,0.05)"':r.estado==='nf'?'style="background:rgba(107,114,128,0.05)"':'';
+    // Conductor: mostrar nombre + badge si no está en BD + botón registrar
+    const condCell = c
+      ? `<span style="font-size:12px;font-weight:500">${c.conductor||r.conductor||'—'}</span>`
+      : r.conductor||r.dni
+        ? `<span style="font-size:12px;color:var(--warn);font-weight:600">${r.conductor||'—'}</span>
+           <br><span style="font-size:9px;color:var(--text3)">DNI:${r.dni||'—'} · No en BD</span>
+           <button onclick="irRegistrarConductor('${(r.conductor||'').replace(/'/g,"\'")}','${r.dni}','${(r.proveedor||'').replace(/'/g,"\'")}','${r.placa}')" style="display:block;margin-top:2px;background:var(--warn);color:#000;border:none;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;cursor:pointer">✚ Registrar</button>`
+        : '—';
+    // Unidad: mostrar tipo si hay match, o placa nueva
+    const unidCell = r.placa
+      ? (u ? `<span class="mono" style="font-weight:700;color:var(--accent2)">${r.placa}</span><br><span style="font-size:9px;color:var(--text3)">${u.tipo||u.marca||''}</span>`
+           : `<span class="mono" style="font-weight:700;color:var(--warn)">${r.placa}</span><br><span style="font-size:9px;color:var(--text3)">Nueva</span>`)
+      : '—';
     return `<tr ${rowStyle}>
       <td class="mono" style="color:var(--text3)">${i+1}</td>
-      <td class="mono" style="font-weight:700;color:var(--accent2)">${r.placa||'—'}</td>
-      <td style="max-width:150px;white-space:normal;font-size:12px">${r.conductor||'—'}${!c&&r.conductor?'<br><span style="font-size:9px;color:var(--text3)">No en BD</span>':''}</td>
-      <td style="font-size:11px;max-width:120px">${u?u.proveedor||r.proveedor:r.proveedor||'—'}</td>
-      <td style="font-size:11px">${r.ruta||'—'}</td>
-      <td class="mono" style="font-size:11px">${r.centro||(u?u.centro:'—')||'—'}</td>
+      <td>${unidCell}</td>
+      <td style="max-width:160px;white-space:normal">${condCell}</td>
+      <td style="font-size:11px;max-width:120px;white-space:normal">${(u?u.proveedor:'')||r.proveedor||'—'}</td>
+      <td style="font-size:11px;max-width:110px;white-space:normal">${r.ruta||'—'}</td>
+      <td class="mono" style="font-size:11px">${r.centro||(u?u.centro:'')||'—'}</td>
       <td style="font-size:11px">${r.turno||'—'}</td>
       <td>${c?badge(c.estadoLic||'—'):'<span style="color:var(--text3)">—</span>'}</td>
-      <td>${c?diasCell(c.diasLic):'—'}</td>
+      <td>${c?diasCell(c.diasLic):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${c?badge(c.estadoSctr||'—'):'<span style="color:var(--text3)">—</span>'}</td>
-      <td>${c?diasCell(c.diasSctr):'—'}</td>
+      <td>${c?diasCell(c.diasSctr):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${u?badge(u.estadoSoat||'—'):'<span style="color:var(--text3)">—</span>'}</td>
-      <td>${u?diasCell(u.diasSoat):'—'}</td>
+      <td>${u?diasCell(u.diasSoat):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${u?badge(u.estadoRtv||'—'):'<span style="color:var(--text3)">—</span>'}</td>
-      <td>${u?diasCell(u.diasRtv):'—'}</td>
+      <td>${u?diasCell(u.diasRtv):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${estBadge(r.estado)}</td>
     </tr>`;}).join(''):'<tr><td colspan="16" class="empty-state">Sin resultados</td></tr>';
 }
