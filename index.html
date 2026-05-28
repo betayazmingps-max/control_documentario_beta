@@ -1750,7 +1750,6 @@ function renderCondRow(r, num){
     ${chk(r.docSctr,'docSctr')}
     ${chk(r.docEmo,'docEmo')}
     <td>${barCumpl(r.cumpl||'—')}</td>
-    <td>${r._nuevaUnidad ? "<input type=\"checkbox\" onchange=\"if(this.checked) abrirFormularioUnidad('" + (r.placa||"") + "')\" style=\"cursor:pointer;width:18px;height:18px\" title=\"Marcar para registrar\">" : ""}</td>
   </tr>`;
 }
 
@@ -1826,13 +1825,24 @@ async function toggleDocUnid(placa, campo){
   const idx = UNIDADES.findIndex(u=>u.placa===placa);
   if(idx<0){ showToast('Unidad no encontrada','err'); return; }
   const actual = UNIDADES[idx][campo];
-  UNIDADES[idx][campo] = (actual==='✓') ? '✗' : '✓';
+  const nuevoValor = (actual==='✓') ? '✗' : '✓';
+  UNIDADES[idx][campo] = nuevoValor;
   const u = UNIDADES[idx];
   const docs = [u.docTarjProp,u.docSoat,u.docRtv,u.docTc,u.docMnto,u.docBoletin,u.docPoliza].filter(v=>v==='✓').length;
   UNIDADES[idx].cumpl = `${docs}/7 (${Math.round(docs/7*100)}%)`;
-  showToast(UNIDADES[idx][campo]==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
+  showToast(nuevoValor==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
+  
+  // ✅ Actualizar visualmente el checkbox INMEDIATAMENTE
+  const td = document.querySelector(`[data-placa-chk="${placa}"][data-campo-chk="${campo}"]`);
+  if(td){
+    const span = td.querySelector('span');
+    if(span){
+      span.textContent = nuevoValor;
+      span.style.color = nuevoValor==='✓' ? 'var(--green)' : 'var(--text3)';
+    }
+  }
+  
   if(GS_URL) await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
-  renderUnidades();
 }
 
 function editCeldaUnid(placa, campo, valorActual){
@@ -1866,10 +1876,12 @@ function renderUnidRow(r, num){
   const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" data-placa-chk="${placaEsc}" data-campo-chk="${campo}" onclick="toggleDocUnidClick(this)" title="Clic para marcar/desmarcar">
     <span style="font-size:15px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'};user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
   const editable = (campo, valor) => `<td data-placa="${placaEsc}" data-campo="${campo}" onclick="editCeldaUnidClick(this)" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${(valor||'—')}</td>`;
+  const btnReg = r._nuevaUnidad ? `<td style="text-align:center"><input type="checkbox" onchange="if(this.checked) abrirFormularioUnidad('${r.placa||''}')" style="cursor:pointer;width:18px;height:18px" title="Marcar para registrar"></td>` : '<td></td>';
   return `<tr>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2)">${r.placa||'—'}</td>
     <td>${badge(r.estado||'INACTIVO')}</td>
+    ${btnReg}
     ${editable('proveedor', r.proveedor)}
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td style="font-size:11px">${r.tipo||'—'}</td>
@@ -1894,7 +1906,6 @@ function renderUnidRow(r, num){
     ${chk(r.docBoletin,'docBoletin')}
     ${chk(r.docPoliza,'docPoliza')}
     <td>${barCumpl(r.cumpl||'—')}</td>
-    <td>${r._nuevaUnidad ? "<input type=\"checkbox\" onchange=\"if(this.checked) abrirFormularioUnidad('" + (r.placa||"") + "')\" style=\"cursor:pointer;width:18px;height:18px\" title=\"Marcar para registrar\">" : ""}</td>
   </tr>`;
 }
 
@@ -2031,13 +2042,10 @@ function renderProveedores(){
 
   let data=PROVEEDORES.filter(p=>{
     if(esInvalida(p)) return false;
-    
-    // ✅ SOLO proveedores del reporte (si hay reporte cargado)
     if(REP_ROWS.length>0){
       const proveedoresEnReporte = new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()));
       if(!proveedoresEnReporte.has((p.nombre||'').trim().toUpperCase())) return false;
     }
-    
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
     if(zona&&p.zona!==zona) return false;
@@ -2055,29 +2063,15 @@ function renderProveedores(){
     return true;
   });
   
-  // ✅ Agregar proveedores NUEVOS del reporte
   if(REP_ROWS.length>0){
     const proveedoresEnBD = new Set(PROVEEDORES.map(x => (x.nombre || '').trim().toUpperCase()));
     const nuevosAgregados = new Set();
-    
     REP_ROWS.forEach(r => {
       const nom = (r.proveedor || '').trim();
       const nomUpper = nom.toUpperCase();
-      
       if(nom && !proveedoresEnBD.has(nomUpper) && !nuevosAgregados.has(nomUpper)) {
         nuevosAgregados.add(nomUpper);
-        data.push({
-          nombre: nom,
-          estado: 'ACTIVO',
-          _nuevoProveedor: true,
-          ruc: '',
-          contacto: '',
-          zona: '',
-          tipo: '',
-          codigo: '',
-          responsable: '',
-          docs: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false]
-        });
+        data.push({nombre: nom, estado: 'ACTIVO', _nuevoProveedor: true, ruc: '', contacto: '', zona: '', tipo: '', codigo: '', responsable: '', docs: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false]});
       }
     });
   }
@@ -2138,7 +2132,7 @@ function renderProveedores(){
           font-size:10.5px;width:72px;background:var(--bg2)"></td>
         <td class="mono" style="text-align:center">${provCond[p.nombre]||0}</td>
         <td class="mono" style="text-align:center">${provUnid[p.nombre]||0}</td>
-        <td>${p._nuevoProveedor ? "<input type=\"checkbox\" onchange=\"if(this.checked) abrirFormularioProveedor('" + (p.nombre||"") + "')\" style=\"cursor:pointer;width:18px;height:18px\" title=\"Marcar para registrar\">" : ""}</td>
+        <td>${p._nuevoProveedor ? '<input type="checkbox" onchange="if(this.checked) abrirFormularioProveedor(\'' + (p.nombre||'').replace(/'/g, "\\'") + '\')" style="cursor:pointer;width:18px;height:18px" title="Marcar para registrar">' : ''}</td>
       </tr>`;
     }).join('');
 
@@ -2436,6 +2430,10 @@ async function leerReporte(){
       const unidBD = buscarPorPlaca(placa);
       const condBD = buscarConductorBD(conductor, dni);
 
+      // ✅ ACTIVAR UNIDADES Y CONDUCTORES DEL REPORTE
+      if(unidBD) unidBD.estado = 'ACTIVO';
+      if(condBD) condBD.estado = 'ACTIVO';
+
       // Contar únicos reales
       if(placa) seenPlacas.add(placa);
       if(conductor||dni) seenConds.add(dni||normText(conductor));
@@ -2458,6 +2456,14 @@ async function leerReporte(){
         _nuevaUnidad:    !unidBD && placa,
       };
     }).filter(Boolean);
+
+    // ✅ ACTIVAR PROVEEDORES DEL REPORTE
+    REP_ROWS.forEach(r => {
+      if(r.proveedor){
+        const provFound = PROVEEDORES.find(p => (p.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase());
+        if(provFound) provFound.estado = 'ACTIVO';
+      }
+    });
 
     // ── Guardar conteos reales para el dashboard ─────────────────────────────
     window._REP_UNID_COUNT  = seenPlacas.size  || REP_ROWS.filter(r=>r.placa).length;
@@ -3024,7 +3030,6 @@ function cerrarModalProv(){
 }
 
 // ── ARRANQUE
-// ✅ FUNCIÓN: Abrir formulario para registrar nueva unidad
 function abrirFormularioUnidad(placa){
   document.getElementById("u-placa").value = placa;
   document.getElementById("u-proveedor").value = "";
@@ -3033,17 +3038,15 @@ function abrirFormularioUnidad(placa){
   document.getElementById("u-anio").value = "";
   switchTab("registro-unidades");
   document.getElementById("u-tipo").focus();
-  showToast("✓ Formulario listo para registrar", "ok");
+  showToast("✓ Formulario listo", "ok");
 }
-
-// ✅ FUNCIÓN: Abrir formulario para registrar nuevo proveedor
 function abrirFormularioProveedor(nombre){
   document.getElementById("pv-nom").value = nombre;
   document.getElementById("pv-estado").value = "ACTIVO";
   document.getElementById("pv-ruc").value = "";
   switchTab("registro-proveedores");
   document.getElementById("pv-ruc").focus();
-  showToast("✓ Formulario listo para registrar", "ok");
+  showToast("✓ Formulario listo", "ok");
 }
 
 if(!localStorage.getItem('gs_url') && GS_URL){
