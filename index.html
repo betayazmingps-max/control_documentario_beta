@@ -1791,15 +1791,29 @@ function renderConductores(){
   let rows=[];
   REP_ROWS.forEach(r=>{
     if(r.condBD){
-      if(!seen.has(r.condBD.dni)){ seen.add(r.condBD.dni); rows.push({...r.condBD, _enBD:true}); }
+      const key=r.condBD.dni||normText(r.condBD.conductor||'');
+      if(!seen.has(key)){
+        seen.add(key);
+        // Enriquecer con datos del Excel que pueden no estar en BD
+        rows.push({
+          ...r.condBD,
+          proveedor: r.condBD.proveedor||r.proveedor||'',
+          placa:     r.condBD.placa||r.placa||'',
+          centro:    r.condBD.centro||r.centro||'',
+          ruta:      r.condBD.ruta||r.ruta||'',
+          turno:     r.condBD.turno||r.turno||'',
+          _enBD:true
+        });
+      }
     } else if(r.conductor||r.dni){
-      // No está en BD: crear fila provisional para registrar
-      const key=(r.dni||r.conductor||'').toUpperCase();
+      // No está en BD: mostrar de todos modos con los datos del Excel
+      const key=(r.dni||normText(r.conductor||'')).toUpperCase();
       if(!seen.has(key)){
         seen.add(key);
         rows.push({
           dni:r.dni||'',conductor:r.conductor||'',proveedor:r.proveedor||'',
-          placa:r.placa||'',estado:'—',catLic:'—',estadoLic:'—',diasLic:'',
+          placa:r.placa||'',centro:r.centro||'',ruta:r.ruta||'',turno:r.turno||'',
+          estado:'—',catLic:'—',estadoLic:'—',diasLic:'',
           estadoSctr:'—',diasSctr:'',docDni:'✗',docLic:'✗',docRecord:'✗',docSctr:'✗',docEmo:'✗',
           cumpl:'0/5 (0%)', _enBD:false
         });
@@ -1896,7 +1910,10 @@ function renderUnidRow(r, num){
 }
 
 // Helpers para evitar problemas de escape en onclick
-function toggleDocUnidClick(td){
+function toggleDocUnidClick(el){
+  // Si el clic cae sobre el span interno, subir al td con los atributos
+  const td = el.closest ? el.closest('[data-placa-chk]') : el;
+  if(!td){ return; }
   const placa = td.getAttribute('data-placa-chk');
   const campo = td.getAttribute('data-campo-chk');
   toggleDocUnid(placa, campo);
@@ -1934,8 +1951,35 @@ function renderUnidades(){
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
   let rows;
   if(UNID_MODO_DIA && REP_ROWS.length>0){
-    rows = REP_ROWS.filter(r=>r.unidBD).map(r=>r.unidBD);
-    const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
+    // Mostrar TODAS las placas del Excel, estén o no en BD
+    const seen=new Set();
+    rows=[];
+    REP_ROWS.forEach(r=>{
+      if(!r.placa) return;
+      if(seen.has(r.placa)) return;
+      seen.add(r.placa);
+      if(r.unidBD){
+        // Unidad encontrada en BD: enriquecer con datos del Excel
+        rows.push({
+          ...r.unidBD,
+          proveedor: r.proveedor||r.unidBD.proveedor||'',
+          centro:    r.centro||r.unidBD.centro||'',
+          _enBD: true
+        });
+      } else {
+        // Unidad nueva (no está en BD): mostrar con datos del Excel
+        rows.push({
+          placa:r.placa, proveedor:r.proveedor||'', centro:r.centro||'',
+          estado:'—', tipo:'NUEVA', anio:'—', ejes:'—', ruedas:'—',
+          pesoBruto:'—', pesoNeto:'—', tipoSeguro:'—', tipoSoat:'—',
+          estadoSoat:'—', diasSoat:'', estadoRtv:'—', diasRtv:'',
+          estadoTc:'—', diasTc:'',
+          docTarjProp:'✗',docSoat:'✗',docRtv:'✗',docTc:'✗',
+          docMnto:'✗',docBoletin:'✗',docPoliza:'✗',
+          cumpl:'0/7 (0%)', _enBD:false
+        });
+      }
+    });
   } else {
     const {estado}=state.unidades;
     rows = filterData(UNIDADES, search, estado);
@@ -1998,7 +2042,25 @@ function updProvResp(n,v){const d=getPD(n);d.resp=v;PD[n]=d;savePD();}
 let PV_MAP = []; // PV_MAP[i] = nombre del proveedor en la página actual
 
 function renderProveedores(){
-  if(PROVEEDORES.length===0){
+  // En modo día: mezclar proveedores de la BD con los que vienen solo del Excel
+  let provData = [...PROVEEDORES];
+  if(UNID_MODO_DIA && REP_ROWS.length>0){
+    const nombresEnBD = new Set(PROVEEDORES.map(p=>(p.nombre||'').toUpperCase()));
+    REP_ROWS.forEach(r=>{
+      const nom=(r.proveedor||'').trim().toUpperCase();
+      if(nom && nom.length>=3 && !nombresEnBD.has(nom)){
+        nombresEnBD.add(nom);
+        provData.push({
+          nombre:nom, estado:'ACTIVO', ruc:'', contacto:'', celular:'',
+          correo:'', zona:'', tipo:'', actividad:'', responsable:'',
+          docs:new Array(20).fill('✗'), cumpl:'—', pctCumpl:'',
+          _soloExcel:true
+        });
+      }
+    });
+  }
+
+  if(provData.length===0){
     const tbody=document.getElementById('prov-tbody');
     if(tbody) tbody.innerHTML='<tr><td colspan="23" class="empty-state">📋 Conecta Google Sheets o sincroniza para ver los proveedores</td></tr>';
     document.getElementById('prov-count').textContent='0 proveedores';
@@ -2026,8 +2088,9 @@ function renderProveedores(){
     return false;
   };
 
-  let data=PROVEEDORES.filter(p=>{
-    if(esInvalida(p)) return false;
+  let data=provData.filter(p=>{
+    // Los proveedores que vienen solo del Excel no aplican filtros estrictos de esInvalida
+    if(!p._soloExcel && esInvalida(p)) return false;
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
     if(zona&&p.zona!==zona) return false;
