@@ -1936,7 +1936,11 @@ function renderUnidades(){
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
   let rows;
   if(UNID_MODO_DIA && REP_ROWS.length>0){
-    rows = REP_ROWS.map(r=>r.unidBD || {placa:r.placa||'',proveedor:r.proveedor||'',estado:'ACTIVO',_nuevaUnidad:true});
+    rows = REP_ROWS.map(r=>{
+      if(r.unidBD) return r.unidBD;
+      // Nueva unidad: crear con datos mínimos
+      return {placa:r.placa||'',proveedor:r.proveedor||'',estado:'ACTIVO',_nuevaUnidad:true};
+    });
     const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
   } else {
     const {estado}=state.unidades;
@@ -2402,8 +2406,6 @@ async function leerReporte(){
       // Buscar en BD con normalización robusta
       const unidBD = buscarPorPlaca(placa);
       const condBD = buscarConductorBD(conductor, dni);
-      if(unidBD) unidBD.estado = 'ACTIVO';
-      if(condBD) condBD.estado = 'ACTIVO';
 
       // Contar únicos reales
       if(placa) seenPlacas.add(placa);
@@ -2432,7 +2434,6 @@ async function leerReporte(){
     window._REP_UNID_COUNT  = seenPlacas.size  || REP_ROWS.filter(r=>r.placa).length;
     window._REP_COND_COUNT  = seenConds.size   || REP_ROWS.filter(r=>r.conductor||r.dni).length;
     window._REP_PROV_COUNT  = seenProvs.size;
-    REP_ROWS.forEach(r => { if(r.proveedor){ const p = PROVEEDORES.find(pv => (pv.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase()); if(p) p.estado = 'ACTIVO'; } });
 
     renderReporte();
     document.getElementById('rep-kpi-row').style.display='';
