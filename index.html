@@ -1032,8 +1032,6 @@ function calcDiasDesde(fechaStr) {
     const hoy = new Date(); hoy.setHours(0,0,0,0);
     const fv = new Date(fechaStr); fv.setHours(0,0,0,0);
     if (isNaN(fv.getTime())) return null;
-    // ✅ CORREGIDO: Usar Math.floor en lugar de Math.round para mayor precisión
-    // Calcula días desde hoy hasta la fecha de vencimiento
     const diff = fv.getTime() - hoy.getTime();
     return Math.floor(diff / 86400000);
   } catch(e){ return null; }
@@ -2031,6 +2029,14 @@ function renderProveedores(){
 
   let data=PROVEEDORES.filter(p=>{
     if(esInvalida(p)) return false;
+    
+    // ✅ FILTRO: Solo proveedores del reporte actual
+    const proveedoresEnReporte = new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()));
+    if(REP_ROWS.length>0){
+      const nombreNorm=(p.nombre||'').trim().toUpperCase();
+      if(!proveedoresEnReporte.has(nombreNorm)) return false;
+    }
+    
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
     if(zona&&p.zona!==zona) return false;
@@ -2055,7 +2061,13 @@ function renderProveedores(){
   CONDUCTORES.forEach(c=>{if(c.proveedor)provCond[c.proveedor]=(provCond[c.proveedor]||0)+1;});
   UNIDADES.forEach(u=>{if(u.proveedor)provUnid[u.proveedor]=(provUnid[u.proveedor]||0)+1;});
 
-  document.getElementById('prov-count').textContent=data.length+' proveedores';
+  // ✅ Actualizar contador
+  if(REP_ROWS.length>0){
+    const provCount=new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase())).size;
+    document.getElementById('prov-count').textContent=`${data.length} de ${provCount} proveedores del reporte`;
+  }else{
+    document.getElementById('prov-count').textContent=data.length+' proveedores';
+  }
   const tp=Math.ceil(data.length/PV_PS)||1;
   PV_PAGE=Math.min(PV_PAGE,tp);
   const sl=data.slice((PV_PAGE-1)*PV_PS,PV_PAGE*PV_PS);
@@ -2689,8 +2701,10 @@ function poblarDatalistProv(){
 }
 
 function buscarConductor(dni){
-  if(!dni||dni.length<7)return;
-  const c=CONDUCTORES.find(x=>x.dni===dni);
+  if(!dni||dni.trim().length<7)return;
+  const dniNorm=dni.trim().toUpperCase();
+  if(CONDUCTORES.length===0){showToast('⚠️ Sincroniza datos primero','err');return;}
+  const c=CONDUCTORES.find(x=>(x.dni||'').trim().toUpperCase()===dniNorm||(x.dni||'').trim()===dni.trim());
   if(c){
     document.getElementById('c-nombre').value=c.conductor||'';
     document.getElementById('c-proveedor').value=c.proveedor||'';
@@ -2699,23 +2713,34 @@ function buscarConductor(dni){
     document.getElementById('c-cat-lic').value=c.catLic||'A-I';
     document.getElementById('c-fecha-lic').value=c.fechaLic||'';
     document.getElementById('c-restriccion').value=c.restriccion||'SIN RESTRICCIONES';
+    document.getElementById('c-celular').value=c.celular||'';
     document.getElementById('c-aseg-sctr').value=c.asegSctr||'SANITAS';
+    document.getElementById('c-tipo-sctr').value=c.tipoSctr||'';
     document.getElementById('c-fecha-sctr').value=c.fechaSctr||'';
+    document.getElementById('c-fecha-emo').value=c.fechaEmo||'';
     if(c.fechaLic)calcDocDias('c-fecha-lic','c-dias-lic','c-est-lic');
     if(c.fechaSctr)calcDocDias('c-fecha-sctr','c-dias-sctr','c-est-sctr');
-    showToast('Conductor encontrado: '+c.conductor,'ok');
+    if(c.fechaEmo)calcDocDias('c-fecha-emo','c-dias-emo','c-est-emo');
+    showToast('✓ Conductor encontrado: '+c.conductor,'ok');
+  }else{
+    showToast('❌ Conductor no encontrado con DNI: '+dni,'err');
   }
 }
 function buscarUnidad(placa){
-  if(!placa||placa.length<5)return;
-  const u=UNIDADES.find(x=>x.placa&&x.placa.toUpperCase()===placa.toUpperCase());
+  if(!placa||placa.trim().length<5)return;
+  const placaNorm=placa.trim().toUpperCase();
+  if(UNIDADES.length===0){showToast('⚠️ Sincroniza datos primero','err');return;}
+  const u=UNIDADES.find(x=>(x.placa||'').trim().toUpperCase()===placaNorm||(x.placa||'').trim()===placa.trim());
   if(u){
     document.getElementById('u-proveedor').value=u.proveedor||'';
     document.getElementById('u-estado').value=u.estado||'ACTIVO';
     document.getElementById('u-tipo').value=u.tipo||'CAMION';
     document.getElementById('u-anio').value=u.anio||'';
+    document.getElementById('u-antiguedad').value=u.antiguedad||'';
     document.getElementById('u-marca').value=u.marca||'';
+    document.getElementById('u-carroceria').value=u.carroceria||'';
     document.getElementById('u-aseg-soat').value=u.aseguradora||'LA POSITIVA';
+    document.getElementById('u-tipo-soat').value=u.tipoSoat||'DIGITAL';
     document.getElementById('u-fecha-soat').value=u.fechaSoat||'';
     document.getElementById('u-fecha-rtv').value=u.fechaRtv||'';
     document.getElementById('u-fecha-tc').value=u.fechaTc||'';
@@ -2723,7 +2748,9 @@ function buscarUnidad(placa){
     if(u.fechaSoat)calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat');
     if(u.fechaRtv)calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv');
     if(u.fechaTc)calcDocDias('u-fecha-tc','u-dias-tc','u-est-tc');
-    showToast('Unidad encontrada: '+u.placa,'ok');
+    showToast('✓ Unidad encontrada: '+u.placa,'ok');
+  }else{
+    showToast('❌ Unidad no encontrada con placa: '+placa,'err');
   }
 }
 async function guardarConductor(){
