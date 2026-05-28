@@ -1831,13 +1831,7 @@ async function toggleDocUnid(placa, campo){
   UNIDADES[idx].cumpl = `${docs}/7 (${Math.round(docs/7*100)}%)`;
   showToast(nuevoValor==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
   const td = document.querySelector(`[data-placa-chk="${placa}"][data-campo-chk="${campo}"]`);
-  if(td){
-    const span = td.querySelector('span');
-    if(span){
-      span.textContent = nuevoValor;
-      span.style.color = nuevoValor==='✓' ? 'var(--green)' : 'var(--text3)';
-    }
-  }
+  if(td){ const span = td.querySelector('span'); if(span){ span.textContent = nuevoValor; span.style.color = nuevoValor==='✓' ? 'var(--green)' : 'var(--text3)'; } }
   if(GS_URL) await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
 }
 
@@ -2036,18 +2030,16 @@ function renderProveedores(){
 
   let data=PROVEEDORES.filter(p=>{
     if(esInvalida(p)) return false;
-    // ✅ SOLO PROVEEDORES DEL REPORTE
-    if(REP_ROWS.length>0){
-      const provReporte = new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()));
-      if(!provReporte.has((p.nombre||'').trim().toUpperCase())) return false;
-    }
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
     if(zona&&p.zona!==zona) return false;
+    // Filtro por tipo
     const tipoF=(document.getElementById('pv-tipo')||{value:''}).value;
     if(tipoF&&p.tipo!==tipoF) return false;
+    // Filtro por responsable
     const respF=(document.getElementById('pv-resp')||{value:''}).value;
     if(respF&&(p.responsable||'').toUpperCase()!==respF.toUpperCase()) return false;
+    // Filtro por cumplimiento documentario
     if(cumplF){
       const pd2=getPD(p.nombre);
       const pct2=Math.round(pd2.docs.filter(Boolean).length/20*100);
@@ -2410,8 +2402,6 @@ async function leerReporte(){
       // Buscar en BD con normalización robusta
       const unidBD = buscarPorPlaca(placa);
       const condBD = buscarConductorBD(conductor, dni);
-      
-      // ✅ ACTIVAR AUTOMÁTICAMENTE
       if(unidBD) unidBD.estado = 'ACTIVO';
       if(condBD) condBD.estado = 'ACTIVO';
 
@@ -2442,14 +2432,7 @@ async function leerReporte(){
     window._REP_UNID_COUNT  = seenPlacas.size  || REP_ROWS.filter(r=>r.placa).length;
     window._REP_COND_COUNT  = seenConds.size   || REP_ROWS.filter(r=>r.conductor||r.dni).length;
     window._REP_PROV_COUNT  = seenProvs.size;
-
-    // ✅ ACTIVAR PROVEEDORES
-    REP_ROWS.forEach(r => {
-      if(r.proveedor){
-        const p = PROVEEDORES.find(pv => (pv.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase());
-        if(p) p.estado = 'ACTIVO';
-      }
-    });
+    REP_ROWS.forEach(r => { if(r.proveedor){ const p = PROVEEDORES.find(pv => (pv.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase()); if(p) p.estado = 'ACTIVO'; } });
 
     renderReporte();
     document.getElementById('rep-kpi-row').style.display='';
