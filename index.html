@@ -1760,14 +1760,25 @@ function renderUnidRow(r, num){
   const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocUnid('${placa}','${campo}')" title="Clic para marcar/desmarcar">
     <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'};user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
   const editable = (campo, valor) => `<td data-placa="${placa}" data-campo="${campo}" onclick="editCeldaUnid('${placa}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
+  const editableEstado = (campo, valor) => {
+    const opts = ['ACTIVO','INACTIVO'];
+    const safeVal = (valor||'INACTIVO').replace(/'/g,"\\'");
+    return `<td data-placa="${placa}" data-campo="${campo}" class="editable-cell" title="Clic para cambiar estado" style="cursor:pointer"
+      onclick="(function(td){
+        const cur='${safeVal}';
+        const opts=['ACTIVO','INACTIVO'];
+        const next=opts[(opts.indexOf(cur)+1)%opts.length];
+        guardarCeldaUnid('${placa}','${campo}',next);
+      })(this)">${badge(valor||'INACTIVO')}</td>`;
+  };
   return `<tr>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2)">${r.placa||'—'}</td>
-    <td>${badge(r.estado||'INACTIVO')}</td>
+    ${editableEstado('estado', r.estado)}
     ${editable('proveedor', r.proveedor)}
-    <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
-    <td style="font-size:11px">${r.tipo||'—'}</td>
-    <td class="mono">${r.anio||'—'}</td>
+    ${editable('centro', r.centro)}
+    ${editable('tipo', r.tipo)}
+    ${editable('anio', r.anio)}
     <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')" title="Editar SOAT">${badge(r.estadoSoat||'—')}</td>
     <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')">${diasCell(r.diasSoat)}</td>
     <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')" title="Editar RTV">${badge(r.estadoRtv||'—')}</td>
@@ -2703,7 +2714,17 @@ function filtrarModalProv(q){
     return true;
   });
   if(!provs.length){
-    list.innerHTML='<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">Sin resultados</div>';
+    const qClean = (q||'').trim();
+    const safeQ = qClean.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    list.innerHTML='<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">Sin resultados</div>'
+      +(qClean.length>=3?`<div style="padding:10px 14px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px">¿No existe este proveedor? Agrégalo directamente:</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="mprov-nuevo-nombre" value="${safeQ}" placeholder="Nombre del proveedor"
+            style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:6px 10px;font-size:12px;color:var(--text);outline:none"/>
+          <button onclick="agregarProvDesdeModal()" style="background:var(--accent);color:#fff;border:none;border-radius:5px;padding:7px 13px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap">+ Agregar</button>
+        </div>
+      </div>`:'');
     return;
   }
   list.innerHTML = provs.map(p=>{
@@ -2718,6 +2739,22 @@ function filtrarModalProv(q){
 }
 function seleccionarProv(nombre){
   if(_provModalCb) _provModalCb(nombre);
+  cerrarModalProv();
+}
+function agregarProvDesdeModal(){
+  const inp = document.getElementById('mprov-nuevo-nombre');
+  if(!inp) return;
+  const nom = inp.value.trim().toUpperCase();
+  if(nom.length < 3){ inp.style.borderColor='var(--danger)'; return; }
+  // Verificar si ya existe (puede que lo hayan escrito diferente)
+  const existe = PROVEEDORES.find(p=>(p.nombre||'').trim().toUpperCase()===nom);
+  if(!existe){
+    // Agregar proveedor mínimo
+    PROVEEDORES.push({ nombre:nom, estado:'ACTIVO', zona:'', tipo:'', ruc:'', codigo:'', contacto:'', responsable:'', fechaReg:new Date().toLocaleDateString('es-PE') });
+    showToast&&showToast('Proveedor "'+nom+'" agregado ✓','ok');
+  }
+  // Seleccionarlo directamente
+  if(_provModalCb) _provModalCb(nom);
   cerrarModalProv();
 }
 function cerrarModalProv(){
