@@ -1750,7 +1750,6 @@ function renderCondRow(r, num){
     ${chk(r.docSctr,'docSctr')}
     ${chk(r.docEmo,'docEmo')}
     <td>${barCumpl(r.cumpl||'—')}</td>
-    <td>${r._nuevaUnidad ? '<button class="btn btn-green" onclick="abrirFormularioUnidad('' + (r.placa||'') + '')" style="padding:4px 8px;font-size:11px">+ Registrar</button>' : ''}</td>
   </tr>`;
 }
 
@@ -1824,18 +1823,7 @@ function renderConductores(){
 
 async function toggleDocUnid(placa, campo){
   let idx = UNIDADES.findIndex(u=>u.placa===placa);
-  // ✅ Si no existe (unidad nueva), agregar a UNIDADES
-  if(idx<0){
-    const nuevaUnidad = REP_ROWS.find(r=>r.placa===placa);
-    if(nuevaUnidad){
-      const u = {placa:nuevaUnidad.placa,proveedor:nuevaUnidad.proveedor,estado:'NUEVO',_nuevaUnidad:true};
-      UNIDADES.push(u);
-      idx = UNIDADES.length - 1;
-    } else {
-      showToast('Unidad no encontrada','err');
-      return;
-    }
-  }
+  if(idx<0){ showToast('Unidad no encontrada','err'); return; }
   const actual = UNIDADES[idx][campo];
   UNIDADES[idx][campo] = (actual==='✓') ? '✗' : '✓';
   const u = UNIDADES[idx];
@@ -1905,7 +1893,6 @@ function renderUnidRow(r, num){
     ${chk(r.docBoletin,'docBoletin')}
     ${chk(r.docPoliza,'docPoliza')}
     <td>${barCumpl(r.cumpl||'—')}</td>
-    <td>${r._nuevaUnidad ? '<button class="btn btn-green" onclick="abrirFormularioUnidad('' + (r.placa||'') + '')" style="padding:4px 8px;font-size:11px">+ Registrar</button>' : ''}</td>
   </tr>`;
 }
 
@@ -1948,7 +1935,6 @@ function renderUnidades(){
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
   let rows;
   if(UNID_MODO_DIA && REP_ROWS.length>0){
-    // ✅ Mostrar unidades de BD + unidades nuevas
     rows = REP_ROWS.map(r=>r.unidBD || {placa:r.placa||'',proveedor:r.proveedor||'',estado:'NUEVO',_nuevaUnidad:true});
     const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
   } else {
@@ -3004,18 +2990,6 @@ function cerrarModalProv(){
 }
 
 // ── ARRANQUE
-// ✅ FUNCIÓN: Abrir formulario para registrar nueva unidad
-function abrirFormularioUnidad(placa){
-  document.getElementById("u-placa").value = placa;
-  document.getElementById("u-proveedor").value = "";
-  document.getElementById("u-estado").value = "ACTIVO";
-  document.getElementById("u-tipo").value = "";
-  document.getElementById("u-anio").value = "";
-  switchTab("registro-unidades");
-  document.getElementById("u-tipo").focus();
-  showToast("✓ Formulario abierto - Completa los datos y presiona Guardar", "ok");
-}
-
 if(!localStorage.getItem('gs_url') && GS_URL){
   localStorage.setItem('gs_url', GS_URL);
 }
