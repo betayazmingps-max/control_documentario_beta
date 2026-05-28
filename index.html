@@ -472,11 +472,11 @@ tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>#</th><th>DNI</th><th>Conductor</th><th>Estado</th><th>Proveedor</th>
-            <th>Placa</th><th>Centro</th><th>Cat. Lic</th>
-            <th>Est. Lic</th><th>Días Lic ✏️</th>
-            <th>Est. SCTR</th><th>Días SCTR ✏️</th>
-            <th>DNI</th><th>Lic</th><th>Récord</th><th>SCTR</th><th>EMO ✏️</th>
+            <th>#</th><th>DNI</th><th>Conductor</th><th title="Clic para cambiar">Estado ✏️</th><th>Proveedor ✏️</th>
+            <th>Placa ✏️</th><th>Centro ✏️</th><th>Cat. Lic ✏️</th>
+            <th title="Clic para cambiar">Est. Lic ✏️</th><th title="Clic para editar fecha">Días Lic</th>
+            <th title="Clic para cambiar">Est. SCTR ✏️</th><th title="Clic para editar fecha">Días SCTR</th>
+            <th>DNI</th><th>Lic</th><th>Récord</th><th>SCTR</th><th>EMO</th>
             <th>Cumpl.</th>
           </tr></thead>
           <tbody id="cond-tbody"><tr><td colspan="18" class="empty-state">Cargando...</td></tr></tbody>
@@ -503,10 +503,10 @@ tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>#</th><th>Placa</th><th>Estado</th><th>Proveedor</th><th>Centro</th><th>Tipo</th><th>Año</th>
-            <th>SOAT ✏️</th><th>Días SOAT</th>
-            <th>RTV ✏️</th><th>Días RTV</th>
-            <th>T.C. ✏️</th><th>Días T.C.</th>
+            <th>#</th><th>Placa</th><th title="Clic para cambiar">Estado ✏️</th><th>Proveedor ✏️</th><th>Centro ✏️</th><th>Tipo ✏️</th><th>Año ✏️</th>
+            <th title="Clic para cambiar estado">SOAT ✏️</th><th title="Clic para editar fecha">Días SOAT</th>
+            <th title="Clic para cambiar estado">RTV ✏️</th><th title="Clic para editar fecha">Días RTV</th>
+            <th title="Clic para cambiar estado">T.C. ✏️</th><th title="Clic para editar fecha">Días T.C.</th>
             <th>T.Prop</th><th>SOAT</th><th>RTV</th><th>T.C.</th><th>MNTO</th><th>Boletín</th><th>Póliza</th>
             <th>Cumpl.</th>
           </tr></thead>
@@ -1609,6 +1609,11 @@ async function guardarCeldaCond(dni, campo, valor){
   showToast('✓ Guardado','ok');
   renderConductores();
 }
+async function ciclarCeldaCond(dni, campo, valorActual, opts){
+  const idx = opts.indexOf(valorActual);
+  const siguiente = opts[(idx+1) % opts.length];
+  await guardarCeldaCond(dni, campo, siguiente);
+}
 
 function renderCondRow(r, num){
   // ensure _enBD is set for rows coming from CONDUCTORES array directly
@@ -1633,19 +1638,26 @@ function renderCondRow(r, num){
   const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocCond('${dni}','${campo}')" title="Clic para marcar/desmarcar">
     <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'}; user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
   const editable = (campo, valor) => `<td data-dni="${dni}" data-campo="${campo}" onclick="editCeldaCond('${dni}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
+  // Click-ciclo para campos con opciones fijas
+  const ciclo = (campo, valor, opts) => {
+    const cur = (valor||opts[0]).toUpperCase();
+    const safeOpts = JSON.stringify(opts).replace(/"/g,'&quot;');
+    return `<td class="editable-cell" title="Clic para cambiar" style="cursor:pointer"
+      onclick="ciclarCeldaCond('${dni}','${campo}','${cur}',${safeOpts})">${badge(cur)}</td>`;
+  };
   return `<tr>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono">${r.dni||'—'}</td>
     <td style="max-width:160px;white-space:normal;font-size:12px;font-weight:500">${r.conductor||'—'}</td>
-    <td>${badge(r.estado||'INACTIVO')}</td>
+    ${ciclo('estado', r.estado, ['ACTIVO','INACTIVO'])}
     ${editable('proveedor', r.proveedor)}
     ${editable('placa', r.placa)}
-    <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
-    <td><span class="badge blue">${r.catLic||'—'}</span></td>
-    <td>${badge(r.estadoLic||'—')}</td>
-    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasLic)}</td>
-    <td>${badge(r.estadoSctr||'—')}</td>
-    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasSctr)}</td>
+    ${editable('centro', r.centro)}
+    ${editable('catLic', r.catLic)}
+    ${ciclo('estadoLic', r.estadoLic, ['VIGENTE','POR VENCER','VENCIDO'])}
+    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Editar fecha licencia">${diasCell(r.diasLic)}</td>
+    ${ciclo('estadoSctr', r.estadoSctr, ['VIGENTE','POR VENCER','VENCIDO'])}
+    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Editar fecha SCTR">${diasCell(r.diasSctr)}</td>
     ${chk(r.docDni,'docDni')}
     ${chk(r.docLic,'docLic')}
     ${chk(r.docRecord,'docRecord')}
@@ -1753,6 +1765,11 @@ async function guardarCeldaUnid(placa, campo, valor){
   showToast('✓ Guardado','ok');
   renderUnidades();
 }
+async function ciclarCeldaUnid(placa, campo, valorActual, opts){
+  const idx = opts.indexOf(valorActual);
+  const siguiente = opts[(idx+1) % opts.length];
+  await guardarCeldaUnid(placa, campo, siguiente);
+}
 
 function renderUnidRow(r, num){
   const placa = (r.placa||'').replace(/'/g,"\\'");
@@ -1760,31 +1777,26 @@ function renderUnidRow(r, num){
   const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocUnid('${placa}','${campo}')" title="Clic para marcar/desmarcar">
     <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'};user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
   const editable = (campo, valor) => `<td data-placa="${placa}" data-campo="${campo}" onclick="editCeldaUnid('${placa}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
-  const editableEstado = (campo, valor) => {
-    const opts = ['ACTIVO','INACTIVO'];
-    const safeVal = (valor||'INACTIVO').replace(/'/g,"\\'");
-    return `<td data-placa="${placa}" data-campo="${campo}" class="editable-cell" title="Clic para cambiar estado" style="cursor:pointer"
-      onclick="(function(td){
-        const cur='${safeVal}';
-        const opts=['ACTIVO','INACTIVO'];
-        const next=opts[(opts.indexOf(cur)+1)%opts.length];
-        guardarCeldaUnid('${placa}','${campo}',next);
-      })(this)">${badge(valor||'INACTIVO')}</td>`;
+  const ciclo = (campo, valor, opts) => {
+    const cur = (valor||opts[0]).toUpperCase();
+    const safeOpts = JSON.stringify(opts).replace(/"/g,'&quot;');
+    return `<td class="editable-cell" title="Clic para cambiar" style="cursor:pointer"
+      onclick="ciclarCeldaUnid('${placa}','${campo}','${cur}',${safeOpts})">${badge(cur)}</td>`;
   };
   return `<tr>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2)">${r.placa||'—'}</td>
-    ${editableEstado('estado', r.estado)}
+    ${ciclo('estado', r.estado, ['ACTIVO','INACTIVO'])}
     ${editable('proveedor', r.proveedor)}
     ${editable('centro', r.centro)}
     ${editable('tipo', r.tipo)}
     ${editable('anio', r.anio)}
-    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')" title="Editar SOAT">${badge(r.estadoSoat||'—')}</td>
-    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')">${diasCell(r.diasSoat)}</td>
-    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')" title="Editar RTV">${badge(r.estadoRtv||'—')}</td>
-    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')">${diasCell(r.diasRtv)}</td>
-    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasTc','fechaTc','${placa}')" title="Editar T.C.">${badge(r.estadoTc||'—')}</td>
-    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasTc','fechaTc','${placa}')">${diasCell(r.diasTc)}</td>
+    ${ciclo('estadoSoat', r.estadoSoat, ['VIGENTE','POR VENCER','VENCIDO'])}
+    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasSoat','fechaSoat','${placa}')" title="Editar fecha SOAT">${diasCell(r.diasSoat)}</td>
+    ${ciclo('estadoRtv', r.estadoRtv, ['VIGENTE','POR VENCER','VENCIDO'])}
+    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasRtv','fechaRtv','${placa}')" title="Editar fecha RTV">${diasCell(r.diasRtv)}</td>
+    ${ciclo('estadoTc', r.estadoTc, ['VIGENTE','POR VENCER','VENCIDO'])}
+    <td class="editable-cell" onclick="abrirEdit('unidad',${idx},'diasTc','fechaTc','${placa}')" title="Editar fecha T.C.">${diasCell(r.diasTc)}</td>
     ${chk(r.docTarjProp,'docTarjProp')}
     ${chk(r.docSoat,'docSoat')}
     ${chk(r.docRtv,'docRtv')}
@@ -1861,6 +1873,17 @@ function renderProveedores(){
     document.getElementById('prov-count').textContent='0 proveedores';
     return;
   }
+
+  // Si hay modo día activo, filtrar solo proveedores que aparecen en el reporte
+  let baseData = PROVEEDORES;
+  if((typeof COND_MODO_DIA !== 'undefined' && COND_MODO_DIA) && REP_ROWS && REP_ROWS.length > 0){
+    const provsDelDia = new Set(
+      REP_ROWS.map(r => (r.proveedor || r.provExcel || r.unidBD?.proveedor || '').trim().toUpperCase()).filter(Boolean)
+    );
+    baseData = PROVEEDORES.filter(p => provsDelDia.has((p.nombre||'').trim().toUpperCase()));
+    // Si no hay coincidencias exactas, mostrar todos para no dejar vacío
+    if(baseData.length === 0) baseData = PROVEEDORES;
+  }
   // Filtros propios de la tabla de proveedores
   const search = (document.getElementById('pv-srch')||{value:''}).value.toLowerCase();
   const estado  = (document.getElementById('pv-est')||{value:''}).value;
@@ -1883,7 +1906,7 @@ function renderProveedores(){
     return false;
   };
 
-  let data=PROVEEDORES.filter(p=>{
+  let data=baseData.filter(p=>{
     if(esInvalida(p)) return false;
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
@@ -2715,12 +2738,11 @@ function filtrarModalProv(q){
   });
   if(!provs.length){
     const qClean = (q||'').trim();
-    const safeQ = qClean.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
     list.innerHTML='<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">Sin resultados</div>'
       +(qClean.length>=3?`<div style="padding:10px 14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:8px">¿No existe este proveedor? Agrégalo directamente:</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px">¿No existe? Agrégalo directamente:</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <input id="mprov-nuevo-nombre" value="${safeQ}" placeholder="Nombre del proveedor"
+          <input id="mprov-nuevo-nombre" value="${qClean.replace(/"/g,'&quot;')}" placeholder="Nombre del proveedor"
             style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:6px 10px;font-size:12px;color:var(--text);outline:none"/>
           <button onclick="agregarProvDesdeModal()" style="background:var(--accent);color:#fff;border:none;border-radius:5px;padding:7px 13px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap">+ Agregar</button>
         </div>
@@ -2746,14 +2768,11 @@ function agregarProvDesdeModal(){
   if(!inp) return;
   const nom = inp.value.trim().toUpperCase();
   if(nom.length < 3){ inp.style.borderColor='var(--danger)'; return; }
-  // Verificar si ya existe (puede que lo hayan escrito diferente)
   const existe = PROVEEDORES.find(p=>(p.nombre||'').trim().toUpperCase()===nom);
   if(!existe){
-    // Agregar proveedor mínimo
     PROVEEDORES.push({ nombre:nom, estado:'ACTIVO', zona:'', tipo:'', ruc:'', codigo:'', contacto:'', responsable:'', fechaReg:new Date().toLocaleDateString('es-PE') });
     showToast&&showToast('Proveedor "'+nom+'" agregado ✓','ok');
   }
-  // Seleccionarlo directamente
   if(_provModalCb) _provModalCb(nom);
   cerrarModalProv();
 }
