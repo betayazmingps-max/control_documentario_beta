@@ -1032,8 +1032,7 @@ function calcDiasDesde(fechaStr) {
     const hoy = new Date(); hoy.setHours(0,0,0,0);
     const fv = new Date(fechaStr); fv.setHours(0,0,0,0);
     if (isNaN(fv.getTime())) return null;
-    const diff = fv.getTime() - hoy.getTime();
-    return Math.floor(diff / 86400000);
+    return Math.floor((fv-hoy)/86400000);
   } catch(e){ return null; }
 }
 function estadoDesde(dias) {
@@ -1723,10 +1722,7 @@ function renderCondRow(r, num){
       <td><span class="badge warn">SIN REG.</span></td>
       <td style="font-size:11px">${r.proveedor||'—'}</td>
       <td class="mono">${r.placa||'—'}</td>
-            <td style="text-align:center"><button onclick="irRegistrarConductor(\x27${nom}\x27,\x27${dni}\x27,\x27${prov}\x27,\x27${plc}\x27)" style="background:var(--warn);color:#000;border:none;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;width:70px">✚ Reg.</button></td>
-      <td style="font-size:11px">${r.proveedor||'—'}</td>
-      <td class="mono">${r.placa||'—'}</td>
-      <td colspan="11" style="text-align:center">
+      <td colspan="13" style="text-align:center">
         <button onclick="irRegistrarConductor('${nom}','${dni}','${prov}','${plc}')" style="background:var(--warn);color:#000;border:none;border-radius:5px;padding:4px 14px;font-size:11px;font-weight:700;cursor:pointer">✚ Registrar</button>
       </td>
     </tr>`;
@@ -1753,7 +1749,6 @@ function renderCondRow(r, num){
     ${chk(r.docSctr,'docSctr')}
     ${chk(r.docEmo,'docEmo')}
     <td>${barCumpl(r.cumpl||'—')}</td>
-    <td>${r._nuevaUnidad ? '<button onclick="abrirFormularioUnidad(\x27' + (r.placa||'') + \x27')" style="background:var(--green);color:white;border:none;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;width:90px">✚ Registrar</button>' : ''}</td>
   </tr>`;
 }
 
@@ -1905,7 +1900,6 @@ function renderUnidRow(r, num){
     ${chk(r.docBoletin,'docBoletin')}
     ${chk(r.docPoliza,'docPoliza')}
     <td>${barCumpl(r.cumpl||'—')}</td>
-    <td>${r._nuevaUnidad ? '<button onclick="abrirFormularioUnidad(\x27' + (r.placa||'') + \x27')" style="background:var(--green);color:white;border:none;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;width:90px">✚ Registrar</button>' : ''}</td>
   </tr>`;
 }
 
@@ -1948,10 +1942,7 @@ function renderUnidades(){
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
   let rows;
   if(UNID_MODO_DIA && REP_ROWS.length>0){
-    rows = REP_ROWS.map(r=>{
-      const unidad = r.unidBD || {placa:r.placa||'',proveedor:r.proveedor||'',estado:'ACTIVO',_nuevaUnidad:true};
-      return unidad;
-    });
+    rows = REP_ROWS.map(r=>r.unidBD || {placa:r.placa||'',proveedor:r.proveedor||'',estado:'ACTIVO',_nuevaUnidad:true});
     const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
   } else {
     const {estado}=state.unidades;
@@ -2045,9 +2036,10 @@ function renderProveedores(){
 
   let data=PROVEEDORES.filter(p=>{
     if(esInvalida(p)) return false;
+    // ✅ SOLO PROVEEDORES DEL REPORTE
     if(REP_ROWS.length>0){
-      const proveedoresEnReporte = new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()));
-      if(!proveedoresEnReporte.has((p.nombre||'').trim().toUpperCase())) return false;
+      const provReporte = new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()));
+      if(!provReporte.has((p.nombre||'').trim().toUpperCase())) return false;
     }
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
@@ -2065,19 +2057,6 @@ function renderProveedores(){
     }
     return true;
   });
-  
-  if(REP_ROWS.length>0){
-    const proveedoresEnBD = new Set(PROVEEDORES.map(x => (x.nombre || '').trim().toUpperCase()));
-    const nuevosAgregados = new Set();
-    REP_ROWS.forEach(r => {
-      const nom = (r.proveedor || '').trim();
-      const nomUpper = nom.toUpperCase();
-      if(nom && !proveedoresEnBD.has(nomUpper) && !nuevosAgregados.has(nomUpper)) {
-        nuevosAgregados.add(nomUpper);
-        data.push({nombre: nom, estado: 'ACTIVO', _nuevoProveedor: true, ruc: '', contacto: '', zona: '', tipo: '', codigo: '', responsable: '', docs: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false]});
-      }
-    });
-  }
 
   const provCond={},provUnid={};
   CONDUCTORES.forEach(c=>{if(c.proveedor)provCond[c.proveedor]=(provCond[c.proveedor]||0)+1;});
@@ -2135,7 +2114,6 @@ function renderProveedores(){
           font-size:10.5px;width:72px;background:var(--bg2)"></td>
         <td class="mono" style="text-align:center">${provCond[p.nombre]||0}</td>
         <td class="mono" style="text-align:center">${provUnid[p.nombre]||0}</td>
-        <td>${p._nuevoProveedor ? '<button onclick="abrirFormularioProveedor(\x27' + (p.nombre||'').replace(''/g, \\'\x27) + \x27')" style="background:var(--green);color:white;border:none;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;width:90px">✚ Registrar</button>' : ''}</td>
       </tr>`;
     }).join('');
 
@@ -2424,16 +2402,20 @@ async function leerReporte(){
       const centro    = COL.centro    ? (row[COL.centro]   ||'').toString().trim() : '';
       const turno     = COL.turno     ? (row[COL.turno]    ||'').toString().trim() : '';
 
+      // Omitir filas completamente vacías
       if(!placa && !conductor && !dni && !provExcel) return null;
+      // Omitir filas que parecen ser subtítulos/totales
       if(!placa && !conductor && !dni) return null;
 
+      // Buscar en BD con normalización robusta
       const unidBD = buscarPorPlaca(placa);
       const condBD = buscarConductorBD(conductor, dni);
-
-      // ✅ ACTIVAR
+      
+      // ✅ ACTIVAR AUTOMÁTICAMENTE
       if(unidBD) unidBD.estado = 'ACTIVO';
       if(condBD) condBD.estado = 'ACTIVO';
 
+      // Contar únicos reales
       if(placa) seenPlacas.add(placa);
       if(conductor||dni) seenConds.add(dni||normText(conductor));
       const provNom=(provExcel||condBD?.proveedor||unidBD?.proveedor||'').trim().toUpperCase();
@@ -2456,18 +2438,18 @@ async function leerReporte(){
       };
     }).filter(Boolean);
 
-    // ✅ ACTIVAR PROVEEDORES
-    REP_ROWS.forEach(r => {
-      if(r.proveedor){
-        const provFound = PROVEEDORES.find(p => (p.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase());
-        if(provFound) provFound.estado = 'ACTIVO';
-      }
-    });
-
     // ── Guardar conteos reales para el dashboard ─────────────────────────────
     window._REP_UNID_COUNT  = seenPlacas.size  || REP_ROWS.filter(r=>r.placa).length;
     window._REP_COND_COUNT  = seenConds.size   || REP_ROWS.filter(r=>r.conductor||r.dni).length;
     window._REP_PROV_COUNT  = seenProvs.size;
+
+    // ✅ ACTIVAR PROVEEDORES
+    REP_ROWS.forEach(r => {
+      if(r.proveedor){
+        const p = PROVEEDORES.find(pv => (pv.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase());
+        if(p) p.estado = 'ACTIVO';
+      }
+    });
 
     renderReporte();
     document.getElementById('rep-kpi-row').style.display='';
@@ -3029,23 +3011,6 @@ function cerrarModalProv(){
 }
 
 // ── ARRANQUE
-function abrirFormularioUnidad(placa){
-  document.getElementById("u-placa").value = placa;
-  document.getElementById("u-proveedor").value = "";
-  document.getElementById("u-estado").value = "ACTIVO";
-  switchTab("registro-unidades");
-  document.getElementById("u-tipo").focus();
-  showToast("✓ Formulario listo", "ok");
-}
-function abrirFormularioProveedor(nombre){
-  document.getElementById("pv-nom").value = nombre;
-  document.getElementById("pv-estado").value = "ACTIVO";
-  document.getElementById("pv-ruc").value = "";
-  switchTab("registro-proveedores");
-  document.getElementById("pv-ruc").focus();
-  showToast("✓ Formulario listo", "ok");
-}
-
 if(!localStorage.getItem('gs_url') && GS_URL){
   localStorage.setItem('gs_url', GS_URL);
 }
