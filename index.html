@@ -1027,11 +1027,35 @@ let PROVEEDORES = [];
 // RECÁLCULO AUTOMÁTICO
 // ═══════════════════════════════════════════════
 function calcDiasDesde(fechaStr) {
-  if (!fechaStr || fechaStr==='' || fechaStr==='NO APLICA' || fechaStr==='UNIDAD <=') return null;
+  if (!fechaStr || fechaStr==='' || fechaStr==='NO APLICA' || fechaStr==='UNIDAD <=' || fechaStr==='-') return null;
   try {
     const hoy = new Date(); hoy.setHours(0,0,0,0);
-    const fv = new Date(fechaStr); fv.setHours(0,0,0,0);
+    let fv = null;
+    const s = String(fechaStr).trim();
+    
+    // Formato DD/MM/YYYY (peruano - el del Sheet)
+    let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m){ fv = new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1])); }
+    
+    // Formato DD-MM-YYYY
+    if(!fv){
+      m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+      if(m){ fv = new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1])); }
+    }
+    
+    // Formato YYYY-MM-DD (ISO)
+    if(!fv){
+      m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if(m){ fv = new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3])); }
+    }
+    
+    // Fallback: intentar parseo nativo
+    if(!fv || isNaN(fv.getTime())){
+      fv = new Date(s);
+    }
+    
     if (isNaN(fv.getTime())) return null;
+    fv.setHours(0,0,0,0);
     return Math.floor((fv-hoy)/86400000);
   } catch(e){ return null; }
 }
@@ -1044,14 +1068,45 @@ function estadoDesde(dias) {
 function recalcular() {
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   CONDUCTORES.forEach(c => {
-    if (c.fechaLic) { const d=calcDiasDesde(c.fechaLic); if(d!==null){c.diasLic=String(d);c.estadoLic=estadoDesde(d);} }
-    if (c.fechaSctr){ const d=calcDiasDesde(c.fechaSctr);if(d!==null){c.diasSctr=String(d);c.estadoSctr=estadoDesde(d);}}
+    // Si los días ya vienen del sheet como número, usarlos. Sino, calcular desde fecha.
+    if (c.fechaLic) { 
+      const d=calcDiasDesde(c.fechaLic); 
+      if(d!==null){ c.diasLic=String(d); c.estadoLic=estadoDesde(d); }
+    } else if(c.diasLic && !isNaN(parseInt(c.diasLic))){
+      const d = parseInt(c.diasLic);
+      c.estadoLic = estadoDesde(d);
+    }
+    if (c.fechaSctr){ 
+      const d=calcDiasDesde(c.fechaSctr); 
+      if(d!==null){ c.diasSctr=String(d); c.estadoSctr=estadoDesde(d); }
+    } else if(c.diasSctr && !isNaN(parseInt(c.diasSctr))){
+      const d = parseInt(c.diasSctr);
+      c.estadoSctr = estadoDesde(d);
+    }
     if (c.fechaEmo) { const d=calcDiasDesde(c.fechaEmo); if(d!==null){c.diasEmo=String(d);c.estadoEmo=estadoDesde(d);} }
   });
   UNIDADES.forEach(u => {
-    if (u.fechaSoat){ const d=calcDiasDesde(u.fechaSoat);if(d!==null){u.diasSoat=String(d);u.estadoSoat=estadoDesde(d);}}
-    if (u.fechaRtv) { const d=calcDiasDesde(u.fechaRtv); if(d!==null){u.diasRtv=String(d);u.estadoRtv=estadoDesde(d); }}
-    if (u.fechaTc)  { const d=calcDiasDesde(u.fechaTc);  if(d!==null){u.diasTc=String(d);u.estadoTc=estadoDesde(d);  }}
+    if (u.fechaSoat){ 
+      const d=calcDiasDesde(u.fechaSoat); 
+      if(d!==null){ u.diasSoat=String(d); u.estadoSoat=estadoDesde(d); }
+    } else if(u.diasSoat && !isNaN(parseInt(u.diasSoat))){
+      const d = parseInt(u.diasSoat);
+      u.estadoSoat = estadoDesde(d);
+    }
+    if (u.fechaRtv) { 
+      const d=calcDiasDesde(u.fechaRtv); 
+      if(d!==null){ u.diasRtv=String(d); u.estadoRtv=estadoDesde(d); }
+    } else if(u.diasRtv && !isNaN(parseInt(u.diasRtv))){
+      const d = parseInt(u.diasRtv);
+      u.estadoRtv = estadoDesde(d);
+    }
+    if (u.fechaTc)  { 
+      const d=calcDiasDesde(u.fechaTc);  
+      if(d!==null){ u.diasTc=String(d); u.estadoTc=estadoDesde(d); }
+    } else if(u.diasTc && !isNaN(parseInt(u.diasTc))){
+      const d = parseInt(u.diasTc);
+      u.estadoTc = estadoDesde(d);
+    }
     if (u.anio&&parseInt(u.anio)>0) u.antiguedad=String(new Date().getFullYear()-parseInt(u.anio));
   });
 }
@@ -1718,13 +1773,11 @@ function renderCondRow(r, num){
     return `<tr style="background:rgba(245,158,11,0.06)">
       <td class="mono" style="color:var(--text3)">${num}</td>
       <td class="mono" style="color:var(--warn)">${r.dni||'—'}</td>
-      <td style="max-width:160px;white-space:normal;font-size:12px;font-weight:600;color:var(--warn)">${r.conductor||'—'}</td>
+      <td style="max-width:160px;white-space:normal;font-size:12px;font-weight:600;color:var(--warn)">${r.conductor||'—'}<br><button onclick="irRegistrarConductor('${nom}','${dni}','${prov}','${plc}')" style="margin-top:4px;background:#f59e0b;color:#000;border:none;border-radius:5px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button></td>
       <td><span class="badge warn">SIN REG.</span></td>
       <td style="font-size:11px">${r.proveedor||'—'}</td>
       <td class="mono">${r.placa||'—'}</td>
-      <td colspan="13" style="text-align:center">
-        <button onclick="irRegistrarConductor('${nom}','${dni}','${prov}','${plc}')" style="background:var(--warn);color:#000;border:none;border-radius:5px;padding:4px 14px;font-size:11px;font-weight:700;cursor:pointer">✚ Registrar</button>
-      </td>
+      <td colspan="13"></td>
     </tr>`;
   }
   const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocCond('${dni}','${campo}')" title="Clic para marcar/desmarcar">
@@ -3048,30 +3101,24 @@ function cerrarModalProv(){
 // ✅ FUNCIONES PARA BOTONES REGISTRAR
 function abrirRegUnid(btn){
   const placa = btn.getAttribute('data-placa');
-  const inp = document.getElementById('u-placa');
-  if(inp) inp.value = placa;
-  const est = document.getElementById('u-estado');
-  if(est) est.value = 'ACTIVO';
-  if(typeof goPage === 'function'){
-    const nav = document.querySelector('.nav-item[onclick*="reg-unidades"]');
-    if(nav) goPage('reg-unidades', nav);
-  } else if(typeof switchTab === 'function'){
-    switchTab('registro-unidades');
-  }
+  goPage('reg-unidad', document.querySelector('.nav-item[onclick*="reg-unidad"]'));
+  setTimeout(()=>{
+    const inp = document.getElementById('u-placa');
+    if(inp) inp.value = placa;
+    const est = document.getElementById('u-estado');
+    if(est) est.value = 'ACTIVO';
+  },100);
   showToast('✓ Formulario listo. Completa los datos','ok');
 }
 function abrirRegProv(btn){
   const nom = btn.getAttribute('data-nom');
-  const inp = document.getElementById('pv-nom');
-  if(inp) inp.value = nom;
-  const est = document.getElementById('pv-estado');
-  if(est) est.value = 'ACTIVO';
-  if(typeof goPage === 'function'){
-    const nav = document.querySelector('.nav-item[onclick*="reg-proveedores"]');
-    if(nav) goPage('reg-proveedores', nav);
-  } else if(typeof switchTab === 'function'){
-    switchTab('registro-proveedores');
-  }
+  goPage('reg-proveedor', document.querySelector('.nav-item[onclick*="reg-proveedor"]'));
+  setTimeout(()=>{
+    const inp = document.getElementById('rp-nombre');
+    if(inp) inp.value = nom;
+    const est = document.getElementById('rp-estado');
+    if(est) est.value = 'ACTIVO';
+  },100);
   showToast('✓ Formulario listo. Completa los datos','ok');
 }
 
