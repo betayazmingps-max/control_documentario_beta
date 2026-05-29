@@ -1824,15 +1824,13 @@ async function toggleDocUnid(placa, campo){
   const idx = UNIDADES.findIndex(u=>u.placa===placa);
   if(idx<0){ showToast('Unidad no encontrada','err'); return; }
   const actual = UNIDADES[idx][campo];
-  const nuevoValor = (actual==='✓') ? '✗' : '✓';
-  UNIDADES[idx][campo] = nuevoValor;
+  UNIDADES[idx][campo] = (actual==='✓') ? '✗' : '✓';
   const u = UNIDADES[idx];
   const docs = [u.docTarjProp,u.docSoat,u.docRtv,u.docTc,u.docMnto,u.docBoletin,u.docPoliza].filter(v=>v==='✓').length;
   UNIDADES[idx].cumpl = `${docs}/7 (${Math.round(docs/7*100)}%)`;
-  showToast(nuevoValor==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
-  const td = document.querySelector(`[data-placa-chk="${placa}"][data-campo-chk="${campo}"]`);
-  if(td){ const span = td.querySelector('span'); if(span){ span.textContent = nuevoValor; span.style.color = nuevoValor==='✓' ? 'var(--green)' : 'var(--text3)'; } }
+  showToast(UNIDADES[idx][campo]==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
   if(GS_URL) await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
+  renderUnidades();
 }
 
 function editCeldaUnid(placa, campo, valorActual){
@@ -1936,7 +1934,7 @@ function renderUnidades(){
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
   let rows;
   if(UNID_MODO_DIA && REP_ROWS.length>0){
-    rows = REP_ROWS.map(r=> r.unidBD || {placa:r.placa||'',proveedor:r.proveedor||'',estado:'ACTIVO',centro:'',tipo:'',anio:'',ejes:'',ruedas:'',pesoBruto:'',pesoNeto:'',tipoSeguro:'',tipoSoat:'',diasSoat:'',estadoSoat:'',diasRtv:'',estadoRtv:'',diasTc:'',estadoTc:'',docTarjProp:'✗',docSoat:'✗',docRtv:'✗',docTc:'✗',docMnto:'✗',docBoletin:'✗',docPoliza:'✗',cumpl:'0/7 (0%)',_nuevaUnidad:true});
+    rows = REP_ROWS.filter(r=>r.unidBD).map(r=>r.unidBD);
     const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
   } else {
     const {estado}=state.unidades;
@@ -2028,21 +2026,25 @@ function renderProveedores(){
     return false;
   };
 
-  let data=PROVEEDORES.filter(p=>{
+  // ✅ SI HAY REPORTE, SOLO MOSTRAR PROVEEDORES DEL REPORTE
+  let proveedoresAMostrar = PROVEEDORES;
+  if(REP_ROWS.length > 0){
+    const nomsProv = new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()));
+    proveedoresAMostrar = PROVEEDORES.filter(p => nomsProv.has((p.nombre||'').trim().toUpperCase()));
+  }
+  
+  let data=proveedoresAMostrar.filter(p=>{
     if(esInvalida(p)) return false;
-    // ✅ FILTRAR SOLO DEL REPORTE CUANDO HAY REPORTE
-    if(REP_ROWS.length>0){
-      const nomProv = (p.nombre||'').trim().toUpperCase();
-      const enReporte = REP_ROWS.some(r=>(r.proveedor||'').trim().toUpperCase()===nomProv);
-      if(!enReporte) return false;
-    }
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
     if(zona&&p.zona!==zona) return false;
+    // Filtro por tipo
     const tipoF=(document.getElementById('pv-tipo')||{value:''}).value;
     if(tipoF&&p.tipo!==tipoF) return false;
+    // Filtro por responsable
     const respF=(document.getElementById('pv-resp')||{value:''}).value;
     if(respF&&(p.responsable||'').toUpperCase()!==respF.toUpperCase()) return false;
+    // Filtro por cumplimiento documentario
     if(cumplF){
       const pd2=getPD(p.nombre);
       const pct2=Math.round(pd2.docs.filter(Boolean).length/20*100);
@@ -2052,6 +2054,20 @@ function renderProveedores(){
     }
     return true;
   });
+
+  // ✅ AGREGAR PROVEEDORES NUEVOS DEL REPORTE
+  if(REP_ROWS.length > 0){
+    const provsEnBD = new Set(PROVEEDORES.map(x => (x.nombre||'').trim().toUpperCase()));
+    const nuevosAgregados = new Set();
+    REP_ROWS.forEach(r => {
+      const nom = (r.proveedor||'').trim();
+      const nomUpper = nom.toUpperCase();
+      if(nom && !provsEnBD.has(nomUpper) && !nuevosAgregados.has(nomUpper)){
+        nuevosAgregados.add(nomUpper);
+        data.push({nombre: nom, estado: 'ACTIVO', _nuevoProveedor: true, ruc: '', contacto: '', zona: '', tipo: '', codigo: '', responsable: '', docs: Array(20).fill(false)});
+      }
+    });
+  }
 
   const provCond={},provUnid={};
   CONDUCTORES.forEach(c=>{if(c.proveedor)provCond[c.proveedor]=(provCond[c.proveedor]||0)+1;});
@@ -2088,7 +2104,7 @@ function renderProveedores(){
 
       return `<tr>
         <td class="mono" style="color:var(--text3)">${(PV_PAGE-1)*PV_PS+i+1}</td>
-        <td style="min-width:200px;white-space:normal;font-size:11.5px;font-weight:500">${p.nombre}</td>
+        <td style="min-width:200px;white-space:normal;font-size:11.5px;font-weight:500">${p.nombre}${p._nuevoProveedor ? '<br><button onclick="abrirFormProv(' + "'" + (p.nombre||'').replace(/'/g, "\\'") + "'" + ')" style="display:block;margin-top:2px;background:var(--green);color:white;border:none;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;cursor:pointer">✚ Registrar</button>' : ''}</td>
         <td>${badge(p.estado||'INACTIVO')}</td>
         <td style="font-size:11px">${p.zona||'—'}</td>
         <td style="font-size:10.5px">${p.tipo||'—'}</td>
@@ -2405,8 +2421,6 @@ async function leerReporte(){
       // Buscar en BD con normalización robusta
       const unidBD = buscarPorPlaca(placa);
       const condBD = buscarConductorBD(conductor, dni);
-      
-      // ✅ ACTIVAR AUTOMÁTICAMENTE
       if(unidBD) unidBD.estado = 'ACTIVO';
       if(condBD) condBD.estado = 'ACTIVO';
 
@@ -2437,12 +2451,12 @@ async function leerReporte(){
     window._REP_UNID_COUNT  = seenPlacas.size  || REP_ROWS.filter(r=>r.placa).length;
     window._REP_COND_COUNT  = seenConds.size   || REP_ROWS.filter(r=>r.conductor||r.dni).length;
     window._REP_PROV_COUNT  = seenProvs.size;
-
-    // ✅ ACTIVAR PROVEEDORES DEL REPORTE
-    REP_ROWS.forEach(r=>{
+    
+    // ✅ ACTIVAR PROVEEDORES
+    REP_ROWS.forEach(r => {
       if(r.proveedor){
-        const p = PROVEEDORES.find(pv=>(pv.nombre||'').trim().toUpperCase()===(r.proveedor||'').trim().toUpperCase());
-        if(p) p.estado='ACTIVO';
+        const p = PROVEEDORES.find(pv => (pv.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase());
+        if(p) p.estado = 'ACTIVO';
       }
     });
 
@@ -2508,10 +2522,10 @@ function renderReporte(){
            <br><span style="font-size:9px;color:var(--text3)">DNI:${r.dni||'—'} · No en BD</span>
            <button onclick="irRegistrarConductor('${(r.conductor||'').replace(/'/g,"\'")}','${r.dni}','${(r.proveedor||'').replace(/'/g,"\'")}','${r.placa}')" style="display:block;margin-top:2px;background:var(--warn);color:#000;border:none;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;cursor:pointer">✚ Registrar</button>`
         : '—';
-    // Unidad: mostrar tipo si hay match, o placa nueva
+    // Unidad: mostrar tipo si hay match, o placa nueva CON BOTÓN
     const unidCell = r.placa
       ? (u ? `<span class="mono" style="font-weight:700;color:var(--accent2)">${r.placa}</span><br><span style="font-size:9px;color:var(--text3)">${u.tipo||u.marca||''}</span>`
-           : `<span class="mono" style="font-weight:700;color:var(--warn)">${r.placa}</span><br><span style="font-size:9px;color:var(--text3)">Nueva</span>`)
+           : `<span class="mono" style="font-weight:700;color:var(--warn)">${r.placa}</span><br><span style="font-size:9px;color:var(--text3)">Nueva</span><button onclick="abrirFormUnid('${r.placa}')" style="display:block;margin-top:2px;background:var(--green);color:white;border:none;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;cursor:pointer">✚ Registrar</button>`)
       : '—';
     return `<tr ${rowStyle}>
       <td class="mono" style="color:var(--text3)">${i+1}</td>
@@ -3006,6 +3020,19 @@ function cerrarModalProv(){
 }
 
 // ── ARRANQUE
+function abrirFormUnid(placa){
+  document.getElementById("u-placa").value = placa;
+  document.getElementById("u-estado").value = "ACTIVO";
+  switchTab("registro-unidades");
+  showToast("✓ Formulario listo","ok");
+}
+function abrirFormProv(nombre){
+  document.getElementById("pv-nom").value = nombre;
+  document.getElementById("pv-estado").value = "ACTIVO";
+  switchTab("registro-proveedores");
+  showToast("✓ Formulario listo","ok");
+}
+
 if(!localStorage.getItem('gs_url') && GS_URL){
   localStorage.setItem('gs_url', GS_URL);
 }
