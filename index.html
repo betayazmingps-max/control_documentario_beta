@@ -7,23 +7,23 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#dde1e7;--bg2:#e8ebef;--bg3:#eef0f3;--bg4:#d4d8de;
-  --border:#c8cdd5;--border2:#b8bec8;
-  --sb-bg:#1c1f26;--sb-bg2:#252930;--sb-border:rgba(255,255,255,0.07);
-  --sb-text:rgba(255,255,255,0.55);--sb-text-act:#ffffff;
-  --sb-accent:#4f7ef8;--sb-hover:rgba(255,255,255,0.06);
-  --sb-active:rgba(79,126,248,0.18);
-  --accent:#4f7ef8;--accent2:#3b6ef0;--accent3:rgba(79,126,248,0.12);
-  --green:#16a34a;--green2:rgba(22,163,74,0.12);
-  --warn:#d97706;--warn2:rgba(217,119,6,0.12);
-  --danger:#dc2626;--danger2:rgba(220,38,38,0.12);
-  --purple:#7c3aed;--purple2:rgba(124,58,237,0.12);
-  --text:#0f1117;--text2:#374151;--text3:#6b7280;
+  --bg:#f0f4f8;--bg2:#ffffff;--bg3:#f3f4f6;--bg4:#e5e7eb;
+  --border:#d1d5db;--border2:#c8cdd5;
+  --sb-bg:#0f172a;--sb-bg2:#1a2642;--sb-border:rgba(255,255,255,0.08);
+  --sb-text:rgba(255,255,255,0.6);--sb-text-act:#ffffff;
+  --sb-accent:#3b82f6;--sb-hover:rgba(255,255,255,0.08);
+  --sb-active:rgba(59,130,246,0.2);
+  --accent:#3b82f6;--accent2:#2563eb;--accent3:rgba(59,130,246,0.15);
+  --green:#10b981;--green2:rgba(16,185,129,0.15);
+  --warn:#f59e0b;--warn2:rgba(245,158,11,0.15);
+  --danger:#ef4444;--danger2:rgba(239,68,68,0.15);
+  --purple:#8b5cf6;--purple2:rgba(139,92,246,0.15);
+  --text:#1f2937;--text2:#4b5563;--text3:#6b7280;
   --radius:10px;--radius-sm:6px;
   --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
-  --success:#16a34a;--success-bg:rgba(22,163,74,0.12);
-  --warning:#d97706;--warning-bg:rgba(217,119,6,0.12);
-  --danger-bg:rgba(220,38,38,0.12);
+  --success:#10b981;--success-bg:rgba(16,185,129,0.15);
+  --warning:#f59e0b;--warning-bg:rgba(245,158,11,0.15);
+  --danger-bg:rgba(239,68,68,0.15);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px;}
@@ -47,15 +47,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .gs-dot.off{background:var(--danger);}
 
 /* MAIN */
-.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;background:#dde1e7;}
-.topbar{background:linear-gradient(90deg,#ffffff 0%,#f7f8fa 100%);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(15,17,23,0.08);}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;background:#f0f4f8;}
+.topbar{background:linear-gradient(90deg,#ffffff 0%,#f9fafb 100%);border-bottom:1px solid var(--border);padding:13px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 .topbar-left{display:flex;align-items:center;gap:12px;}
-.topbar-title{font-size:22px;font-weight:800;color:#0f1117;letter-spacing:-0.5px;background:linear-gradient(90deg,#0f1117 0%,#374151 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.topbar-title{font-size:20px;font-weight:800;color:#111827;letter-spacing:-0.3px;}
 .topbar-right{display:flex;align-items:center;gap:8px;}
-.tb-btn{border:1px solid var(--border2);background:var(--bg3);border-radius:var(--radius-sm);padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all 0.12s;display:flex;align-items:center;gap:5px;}
-.tb-btn:hover{border-color:var(--accent);color:var(--accent2);}
-.tb-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
-.tb-btn.primary:hover{background:#2563eb;}
+.tb-btn{border:1px solid var(--border);background:#ffffff;border-radius:var(--radius-sm);padding:7px 13px;font-size:12px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all 0.15s;display:flex;align-items:center;gap:5px;font-weight:500;}
+.tb-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 6px rgba(59,130,246,0.2);}
+.tb-btn.primary{background:var(--accent);color:#ffffff;border-color:var(--accent);font-weight:600;}
+.tb-btn.primary:hover{background:#2563eb;box-shadow:0 4px 12px rgba(37,99,235,0.35);}
 .search-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;font-size:12px;font-family:var(--font);width:200px;outline:none;color:var(--text);transition:border-color 0.12s;}
 .search-box:focus{border-color:var(--accent);}
 .filter-sel{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;color:var(--text);cursor:pointer;}
@@ -71,14 +71,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .kpi-grid.cols-6{grid-template-columns:repeat(6,1fr);}
 .kpi-grid.cols-5{grid-template-columns:repeat(5,1fr);}
 .kpi-grid.cols-4{grid-template-columns:repeat(4,1fr);}
-.kpi-card{background:linear-gradient(135deg,#ffffff 0%,#f9fafb 100%);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(15,17,23,0.07);transition:transform 0.15s,box-shadow 0.15s;}
-.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi-card{background:linear-gradient(135deg,#ffffff 0%,#f9fafb 100%);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);transition:all 0.2s;}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
 .kpi-card.blue::after{background:var(--accent);}
 .kpi-card.green::after{background:var(--green);}
 .kpi-card.warn::after{background:var(--warn);}
 .kpi-card.danger::after{background:var(--danger);}
 .kpi-card.purple::after{background:var(--purple);}
-.kpi-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(15,17,23,0.11);}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.1);}
 .kpi-label{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
 .kpi-value{font-size:28px;font-weight:700;color:var(--text);line-height:1;margin-bottom:3px;font-family:var(--mono);}
 .kpi-sub{font-size:11px;color:var(--text2);}
@@ -94,14 +94,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .count-tag{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--text2);font-family:var(--mono);}
 
 /* TABLE */
-.tbl-wrap{background:#ffffff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 8px rgba(15,17,23,0.07);}
+.tbl-wrap{background:#ffffff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 .tbl-scroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
-thead th{text-align:left;padding:9px 12px;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:#f0f2f5;border-bottom:1px solid var(--border);white-space:nowrap;}
-tbody tr{border-bottom:1px solid #eaedf2;transition:background 0.1s;}
-tbody tr:hover{background:rgba(79,126,248,0.04);}
+thead th{text-align:left;padding:11px 12px;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;background:#f9fafb;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid #f3f4f6;transition:background 0.12s;}
+tbody tr:hover{background:rgba(59,130,246,0.05);}
 tbody tr:last-child{border-bottom:none;}
-td{padding:8px 12px;color:var(--text);font-size:12px;vertical-align:middle;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
+td{padding:10px 12px;color:var(--text);font-size:12px;vertical-align:middle;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
 td.mono{font-family:var(--mono);font-size:11px;}
 .tbl-footer{padding:8px 14px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:space-between;}
 .pag-btns{display:flex;gap:4px;}
@@ -110,14 +110,14 @@ td.mono{font-family:var(--mono);font-size:11px;}
 .pag-btn.active{background:var(--accent3);border-color:var(--accent);color:var(--accent2);}
 
 /* BADGES */
-.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;white-space:nowrap;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;white-space:nowrap;}
 .badge::before{content:'●';font-size:6px;}
-.badge.ok{background:var(--green2);color:var(--green);}
-.badge.warn{background:var(--warn2);color:var(--warn);}
-.badge.danger{background:var(--danger2);color:var(--danger);}
-.badge.inactive{background:var(--bg4);color:var(--text3);}
-.badge.blue{background:var(--accent3);color:var(--accent2);}
-.badge.purple{background:var(--purple2);color:var(--purple);}
+.badge.ok{background:rgba(16,185,129,0.2);color:#059669;}
+.badge.warn{background:rgba(245,158,11,0.2);color:#b45309;}
+.badge.danger{background:rgba(239,68,68,0.2);color:#991b1b;}
+.badge.inactive{background:rgba(107,114,128,0.12);color:#6b7280;}
+.badge.blue{background:rgba(59,130,246,0.2);color:#1e40af;}
+.badge.purple{background:rgba(139,92,246,0.2);color:#6d28d9;}
 
 /* DIAS */
 .d-ok{color:var(--green);font-family:var(--mono);font-size:11px;font-weight:500;}
@@ -1032,7 +1032,7 @@ function calcDiasDesde(fechaStr) {
     const hoy = new Date(); hoy.setHours(0,0,0,0);
     const fv = new Date(fechaStr); fv.setHours(0,0,0,0);
     if (isNaN(fv.getTime())) return null;
-    return Math.floor((fv-hoy)/86400000);
+    return Math.round((fv-hoy)/86400000);
   } catch(e){ return null; }
 }
 function estadoDesde(dias) {
@@ -1824,15 +1824,13 @@ async function toggleDocUnid(placa, campo){
   const idx = UNIDADES.findIndex(u=>u.placa===placa);
   if(idx<0){ showToast('Unidad no encontrada','err'); return; }
   const actual = UNIDADES[idx][campo];
-  const nuevoValor = (actual==='✓') ? '✗' : '✓';
-  UNIDADES[idx][campo] = nuevoValor;
+  UNIDADES[idx][campo] = (actual==='✓') ? '✗' : '✓';
   const u = UNIDADES[idx];
   const docs = [u.docTarjProp,u.docSoat,u.docRtv,u.docTc,u.docMnto,u.docBoletin,u.docPoliza].filter(v=>v==='✓').length;
   UNIDADES[idx].cumpl = `${docs}/7 (${Math.round(docs/7*100)}%)`;
-  showToast(nuevoValor==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
-  const td = document.querySelector(`[data-placa-chk="${placa}"][data-campo-chk="${campo}"]`);
-  if(td){ const span = td.querySelector('span'); if(span){ span.textContent = nuevoValor; span.style.color = nuevoValor==='✓' ? 'var(--green)' : 'var(--text3)'; } }
+  showToast(UNIDADES[idx][campo]==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
   if(GS_URL) await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
+  renderUnidades();
 }
 
 function editCeldaUnid(placa, campo, valorActual){
@@ -1936,7 +1934,7 @@ function renderUnidades(){
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
   let rows;
   if(UNID_MODO_DIA && REP_ROWS.length>0){
-    rows = REP_ROWS.map(r=> r.unidBD || {placa:r.placa||'',proveedor:r.proveedor||'',estado:'ACTIVO',centro:'',tipo:'',anio:'',ejes:'',ruedas:'',pesoBruto:'',pesoNeto:'',tipoSeguro:'',tipoSoat:'',diasSoat:'',estadoSoat:'',diasRtv:'',estadoRtv:'',diasTc:'',estadoTc:'',docTarjProp:'✗',docSoat:'✗',docRtv:'✗',docTc:'✗',docMnto:'✗',docBoletin:'✗',docPoliza:'✗',cumpl:'0/7 (0%)',_nuevaUnidad:true});
+    rows = REP_ROWS.filter(r=>r.unidBD).map(r=>r.unidBD);
     const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
   } else {
     const {estado}=state.unidades;
@@ -2028,14 +2026,7 @@ function renderProveedores(){
     return false;
   };
 
-  // ✅ SI HAY REPORTE, SOLO MOSTRAR PROVEEDORES DEL REPORTE
-  let proveedoresAMostrar = PROVEEDORES;
-  if(REP_ROWS.length > 0){
-    const nomsProv = new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()));
-    proveedoresAMostrar = PROVEEDORES.filter(p => nomsProv.has((p.nombre||'').trim().toUpperCase()));
-  }
-  
-  let data=proveedoresAMostrar.filter(p=>{
+  let data=PROVEEDORES.filter(p=>{
     if(esInvalida(p)) return false;
     if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
     if(estado&&p.estado!==estado) return false;
@@ -2056,20 +2047,6 @@ function renderProveedores(){
     }
     return true;
   });
-
-  // ✅ AGREGAR PROVEEDORES NUEVOS DEL REPORTE
-  if(REP_ROWS.length > 0){
-    const provsEnBD = new Set(PROVEEDORES.map(x => (x.nombre||'').trim().toUpperCase()));
-    const nuevosAgregados = new Set();
-    REP_ROWS.forEach(r => {
-      const nom = (r.proveedor||'').trim();
-      const nomUpper = nom.toUpperCase();
-      if(nom && !provsEnBD.has(nomUpper) && !nuevosAgregados.has(nomUpper)){
-        nuevosAgregados.add(nomUpper);
-        data.push({nombre: nom, estado: 'ACTIVO', _nuevoProveedor: true, ruc: '', contacto: '', zona: '', tipo: '', codigo: '', responsable: '', docs: Array(20).fill(false)});
-      }
-    });
-  }
 
   const provCond={},provUnid={};
   CONDUCTORES.forEach(c=>{if(c.proveedor)provCond[c.proveedor]=(provCond[c.proveedor]||0)+1;});
@@ -2106,7 +2083,7 @@ function renderProveedores(){
 
       return `<tr>
         <td class="mono" style="color:var(--text3)">${(PV_PAGE-1)*PV_PS+i+1}</td>
-        <td style="min-width:200px;white-space:normal;font-size:11.5px;font-weight:500">${p.nombre}${p._nuevoProveedor ? '<br><button onclick="abrirFormProv(' + "'" + (p.nombre||'').replace(/'/g, "\\'") + "'" + ')" style="display:block;margin-top:2px;background:var(--green);color:white;border:none;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;cursor:pointer">✚ Registrar</button>' : ''}</td>
+        <td style="min-width:200px;white-space:normal;font-size:11.5px;font-weight:500">${p.nombre}</td>
         <td>${badge(p.estado||'INACTIVO')}</td>
         <td style="font-size:11px">${p.zona||'—'}</td>
         <td style="font-size:10.5px">${p.tipo||'—'}</td>
@@ -2423,8 +2400,6 @@ async function leerReporte(){
       // Buscar en BD con normalización robusta
       const unidBD = buscarPorPlaca(placa);
       const condBD = buscarConductorBD(conductor, dni);
-      if(unidBD) unidBD.estado = 'ACTIVO';
-      if(condBD) condBD.estado = 'ACTIVO';
 
       // Contar únicos reales
       if(placa) seenPlacas.add(placa);
@@ -2453,14 +2428,6 @@ async function leerReporte(){
     window._REP_UNID_COUNT  = seenPlacas.size  || REP_ROWS.filter(r=>r.placa).length;
     window._REP_COND_COUNT  = seenConds.size   || REP_ROWS.filter(r=>r.conductor||r.dni).length;
     window._REP_PROV_COUNT  = seenProvs.size;
-    
-    // ✅ ACTIVAR PROVEEDORES
-    REP_ROWS.forEach(r => {
-      if(r.proveedor){
-        const p = PROVEEDORES.find(pv => (pv.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase());
-        if(p) p.estado = 'ACTIVO';
-      }
-    });
 
     renderReporte();
     document.getElementById('rep-kpi-row').style.display='';
@@ -2516,11 +2483,13 @@ function renderReporte(){
   document.getElementById('rep-tbody').innerHTML=rows.length?rows.map((r,i)=>{
     const u=r.unidBD,c=r.condBD;
     const rowStyle=r.estado==='bad'?'style="background:rgba(239,68,68,0.05)"':r.estado==='warn'?'style="background:rgba(245,158,11,0.05)"':r.estado==='nf'?'style="background:rgba(107,114,128,0.05)"':'';
-    // Conductor: mostrar nombre + badge si no está en BD
+    // Conductor: mostrar nombre + badge si no está en BD + botón registrar
     const condCell = c
       ? `<span style="font-size:12px;font-weight:500">${c.conductor||r.conductor||'—'}</span>`
       : r.conductor||r.dni
-        ? `<span style="font-size:12px;color:var(--warn);font-weight:600">${r.conductor||'—'}</span><br><span style="font-size:9px;color:var(--text3)">DNI:${r.dni||'—'} · No en BD</span>`
+        ? `<span style="font-size:12px;color:var(--warn);font-weight:600">${r.conductor||'—'}</span>
+           <br><span style="font-size:9px;color:var(--text3)">DNI:${r.dni||'—'} · No en BD</span>
+           <button onclick="irRegistrarConductor('${(r.conductor||'').replace(/'/g,"\'")}','${r.dni}','${(r.proveedor||'').replace(/'/g,"\'")}','${r.placa}')" style="display:block;margin-top:2px;background:var(--warn);color:#000;border:none;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;cursor:pointer">✚ Registrar</button>`
         : '—';
     // Unidad: mostrar tipo si hay match, o placa nueva
     const unidCell = r.placa
@@ -2531,7 +2500,6 @@ function renderReporte(){
       <td class="mono" style="color:var(--text3)">${i+1}</td>
       <td>${unidCell}</td>
       <td style="max-width:160px;white-space:normal">${condCell}</td>
-      <td>${!c && (r.conductor||r.dni) ? '<button onclick="irRegistrarConductor(' + "'" + (r.conductor||'').replace(/'/g, "\\'") + "'" + ',' + "'" + (r.dni||'') + "'" + ',' + "'" + (r.proveedor||'').replace(/'/g, "\\'") + "'" + ',' + "'" + (r.placa||'').replace(/'/g, "\\'") + "'" + ')" style="background:var(--warn);color:#000;border:none;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;width:110px">✚ Registrar</button>' : ''}</td>
       <td style="font-size:11px;max-width:120px;white-space:normal">${(u?u.proveedor:'')||r.proveedor||'—'}</td>
       <td style="font-size:11px;max-width:110px;white-space:normal">${r.ruta||'—'}</td>
       <td class="mono" style="font-size:11px">${r.centro||(u?u.centro:'')||'—'}</td>
@@ -2545,7 +2513,6 @@ function renderReporte(){
       <td>${u?badge(u.estadoRtv||'—'):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${u?diasCell(u.diasRtv):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${estBadge(r.estado)}</td>
-      <td>${!u && r.placa ? '<button onclick="abrirFormUnid(' + "'" + (r.placa||'').replace(/'/g, "\\'") + "'" + ')" style="background:var(--green);color:white;border:none;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;width:110px">✚ Registrar</button>' : ''}</td>
     </tr>`;}).join(''):'<tr><td colspan="16" class="empty-state">Sin resultados</td></tr>';
 }
 function limpiarReporte(){
@@ -3022,19 +2989,6 @@ function cerrarModalProv(){
 }
 
 // ── ARRANQUE
-function abrirFormUnid(placa){
-  document.getElementById("u-placa").value = placa;
-  document.getElementById("u-estado").value = "ACTIVO";
-  switchTab("registro-unidades");
-  showToast("✓ Formulario listo","ok");
-}
-function abrirFormProv(nombre){
-  document.getElementById("pv-nom").value = nombre;
-  document.getElementById("pv-estado").value = "ACTIVO";
-  switchTab("registro-proveedores");
-  showToast("✓ Formulario listo","ok");
-}
-
 if(!localStorage.getItem('gs_url') && GS_URL){
   localStorage.setItem('gs_url', GS_URL);
 }
@@ -3059,3 +3013,4 @@ if(GS_URL){
 </script>
 </body>
 </html>
+  
