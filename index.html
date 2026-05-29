@@ -1554,11 +1554,25 @@ function goPage(name, el) {
   render();
 }
 function render() {
+  // Re-sincronizar las copias en REP_ROWS con los datos actualizados de BD
+  if(REP_ROWS && REP_ROWS.length>0){
+    REP_ROWS.forEach(r=>{
+      if(r.placa){
+        const u = UNIDADES.find(x => (x.placa||'').trim().toUpperCase().replace(/[\s\-]/g,'') === (r.placa||'').trim().toUpperCase().replace(/[\s\-]/g,''));
+        if(u) r.unidBD = {...u, _enBD:true};
+      }
+      if(r.dni || r.conductor){
+        const c = CONDUCTORES.find(x => (x.dni||'').toString().trim() === (r.dni||'').toString().trim());
+        if(c) r.condBD = {...c, _enBD:true};
+      }
+    });
+  }
   if(currentPage==='dashboard') renderDashboard();
   else if(currentPage==='conductores') renderConductores();
   else if(currentPage==='unidades') renderUnidades();
   else if(currentPage==='proveedores') renderProveedores();
   else if(currentPage==='alertas') renderAlertas();
+  else if(currentPage==='reporte') renderReporte();
 }
 function onSearch(){ state[currentPage]&&(state[currentPage].page=1,state[currentPage].search=document.getElementById('search-input').value.toLowerCase()); render(); }
 function onFilter(){ state[currentPage]&&(state[currentPage].page=1,state[currentPage].estado=document.getElementById('filter-estado').value); render(); }
@@ -2781,21 +2795,26 @@ async function guardarEdit(){
   const v=document.getElementById('edit-fecha').value;
   reg[fechaCampo]=v;
   const dias=calcDiasDesde(v);
+  const mapaEst={diasLic:'estadoLic',diasSctr:'estadoSctr',diasEmo:'estadoEmo',diasSoat:'estadoSoat',diasRtv:'estadoRtv',diasTc:'estadoTc'};
   if(dias!==null){
     reg[diasCampo]=String(dias);
-    const mapaEst={diasLic:'estadoLic',diasSctr:'estadoSctr',diasEmo:'estadoEmo',diasSoat:'estadoSoat',diasRtv:'estadoRtv',diasTc:'estadoTc'};
     if(mapaEst[diasCampo]) reg[mapaEst[diasCampo]]=estadoDesde(dias);
   } else {
-    // Si la fecha está vacía o inválida, limpiar días y estado
     reg[diasCampo]='';
-    const mapaEst={diasLic:'estadoLic',diasSctr:'estadoSctr',diasEmo:'estadoEmo',diasSoat:'estadoSoat',diasRtv:'estadoRtv',diasTc:'estadoTc'};
     if(mapaEst[diasCampo]) reg[mapaEst[diasCampo]]='';
   }
-  if(GS_URL) await guardarEnSheets(tipo==='conductor'?'CONDUCTORES':'UNIDADES', Object.keys(reg), Object.values(reg));
+  // Guardar en Sheets en background (no bloquear UI)
+  if(GS_URL) guardarEnSheets(tipo==='conductor'?'CONDUCTORES':'UNIDADES', Object.keys(reg), Object.values(reg));
+  // Recalcular y actualizar UI inmediatamente
   recalcular();
   cerrarEdit();
-  render();
-  showToast('✓ Fecha actualizada y guardada','ok');
+  // Forzar render de TODAS las páginas relevantes (no solo la actual)
+  if(typeof renderConductores==='function') renderConductores();
+  if(typeof renderUnidades==='function') renderUnidades();
+  if(typeof renderDashboard==='function') renderDashboard();
+  if(typeof renderAlertas==='function') renderAlertas();
+  if(REP_ROWS && REP_ROWS.length>0 && typeof renderReporte==='function') renderReporte();
+  showToast('✓ Fecha actualizada','ok');
 }
 function cerrarEdit(){ document.getElementById('edit-modal').classList.remove('open'); editTarget=null; }
 
