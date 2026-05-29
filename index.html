@@ -1824,13 +1824,15 @@ async function toggleDocUnid(placa, campo){
   const idx = UNIDADES.findIndex(u=>u.placa===placa);
   if(idx<0){ showToast('Unidad no encontrada','err'); return; }
   const actual = UNIDADES[idx][campo];
-  UNIDADES[idx][campo] = (actual==='✓') ? '✗' : '✓';
+  const nuevoValor = (actual==='✓') ? '✗' : '✓';
+  UNIDADES[idx][campo] = nuevoValor;
   const u = UNIDADES[idx];
   const docs = [u.docTarjProp,u.docSoat,u.docRtv,u.docTc,u.docMnto,u.docBoletin,u.docPoliza].filter(v=>v==='✓').length;
   UNIDADES[idx].cumpl = `${docs}/7 (${Math.round(docs/7*100)}%)`;
-  showToast(UNIDADES[idx][campo]==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
+  showToast(nuevoValor==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
+  const td = document.querySelector(`[data-placa-chk="${placa}"][data-campo-chk="${campo}"]`);
+  if(td){ const span = td.querySelector('span'); if(span){ span.textContent = nuevoValor; span.style.color = nuevoValor==='✓' ? 'var(--green)' : 'var(--text3)'; } }
   if(GS_URL) await guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]));
-  renderUnidades();
 }
 
 function editCeldaUnid(placa, campo, valorActual){
@@ -1934,7 +1936,7 @@ function renderUnidades(){
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
   let rows;
   if(UNID_MODO_DIA && REP_ROWS.length>0){
-    rows = REP_ROWS.filter(r=>r.unidBD).map(r=>r.unidBD);
+    rows = REP_ROWS.map(r=> r.unidBD || {placa:r.placa||'',proveedor:r.proveedor||'',estado:'ACTIVO',centro:'',tipo:'',anio:'',ejes:'',ruedas:'',pesoBruto:'',pesoNeto:'',tipoSeguro:'',tipoSoat:'',diasSoat:'',estadoSoat:'',diasRtv:'',estadoRtv:'',diasTc:'',estadoTc:'',docTarjProp:'✗',docSoat:'✗',docRtv:'✗',docTc:'✗',docMnto:'✗',docBoletin:'✗',docPoliza:'✗',cumpl:'0/7 (0%)',_nuevaUnidad:true});
     const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
   } else {
     const {estado}=state.unidades;
@@ -2514,23 +2516,22 @@ function renderReporte(){
   document.getElementById('rep-tbody').innerHTML=rows.length?rows.map((r,i)=>{
     const u=r.unidBD,c=r.condBD;
     const rowStyle=r.estado==='bad'?'style="background:rgba(239,68,68,0.05)"':r.estado==='warn'?'style="background:rgba(245,158,11,0.05)"':r.estado==='nf'?'style="background:rgba(107,114,128,0.05)"':'';
-    // Conductor: mostrar nombre + badge si no está en BD + botón registrar
+    // Conductor: mostrar nombre + badge si no está en BD
     const condCell = c
       ? `<span style="font-size:12px;font-weight:500">${c.conductor||r.conductor||'—'}</span>`
       : r.conductor||r.dni
-        ? `<span style="font-size:12px;color:var(--warn);font-weight:600">${r.conductor||'—'}</span>
-           <br><span style="font-size:9px;color:var(--text3)">DNI:${r.dni||'—'} · No en BD</span>
-           <button onclick="irRegistrarConductor('${(r.conductor||'').replace(/'/g,"\'")}','${r.dni}','${(r.proveedor||'').replace(/'/g,"\'")}','${r.placa}')" style="display:block;margin-top:2px;background:var(--warn);color:#000;border:none;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;cursor:pointer">✚ Registrar</button>`
+        ? `<span style="font-size:12px;color:var(--warn);font-weight:600">${r.conductor||'—'}</span><br><span style="font-size:9px;color:var(--text3)">DNI:${r.dni||'—'} · No en BD</span>`
         : '—';
-    // Unidad: mostrar tipo si hay match, o placa nueva CON BOTÓN
+    // Unidad: mostrar tipo si hay match, o placa nueva
     const unidCell = r.placa
       ? (u ? `<span class="mono" style="font-weight:700;color:var(--accent2)">${r.placa}</span><br><span style="font-size:9px;color:var(--text3)">${u.tipo||u.marca||''}</span>`
-           : `<span class="mono" style="font-weight:700;color:var(--warn)">${r.placa}</span><br><span style="font-size:9px;color:var(--text3)">Nueva</span><button onclick="abrirFormUnid('${r.placa}')" style="display:block;margin-top:2px;background:var(--green);color:white;border:none;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;cursor:pointer">✚ Registrar</button>`)
+           : `<span class="mono" style="font-weight:700;color:var(--warn)">${r.placa}</span><br><span style="font-size:9px;color:var(--text3)">Nueva</span>`)
       : '—';
     return `<tr ${rowStyle}>
       <td class="mono" style="color:var(--text3)">${i+1}</td>
       <td>${unidCell}</td>
       <td style="max-width:160px;white-space:normal">${condCell}</td>
+      <td>${!c && (r.conductor||r.dni) ? '<button onclick="irRegistrarConductor(' + "'" + (r.conductor||'').replace(/'/g, "\\'") + "'" + ',' + "'" + (r.dni||'') + "'" + ',' + "'" + (r.proveedor||'').replace(/'/g, "\\'") + "'" + ',' + "'" + (r.placa||'').replace(/'/g, "\\'") + "'" + ')" style="background:var(--warn);color:#000;border:none;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;width:110px">✚ Registrar</button>' : ''}</td>
       <td style="font-size:11px;max-width:120px;white-space:normal">${(u?u.proveedor:'')||r.proveedor||'—'}</td>
       <td style="font-size:11px;max-width:110px;white-space:normal">${r.ruta||'—'}</td>
       <td class="mono" style="font-size:11px">${r.centro||(u?u.centro:'')||'—'}</td>
@@ -2544,6 +2545,7 @@ function renderReporte(){
       <td>${u?badge(u.estadoRtv||'—'):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${u?diasCell(u.diasRtv):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${estBadge(r.estado)}</td>
+      <td>${!u && r.placa ? '<button onclick="abrirFormUnid(' + "'" + (r.placa||'').replace(/'/g, "\\'") + "'" + ')" style="background:var(--green);color:white;border:none;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;width:110px">✚ Registrar</button>' : ''}</td>
     </tr>`;}).join(''):'<tr><td colspan="16" class="empty-state">Sin resultados</td></tr>';
 }
 function limpiarReporte(){
