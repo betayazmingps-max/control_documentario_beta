@@ -1554,19 +1554,6 @@ function goPage(name, el) {
   render();
 }
 function render() {
-  // Re-sincronizar las copias en REP_ROWS con los datos actualizados de BD
-  if(REP_ROWS && REP_ROWS.length>0){
-    REP_ROWS.forEach(r=>{
-      if(r.placa){
-        const u = UNIDADES.find(x => (x.placa||'').trim().toUpperCase().replace(/[\s\-]/g,'') === (r.placa||'').trim().toUpperCase().replace(/[\s\-]/g,''));
-        if(u) r.unidBD = {...u, _enBD:true};
-      }
-      if(r.dni || r.conductor){
-        const c = CONDUCTORES.find(x => (x.dni||'').toString().trim() === (r.dni||'').toString().trim());
-        if(c) r.condBD = {...c, _enBD:true};
-      }
-    });
-  }
   if(currentPage==='dashboard') renderDashboard();
   else if(currentPage==='conductores') renderConductores();
   else if(currentPage==='unidades') renderUnidades();
@@ -2803,17 +2790,26 @@ async function guardarEdit(){
     reg[diasCampo]='';
     if(mapaEst[diasCampo]) reg[mapaEst[diasCampo]]='';
   }
-  // Guardar en Sheets en background (no bloquear UI)
+  // Sincronizar copias en REP_ROWS (si la unidad/conductor está en el reporte)
+  if(REP_ROWS && REP_ROWS.length>0){
+    if(tipo==='unidad'){
+      REP_ROWS.forEach(r=>{
+        if(r.unidBD && (r.unidBD.placa||'').trim().toUpperCase().replace(/[\s\-]/g,'') === (reg.placa||'').trim().toUpperCase().replace(/[\s\-]/g,'')){
+          r.unidBD = {...reg, _enBD:true};
+        }
+      });
+    } else {
+      REP_ROWS.forEach(r=>{
+        if(r.condBD && (r.condBD.dni||'').toString().trim() === (reg.dni||'').toString().trim() && reg.dni){
+          r.condBD = {...reg, _enBD:true};
+        }
+      });
+    }
+  }
+  // Guardar en Sheets en background
   if(GS_URL) guardarEnSheets(tipo==='conductor'?'CONDUCTORES':'UNIDADES', Object.keys(reg), Object.values(reg));
-  // Recalcular y actualizar UI inmediatamente
-  recalcular();
   cerrarEdit();
-  // Forzar render de TODAS las páginas relevantes (no solo la actual)
-  if(typeof renderConductores==='function') renderConductores();
-  if(typeof renderUnidades==='function') renderUnidades();
-  if(typeof renderDashboard==='function') renderDashboard();
-  if(typeof renderAlertas==='function') renderAlertas();
-  if(REP_ROWS && REP_ROWS.length>0 && typeof renderReporte==='function') renderReporte();
+  render();
   showToast('✓ Fecha actualizada','ok');
 }
 function cerrarEdit(){ document.getElementById('edit-modal').classList.remove('open'); editTarget=null; }
