@@ -22,7 +22,7 @@
   --danger-bg:rgba(239,68,68,0.12);
   --shadow-sm:0 1px 3px rgba(0,0,0,0.08);
   --shadow:0 4px 12px rgba(0,0,0,0.08);
-  --shadow-md:0 8px 24px rgba(124,58,237,0.15); 
+  --shadow-md:0 8px 24px rgba(124,58,237,0.15);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px;-webkit-font-smoothing:antialiased;}
@@ -2019,9 +2019,9 @@ function irRegistrarConductor(nombre, dni, proveedor, placa){
   },100);
 }
 
-// Conductores BETA = empleados internos de la empresa (tipoSctr==='BETA' o proveedor contiene 'BETA S')
-// Se muestran en el Reporte Diario pero NO en la consulta base
-const esConductorBeta = c => (c.tipoSctr||'').toUpperCase()==='BETA';
+// Conductores BETA = filas donde el nombre del conductor dice "CONDUCTOR BETA"
+// Aparecen en el Reporte Diario pero NO en la consulta base de Conductores
+const esConductorBeta = c => (c.conductor||'').toUpperCase().includes('BETA');
 
 function renderConductores(){
   // Si no hay modo día activo y hay datos en BD → mostrar BD completa (sin conductores BETA)
