@@ -2050,9 +2050,12 @@ function renderConductores(){
   let rows=[];
   REP_ROWS.forEach(r=>{
     if(r.condBD){
+      // NO mostrar conductores BETA en consultas
+      if(esConductorBeta(r.condBD)) return;
       if(!seen.has(r.condBD.dni)){ seen.add(r.condBD.dni); rows.push({...r.condBD, _enBD:true}); }
     } else if(r.conductor||r.dni){
-      // No está en BD: crear fila provisional para registrar
+      // Omitir si el nombre contiene BETA
+      if((r.conductor||'').toUpperCase().includes('BETA')) return;
       const key=(r.dni||r.conductor||'').toUpperCase();
       if(!seen.has(key)){
         seen.add(key);
