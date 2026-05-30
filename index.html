@@ -1325,17 +1325,15 @@ function sheetsToObjs(raw){
     });
 }
 
-// Leer hoja via CSV público (sin CORS, sin Apps Script)
-// Requiere que el Sheet sea público: Compartir → Cualquiera con el enlace puede ver
+// Leer hoja via Apps Script URL (sin problemas de CORS)
 async function leerHoja(hoja){
-  // Mapa nombre de hoja → gid (número de pestaña)
-  // El sistema intentará con el nombre; si falla, usar gid directo
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(hoja)}&t=${Date.now()}`;
+  if(!GS_URL) throw new Error('No hay URL de Apps Script configurada');
+  const url = `${GS_URL}?hoja=${encodeURIComponent(hoja)}&t=${Date.now()}`;
   const r = await fetch(url, {cache:'no-store'});
-  if(!r.ok) throw new Error(`No se pudo leer la hoja "${hoja}" — verifica que el Sheet sea público`);
-  const text = await r.text();
-  if(!text || text.trim().startsWith('<')) throw new Error(`La hoja "${hoja}" no existe o el Sheet no es público`);
-  return parseCsv(text);
+  if(!r.ok) throw new Error(`Error al leer la hoja "${hoja}" (HTTP ${r.status})`);
+  const data = await r.json();
+  if(!Array.isArray(data)) throw new Error(`Respuesta inválida de la hoja "${hoja}"`);
+  return sheetsToObjs(data);
 }
 
 // Parsear CSV robusto (maneja comillas, comas dentro de valores, etc.)
