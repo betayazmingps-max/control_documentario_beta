@@ -303,6 +303,10 @@ tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
       <svg class="nav-ico" viewBox="0 0 18 18"><rect x="3" y="1" width="12" height="16" rx="2" fill="currentColor" opacity=".2"/><rect x="3" y="1" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.4" fill="none" opacity=".8"/><rect x="6" y="5" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".7"/><rect x="6" y="8" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".5"/><rect x="6" y="11" width="4" height="1.5" rx=".75" fill="currentColor" opacity=".4"/></svg>
       Reporte Diario
     </div>
+    <div class="nav-item" onclick="goPage('auditorias',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.6" fill="none" opacity=".8"/><path d="M12 12l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".8"/></svg>
+      Auditorías
+    </div>
     <div class="nav-section">Configuración</div>
     <div class="nav-item" onclick="openGSModal()">
       <svg class="nav-ico" viewBox="0 0 18 18"><circle cx="9" cy="9" r="3" fill="currentColor" opacity=".8"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>
@@ -817,6 +821,46 @@ tbody tr:hover{background:rgba(79,126,248,0.06)!important;}
     </div>
   </div>
 
+  <!-- ======== AUDITORÍAS ======== -->
+  <div class="page" id="page-auditorias">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div style="background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);color:white;border-radius:14px;padding:24px 28px;margin-bottom:20px;box-shadow:0 4px 12px rgba(37,99,235,0.25)">
+        <div style="font-size:22px;font-weight:800;margin-bottom:6px;">🔍 Auditorías — Carpetas SharePoint</div>
+        <div style="font-size:13px;opacity:.92;">Pega las <b>placas</b> y/o <b>proveedores</b> (uno por línea). Genera una tabla con los links de carpetas, lista para copiar al correo.</div>
+      </div>
+
+      <div style="background:#ffffff;border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08)">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:6px">📋 Pegar datos</div>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">📥 Pegar PLACAS (una por línea)</label>
+            <textarea id="aud-placas-input" rows="8" placeholder="ABC-123&#10;XYZ-456&#10;DEF-789" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--mono);text-transform:uppercase;outline:none;resize:vertical;min-height:160px"></textarea>
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">📥 Pegar PROVEEDORES (uno por línea)</label>
+            <textarea id="aud-provs-input" rows="8" placeholder="EMPRESA SAC&#10;TRANSPORTES XYZ" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;resize:vertical;min-height:160px"></textarea>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="generarTablaAuditoria()" style="background:var(--accent);color:white;border:none;border-radius:8px;padding:11px 24px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(59,130,246,0.3)">⚡ Generar tabla</button>
+          <button onclick="limpiarAuditoria()" style="background:#f3f4f6;color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:11px 18px;font-size:13px;font-weight:600;cursor:pointer">🗑️ Limpiar</button>
+          <div style="margin-left:auto;font-size:11px;color:var(--text3)">
+            <span id="aud-stats" style="font-weight:600">Sin datos</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="aud-resultados">
+        <div style="background:#ffffff;border:2px dashed var(--border);border-radius:12px;padding:60px 20px;text-align:center;color:var(--text3)">
+          <div style="font-size:48px;margin-bottom:10px;opacity:.3">📊</div>
+          <div style="font-size:14px">Pega las placas o proveedores y genera la tabla</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ======== REG CONDUCTOR ======== -->
   <div class="page" id="page-reg-conductor">
     <div style="max-width:1100px;">
@@ -1315,6 +1359,7 @@ async function syncFromSheets(){
         docSctr:       boolDoc(o['sctr']),
         docEmo:        boolDoc(o['emo -  examen médico ocupacional']),
         cumpl:         o.cumplimiento||'—',
+        carpeta:       o['carpeta conductor']||o.carpeta||'',
       }));
     }
 
@@ -1378,6 +1423,7 @@ async function syncFromSheets(){
         docBoletin:    boolDoc(o['boletín informativo - sunarp']),
         docPoliza:     boolDoc(o['póliza']),
         cumpl:         o.cumplimiento||'—',
+        carpeta:       o['carpeta unidad']||o.carpeta||'',
       }));
     }
 
@@ -1434,6 +1480,7 @@ async function syncFromSheets(){
           ],
           cumpl:       o.cumplimiento||'—',
           pctCumpl:    o['% cumplimiento']||'',
+          carpeta:     o['carpeta proveedor']||o.carpeta||'',
         }));
     }
 
@@ -1511,6 +1558,7 @@ function render() {
   else if(currentPage==='unidades') renderUnidades();
   else if(currentPage==='proveedores') renderProveedores();
   else if(currentPage==='alertas') renderAlertas();
+  else if(currentPage==='reporte') renderReporte();
 }
 function onSearch(){ state[currentPage]&&(state[currentPage].page=1,state[currentPage].search=document.getElementById('search-input').value.toLowerCase()); render(); }
 function onFilter(){ state[currentPage]&&(state[currentPage].page=1,state[currentPage].estado=document.getElementById('filter-estado').value); render(); }
@@ -2733,13 +2781,35 @@ async function guardarEdit(){
   const v=document.getElementById('edit-fecha').value;
   reg[fechaCampo]=v;
   const dias=calcDiasDesde(v);
+  const mapaEst={diasLic:'estadoLic',diasSctr:'estadoSctr',diasEmo:'estadoEmo',diasSoat:'estadoSoat',diasRtv:'estadoRtv',diasTc:'estadoTc'};
   if(dias!==null){
     reg[diasCampo]=String(dias);
-    const mapaEst={diasLic:'estadoLic',diasSctr:'estadoSctr',diasEmo:'estadoEmo',diasSoat:'estadoSoat',diasRtv:'estadoRtv',diasTc:'estadoTc'};
     if(mapaEst[diasCampo]) reg[mapaEst[diasCampo]]=estadoDesde(dias);
+  } else {
+    reg[diasCampo]='';
+    if(mapaEst[diasCampo]) reg[mapaEst[diasCampo]]='';
   }
-  await guardarEnSheets(tipo==='conductor'?'CONDUCTORES':'UNIDADES', Object.keys(reg), Object.values(reg));
-  cerrarEdit(); render(); showToast('✓ Fecha actualizada','ok');
+  // Sincronizar copia en REP_ROWS si la unidad/conductor está en el reporte
+  if(REP_ROWS && REP_ROWS.length>0){
+    if(tipo==='unidad'){
+      REP_ROWS.forEach(r=>{
+        if(r.unidBD && r.placa && (r.unidBD.placa||'').trim().toUpperCase().replace(/[\s\-]/g,'') === (reg.placa||'').trim().toUpperCase().replace(/[\s\-]/g,'')){
+          r.unidBD = {...reg, _enBD:true};
+        }
+      });
+    } else {
+      REP_ROWS.forEach(r=>{
+        if(r.condBD && reg.dni && (r.condBD.dni||'').toString().trim() === (reg.dni||'').toString().trim()){
+          r.condBD = {...reg, _enBD:true};
+        }
+      });
+    }
+  }
+  // Guardar en background (sin bloquear UI)
+  if(GS_URL) guardarEnSheets(tipo==='conductor'?'CONDUCTORES':'UNIDADES', Object.keys(reg), Object.values(reg));
+  cerrarEdit();
+  render();
+  showToast('✓ Fecha actualizada','ok');
 }
 function cerrarEdit(){ document.getElementById('edit-modal').classList.remove('open'); editTarget=null; }
 
@@ -3130,6 +3200,136 @@ function cerrarModalProv(){
 }
 
 // ── ARRANQUE
+// ✅ MÓDULO DE AUDITORÍAS — Pegar listas y generar tabla copiable
+function limpiarAuditoria(){
+  document.getElementById('aud-placas-input').value = '';
+  document.getElementById('aud-provs-input').value = '';
+  document.getElementById('aud-stats').textContent = 'Sin datos';
+  document.getElementById('aud-resultados').innerHTML = `
+    <div style="background:#ffffff;border:2px dashed var(--border);border-radius:12px;padding:60px 20px;text-align:center;color:var(--text3)">
+      <div style="font-size:48px;margin-bottom:10px;opacity:.3">📊</div>
+      <div style="font-size:14px">Pega las placas o proveedores y genera la tabla</div>
+    </div>`;
+}
+
+function normalizarPlaca(p){
+  return (p||'').toString().trim().toUpperCase().replace(/[\s\-]/g,'');
+}
+
+function generarTablaAuditoria(){
+  const placasTxt = (document.getElementById('aud-placas-input').value||'').trim();
+  const provsTxt = (document.getElementById('aud-provs-input').value||'').trim();
+  const placas = placasTxt ? placasTxt.split(/[\n\r,;]+/).map(s=>s.trim()).filter(Boolean) : [];
+  const provs = provsTxt ? provsTxt.split(/[\n\r]+/).map(s=>s.trim()).filter(Boolean) : [];
+  if(placas.length === 0 && provs.length === 0){
+    showToast('Pega al menos una placa o un proveedor','warn'); return;
+  }
+  const filas = [];
+  placas.forEach(plRaw => {
+    const plNorm = normalizarPlaca(plRaw);
+    const unidad = UNIDADES.find(u => normalizarPlaca(u.placa) === plNorm);
+    const provNom = unidad?.proveedor || '';
+    const proveedor = provNom ? PROVEEDORES.find(p => (p.nombre||'').trim().toUpperCase() === provNom.trim().toUpperCase()) : null;
+    const conds = CONDUCTORES.filter(c => normalizarPlaca(c.placa) === plNorm);
+    if(conds.length === 0){
+      filas.push({placa:unidad?.placa||plRaw.toUpperCase(),proveedor:provNom||'—',conductor:'—',dni:'—',centro:unidad?.centro||'—',linkProv:proveedor?.carpeta||'',linkUnid:unidad?.carpeta||'',linkCond:''});
+    } else {
+      conds.forEach(c => filas.push({placa:unidad?.placa||plRaw.toUpperCase(),proveedor:provNom||c.proveedor||'—',conductor:c.conductor||'—',dni:c.dni||'—',centro:unidad?.centro||c.centro||'—',linkProv:proveedor?.carpeta||'',linkUnid:unidad?.carpeta||'',linkCond:c.carpeta||''}));
+    }
+  });
+  provs.forEach(pNom => {
+    const yaEsta = filas.some(f => (f.proveedor||'').trim().toUpperCase() === pNom.trim().toUpperCase());
+    if(!yaEsta){
+      const proveedor = PROVEEDORES.find(p => (p.nombre||'').trim().toUpperCase() === pNom.trim().toUpperCase());
+      filas.push({placa:'—',proveedor:proveedor?.nombre||pNom.toUpperCase(),conductor:'—',dni:'—',centro:'—',linkProv:proveedor?.carpeta||'',linkUnid:'',linkCond:''});
+    }
+  });
+  document.getElementById('aud-stats').textContent = `${filas.length} registro(s) generado(s)`;
+  let html = `<div style="background:#ffffff;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08)">
+    <div style="padding:14px 18px;background:#f9fafb;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="font-size:13px;font-weight:700;color:var(--text)">📋 Resultados (${filas.length})</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="copiarTablaAud('html')" style="background:#10b981;color:white;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">📋 Copiar (Outlook)</button>
+        <button onclick="copiarTablaAud('texto')" style="background:#3b82f6;color:white;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">📄 Copiar (Excel)</button>
+        <button onclick="descargarTablaAud()" style="background:#8b5cf6;color:white;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">⬇️ Descargar CSV</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;max-height:600px;overflow-y:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead style="position:sticky;top:0;background:#f3f4f6;z-index:5"><tr>
+          <th style="text-align:left;padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);border-bottom:1.5px solid var(--border)">#</th>
+          <th style="text-align:left;padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);border-bottom:1.5px solid var(--border)">Placa</th>
+          <th style="text-align:left;padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);border-bottom:1.5px solid var(--border)">Proveedor</th>
+          <th style="text-align:left;padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);border-bottom:1.5px solid var(--border)">Conductor</th>
+          <th style="text-align:left;padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);border-bottom:1.5px solid var(--border)">DNI</th>
+          <th style="text-align:left;padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);border-bottom:1.5px solid var(--border)">Centro</th>
+          <th style="text-align:center;padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:#1e40af;border-bottom:1.5px solid var(--border)">🏢 Carpeta Prov.</th>
+          <th style="text-align:center;padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:#059669;border-bottom:1.5px solid var(--border)">🚛 Carpeta Unid.</th>
+          <th style="text-align:center;padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:#b45309;border-bottom:1.5px solid var(--border)">👤 Carpeta Cond.</th>
+        </tr></thead><tbody>`;
+  filas.forEach((f,i) => {
+    const linkBtn = (link, color) => link 
+      ? `<a href="${link}" target="_blank" style="display:inline-block;background:${color};color:white;padding:4px 12px;border-radius:4px;text-decoration:none;font-size:10.5px;font-weight:700">🔗 Abrir</a>`
+      : '<span style="color:var(--text3);font-size:10.5px">—</span>';
+    html += `<tr style="border-bottom:1px solid #f3f4f6">
+      <td style="padding:9px 12px;color:var(--text3);font-family:var(--mono);font-size:11px">${i+1}</td>
+      <td style="padding:9px 12px;font-family:var(--mono);font-weight:700;color:var(--accent2)">${f.placa}</td>
+      <td style="padding:9px 12px;font-size:11.5px;max-width:200px;white-space:normal">${f.proveedor}</td>
+      <td style="padding:9px 12px;font-size:11.5px">${f.conductor}</td>
+      <td style="padding:9px 12px;font-family:var(--mono);font-size:11px">${f.dni}</td>
+      <td style="padding:9px 12px;font-family:var(--mono);font-size:11px;text-align:center">${f.centro}</td>
+      <td style="padding:9px 12px;text-align:center">${linkBtn(f.linkProv,'#3b82f6')}</td>
+      <td style="padding:9px 12px;text-align:center">${linkBtn(f.linkUnid,'#10b981')}</td>
+      <td style="padding:9px 12px;text-align:center">${linkBtn(f.linkCond,'#f59e0b')}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+  let htmlOutlook = `<table border="1" style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:11px"><thead><tr style="background:#3b82f6;color:white"><th style="padding:8px;border:1px solid #999">Placa</th><th style="padding:8px;border:1px solid #999">Proveedor</th><th style="padding:8px;border:1px solid #999">Conductor</th><th style="padding:8px;border:1px solid #999">DNI</th><th style="padding:8px;border:1px solid #999">Centro</th><th style="padding:8px;border:1px solid #999">Carpeta Proveedor</th><th style="padding:8px;border:1px solid #999">Carpeta Unidad</th><th style="padding:8px;border:1px solid #999">Carpeta Conductor</th></tr></thead><tbody>`;
+  filas.forEach(f => {
+    htmlOutlook += `<tr><td style="padding:6px;border:1px solid #ccc">${f.placa}</td><td style="padding:6px;border:1px solid #ccc">${f.proveedor}</td><td style="padding:6px;border:1px solid #ccc">${f.conductor}</td><td style="padding:6px;border:1px solid #ccc">${f.dni}</td><td style="padding:6px;border:1px solid #ccc">${f.centro}</td><td style="padding:6px;border:1px solid #ccc">${f.linkProv ? `<a href="${f.linkProv}">${f.linkProv}</a>` : '—'}</td><td style="padding:6px;border:1px solid #ccc">${f.linkUnid ? `<a href="${f.linkUnid}">${f.linkUnid}</a>` : '—'}</td><td style="padding:6px;border:1px solid #ccc">${f.linkCond ? `<a href="${f.linkCond}">${f.linkCond}</a>` : '—'}</td></tr>`;
+  });
+  htmlOutlook += `</tbody></table>`;
+  let textoExcel = 'Placa\tProveedor\tConductor\tDNI\tCentro\tCarpeta Proveedor\tCarpeta Unidad\tCarpeta Conductor\n';
+  filas.forEach(f => { textoExcel += `${f.placa}\t${f.proveedor}\t${f.conductor}\t${f.dni}\t${f.centro}\t${f.linkProv||'—'}\t${f.linkUnid||'—'}\t${f.linkCond||'—'}\n`; });
+  let csv = 'Placa,Proveedor,Conductor,DNI,Centro,Carpeta Proveedor,Carpeta Unidad,Carpeta Conductor\n';
+  filas.forEach(f => { csv += `"${f.placa}","${f.proveedor}","${f.conductor}","${f.dni}","${f.centro}","${f.linkProv||''}","${f.linkUnid||''}","${f.linkCond||''}"\n`; });
+  window._audHTMLOutlook = htmlOutlook;
+  window._audTextoExcel = textoExcel;
+  window._audCSV = csv;
+  document.getElementById('aud-resultados').innerHTML = html;
+}
+
+function copiarTablaAud(formato){
+  try {
+    if(formato === 'html'){
+      const blob = new Blob([window._audHTMLOutlook], {type:'text/html'});
+      const textBlob = new Blob([window._audTextoExcel], {type:'text/plain'});
+      const item = new ClipboardItem({'text/html': blob, 'text/plain': textBlob});
+      navigator.clipboard.write([item]).then(()=>{
+        showToast('✓ Copiado. Pega en Outlook con Ctrl+V','ok');
+      }).catch(()=>{
+        navigator.clipboard.writeText(window._audTextoExcel);
+        showToast('✓ Tabla copiada como texto','ok');
+      });
+    } else {
+      navigator.clipboard.writeText(window._audTextoExcel).then(()=>{
+        showToast('✓ Copiado. Pega en Excel con Ctrl+V','ok');
+      });
+    }
+  } catch(e){ showToast('Error: '+e.message,'err'); }
+}
+
+function descargarTablaAud(){
+  const blob = new Blob(['\ufeff'+window._audCSV], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `auditoria_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ CSV descargado','ok');
+}
+
 // ✅ FUNCIONES PARA BOTONES REGISTRAR
 function abrirRegUnid(btn){
   const placa = btn.getAttribute('data-placa');
