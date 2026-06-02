@@ -1160,7 +1160,7 @@ function doGet(e) {
 // ═══════════════════════════════════════════════
 // BASE DE DATOS — desde Excel (se reemplaza con Sheets)
 // ═══════════════════════════════════════════════
-let GS_URL = 'https://script.google.com/macros/s/AKfycbzell_2B2Kpv9TYx8_PT3MZQC6WFGCingZRAVw5q1ScQjubwHxh7YiZvQScFndhdrUu/exec';
+let GS_URL = 'https://script.google.com/macros/s/AKfycbx078Sabtf6fAiw3WXPQXfijd-qSWU4wFfHefWQ_l_xRsBruxUXHEYMvX0BFu7eiKSq/exec';
 localStorage.setItem('gs_url', GS_URL);
 const SHEET_ID = '1Q2oWrDBmARmYZgUyIBAe0QtxbvXZijOEsaQYUa_uGEQ';
 let GS_CONNECTED = false;
@@ -1327,15 +1327,15 @@ function sheetsToObjs(raw){
     });
 }
 
-// Leer hoja via Apps Script URL (sin problemas de CORS)
+// Leer hoja via Apps Script (devuelve CSV con getDisplayValues — mismo formato que antes)
 async function leerHoja(hoja){
   if(!GS_URL) throw new Error('No hay URL de Apps Script configurada');
   const url = `${GS_URL}?hoja=${encodeURIComponent(hoja)}&t=${Date.now()}`;
   const r = await fetch(url, {cache:'no-store'});
   if(!r.ok) throw new Error(`Error al leer la hoja "${hoja}" (HTTP ${r.status})`);
-  const data = await r.json();
-  if(!Array.isArray(data)) throw new Error(`Respuesta inválida de la hoja "${hoja}"`);
-  return sheetsToObjs(data);
+  const text = await r.text();
+  if(!text || !text.trim()) return [];
+  return parseCsv(text);
 }
 
 // Parsear CSV robusto (maneja comillas, comas dentro de valores, etc.)
@@ -1477,7 +1477,7 @@ async function syncFromSheets(){
     // Boletín Informativo - SUNARP | Póliza | Cumplimiento
     if(unidRaw.length>0){
       UNIDADES = unidRaw.map(o=>({
-        placa:         o.placa||'',
+        placa: o.placa||o['placa del vehiculo']||o['placa vehiculo']||o['placa del vehículo']||o['n placa']||o['nro placa']||o['matricula']||o['número de placa']||o['numero de placa']||Object.values(o).find(v=>v&&/^[A-Z0-9]{5,7}$/.test(String(v).trim().replace(/[\-\s]/g,'')))||'',
         estado:        (o.estado||'').toString().trim().toUpperCase()||'ACTIVO',
         proveedor:     o.proveedor||'',
         centro:        o.centro||'',
