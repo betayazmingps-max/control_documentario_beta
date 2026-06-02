@@ -1160,7 +1160,8 @@ function doGet(e) {
 // ═══════════════════════════════════════════════
 // BASE DE DATOS — desde Excel (se reemplaza con Sheets)
 // ═══════════════════════════════════════════════
-let GS_URL = localStorage.getItem('gs_url') || 'https://script.google.com/macros/s/AKfycby4cbQxtvOU3P_tVrusYc_pIb9P5qvn-uy4RiqOodspxA2ABPc559xLwAAxFqUU-qbk/exec';
+let GS_URL = 'https://script.google.com/macros/s/AKfycbzell_2B2Kpv9TYx8_PT3MZQC6WFGCingZRAVw5q1ScQjubwHxh7YiZvQScFndhdrUu/exec';
+localStorage.setItem('gs_url', GS_URL);
 const SHEET_ID = '1Q2oWrDBmARmYZgUyIBAe0QtxbvXZijOEsaQYUa_uGEQ';
 let GS_CONNECTED = false;
 
@@ -1541,8 +1542,16 @@ async function syncFromSheets(){
     // ANTECEDENTE PENALES | ANTECEDENTE POLICIAL | ANTECEDENTE JUDICIAL |
     // CUMPLIMIENTO | % cumplimiento
     if(provRaw.length>0){
+      const _provVistos = new Set();
       PROVEEDORES = provRaw
-        .filter(o=>o.proveedor)
+        .filter(o=>{
+          if(!o.proveedor) return false;
+          const k = String(o.proveedor).trim().toUpperCase();
+          if(!k || k.length < 3) return false;
+          if(_provVistos.has(k)) return false; // eliminar duplicados
+          _provVistos.add(k);
+          return true;
+        })
         .map(o=>({
           nombre:      o.proveedor||'',
           estado:      (o.estado||'INACTIVO').toUpperCase(),
