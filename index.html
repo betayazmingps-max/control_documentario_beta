@@ -1596,6 +1596,23 @@ async function syncFromSheets(){
     if(total>0){
       recalcular();
       updateGSStatus(true);
+
+      // Si había un reporte cargado antes de que terminara el sync,
+      // re-hacer el match de placas/conductores ahora que tenemos los datos
+      if(REP_ROWS.length > 0){
+        REP_ROWS.forEach(r=>{
+          if(!r.unidBD && r.placa){
+            const u = buscarPorPlaca(r.placa);
+            if(u){ r.unidBD = {...u, _enBD:true}; }
+          }
+          if(!r.condBD && (r.conductor||r.dni)){
+            const c = buscarConductorBD(r.conductor, r.dni);
+            if(c){ r.condBD = {...c, _enBD:true}; }
+          }
+          r.estado = estadoGlobal(r.unidBD, r.condBD);
+        });
+      }
+
       render();
       renderAlertas();
       poblarDatalistProv();
