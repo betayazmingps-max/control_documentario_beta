@@ -2412,6 +2412,15 @@ function renderProveedores(){
     });
   }
 
+  // Eliminar duplicados por nombre
+  const _vistos = new Set();
+  data = data.filter(p => {
+    const k = (p.nombre||'').trim().toUpperCase();
+    if(_vistos.has(k)) return false;
+    _vistos.add(k);
+    return true;
+  });
+
   const provCond={},provUnid={};
   CONDUCTORES.forEach(c=>{if(c.proveedor)provCond[c.proveedor]=(provCond[c.proveedor]||0)+1;});
   UNIDADES.forEach(u=>{if(u.proveedor)provUnid[u.proveedor]=(provUnid[u.proveedor]||0)+1;});
