@@ -359,6 +359,10 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <svg class="nav-ico" viewBox="0 0 18 18"><rect x="3" y="1" width="12" height="16" rx="2" fill="currentColor" opacity=".2"/><rect x="3" y="1" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.4" fill="none" opacity=".8"/><rect x="6" y="5" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".7"/><rect x="6" y="8" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".5"/><rect x="6" y="11" width="4" height="1.5" rx=".75" fill="currentColor" opacity=".4"/></svg>
       Reporte Diario
     </div>
+    <div class="nav-item" onclick="goPage('historial',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><rect x="5" y="5" width="4" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="5" y="9" width="8" height="1.5" rx=".75" fill="currentColor" opacity=".5"/><rect x="5" y="12" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".4"/></svg>
+      Historial
+    </div>
     <div class="nav-item" onclick="goPage('auditorias',this)">
       <svg class="nav-ico" viewBox="0 0 18 18"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.6" fill="none" opacity=".8"/><path d="M12 12l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".8"/></svg>
       Auditorías
@@ -874,6 +878,87 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div style="font-size:42px;margin-bottom:10px;">📋</div>
       <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:5px;">Carga el Excel del día</div>
       <div style="font-size:12px;">El sistema cruzará automáticamente con la base de datos</div>
+    </div>
+  </div>
+
+  <!-- ======== HISTORIAL DE REPORTES ======== -->
+  <div class="page" id="page-historial">
+    <div style="max-width:1200px;margin:0 auto">
+
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#6d28d9,#7c3aed);color:white;border-radius:14px;padding:22px 28px;margin-bottom:20px">
+        <div style="font-size:20px;font-weight:800;margin-bottom:4px">📋 Historial de Reportes Diarios</div>
+        <div style="font-size:13px;opacity:.85">Todos los reportes guardados en Google Sheets — busca y filtra por fecha, placa o proveedor</div>
+      </div>
+
+      <!-- Controles -->
+      <div style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:18px 20px;margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button onclick="cargarHistorial()" id="btn-hist-cargar"
+          style="background:#6d28d9;color:white;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">
+          🔄 Cargar desde Sheets
+        </button>
+        <input type="date" id="hist-fecha-desde" class="filter-sel" title="Desde">
+        <span style="color:#9ca3af;font-size:12px">hasta</span>
+        <input type="date" id="hist-fecha-hasta" class="filter-sel" title="Hasta">
+        <input type="text" id="hist-buscar" class="search-box" placeholder="🔍 Buscar placa, conductor, proveedor..." style="width:240px" oninput="filtrarHistorial()">
+        <button onclick="filtrarHistorial()" style="background:#f3f0ff;color:#6d28d9;border:1px solid #ddd6fe;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer">Filtrar</button>
+        <button onclick="limpiarFiltrosHist()" style="background:#f9fafb;color:#6b7280;border:1px solid #e5e7eb;border-radius:8px;padding:9px 14px;font-size:12px;cursor:pointer">✕ Limpiar</button>
+        <span id="hist-stats" style="margin-left:auto;font-size:11.5px;color:#9ca3af;font-weight:600"></span>
+      </div>
+
+      <!-- KPIs rápidos -->
+      <div id="hist-kpis" style="display:none;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:16px 18px;border-left:4px solid #6d28d9">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;letter-spacing:.5px">Total Registros</div>
+            <div id="hk-total" style="font-size:28px;font-weight:800;color:#111;font-family:var(--mono)">0</div>
+          </div>
+          <div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:16px 18px;border-left:4px solid #10b981">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;letter-spacing:.5px">Días con Reporte</div>
+            <div id="hk-dias" style="font-size:28px;font-weight:800;color:#111;font-family:var(--mono)">0</div>
+          </div>
+          <div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:16px 18px;border-left:4px solid #3b82f6">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;letter-spacing:.5px">Placas Únicas</div>
+            <div id="hk-placas" style="font-size:28px;font-weight:800;color:#111;font-family:var(--mono)">0</div>
+          </div>
+          <div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:16px 18px;border-left:4px solid #f59e0b">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;letter-spacing:.5px">Último Reporte</div>
+            <div id="hk-ultimo" style="font-size:16px;font-weight:800;color:#111;font-family:var(--mono);margin-top:4px">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div id="hist-tabla-wrap" style="display:none">
+        <div class="tbl-wrap" style="margin-bottom:0">
+          <div class="tbl-scroll">
+            <table>
+              <thead><tr>
+                <th>#</th><th>Fecha</th><th>Placa</th>
+                <th style="min-width:140px">Conductor</th>
+                <th style="min-width:130px">Proveedor</th>
+                <th>Centro</th><th>Ruta</th><th>Turno</th>
+                <th>Est. Lic.</th><th>Est. SCTR</th>
+                <th>Est. SOAT</th><th>Est. RTV</th>
+                <th>Estado Op.</th>
+              </tr></thead>
+              <tbody id="hist-tbody"></tbody>
+            </table>
+          </div>
+          <div class="tbl-footer">
+            <span id="hist-info">—</span>
+            <div class="pag-btns" id="hist-pag"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado vacío -->
+      <div id="hist-empty" style="background:#fff;border:2px dashed #e5e7eb;border-radius:14px;padding:60px 20px;text-align:center;color:#9ca3af">
+        <div style="font-size:48px;margin-bottom:12px;opacity:.3">📋</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">Sin reportes cargados</div>
+        <div style="font-size:12px">Presiona <b>Cargar desde Sheets</b> para ver el historial de reportes diarios guardados</div>
+      </div>
+
     </div>
   </div>
 
@@ -1660,7 +1745,8 @@ const pageTitles = {
   dashboard:'Dashboard','reg-conductor':'Registro — Conductor',
   'reg-unidad':'Registro — Unidad','reg-proveedor':'Registro — Proveedor',
   conductores:'Conductores',unidades:'Unidades',proveedores:'Proveedores',
-  alertas:'Alertas Críticas',reporte:'Reporte Diario',auditorias:'Auditorías'
+  alertas:'Alertas Críticas',reporte:'Reporte Diario',
+  historial:'Historial de Reportes',auditorias:'Auditorías'
 };
 const showSearch = ['conductores','unidades','proveedores'];
 function goPage(name, el) {
@@ -3790,6 +3876,152 @@ function abrirRegProv(btn){
     if(est) est.value = 'ACTIVO';
   },100);
   showToast('✓ Formulario listo. Completa los datos','ok');
+}
+
+// ═══════════════════════════════════════════════
+// HISTORIAL DE REPORTES DIARIOS
+// ═══════════════════════════════════════════════
+let HIST_ROWS  = [];   // todos los registros de REPORTES DIARIOS
+let HIST_PAGE  = 1;
+const HIST_PS  = 30;
+
+async function cargarHistorial(){
+  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
+  const btn = document.getElementById('btn-hist-cargar');
+  if(btn){ btn.textContent='⏳ Cargando...'; btn.disabled=true; }
+  try {
+    const raw = await leerHoja('REPORTES DIARIOS');
+    if(!raw || raw.length === 0){
+      showToast('La hoja "REPORTES DIARIOS" está vacía — guarda reportes primero','warn');
+      if(btn){ btn.textContent='🔄 Cargar desde Sheets'; btn.disabled=false; }
+      return;
+    }
+    // Mapear columnas
+    HIST_ROWS = raw.map(r=>({
+      fecha:    (r.fecha    ||r.FECHA    ||'').trim(),
+      placa:    (r.placa    ||r.PLACA    ||'').trim(),
+      conductor:(r.conductor||r.CONDUCTOR||'').trim(),
+      dni:      (r.dni      ||r.DNI      ||'').trim(),
+      proveedor:(r.proveedor||r.PROVEEDOR||'').trim(),
+      ruta:     (r.ruta     ||r.RUTA     ||'').trim(),
+      centro:   (r.centro   ||r.CENTRO   ||'').trim(),
+      turno:    (r.turno    ||r.TURNO    ||'').trim(),
+      estLic:   (r.est_lic  ||r.EST_LIC  ||'').trim(),
+      estSctr:  (r.est_sctr ||r.EST_SCTR ||'').trim(),
+      estSoat:  (r.est_soat ||r.EST_SOAT ||'').trim(),
+      estRtv:   (r.est_rtv  ||r.EST_RTV  ||'').trim(),
+      estadoOp: (r.estado_op||r.ESTADO_OP||'').trim(),
+    })).filter(r=>r.fecha||r.placa);
+
+    HIST_PAGE = 1;
+    showToast(`✅ ${HIST_ROWS.length} registros cargados`,'ok');
+    renderHistorial();
+  } catch(e){
+    showToast('Error al cargar historial: '+e.message,'err');
+    console.error(e);
+  }
+  if(btn){ btn.textContent='🔄 Cargar desde Sheets'; btn.disabled=false; }
+}
+
+function filtrarHistorial(){
+  HIST_PAGE = 1;
+  renderHistorial();
+}
+
+function limpiarFiltrosHist(){
+  const fd = document.getElementById('hist-fecha-desde');
+  const fh = document.getElementById('hist-fecha-hasta');
+  const bq = document.getElementById('hist-buscar');
+  if(fd) fd.value='';
+  if(fh) fh.value='';
+  if(bq) bq.value='';
+  HIST_PAGE = 1;
+  renderHistorial();
+}
+
+function renderHistorial(){
+  const desde  = (document.getElementById('hist-fecha-desde')||{value:''}).value;
+  const hasta  = (document.getElementById('hist-fecha-hasta')||{value:''}).value;
+  const buscar = (document.getElementById('hist-buscar')||{value:''}).value.toLowerCase();
+
+  const empty = document.getElementById('hist-empty');
+  const wrap  = document.getElementById('hist-tabla-wrap');
+  const kpis  = document.getElementById('hist-kpis');
+
+  if(HIST_ROWS.length === 0){
+    if(empty) empty.style.display='';
+    if(wrap)  wrap.style.display='none';
+    if(kpis)  kpis.style.display='none';
+    document.getElementById('hist-stats').textContent='';
+    return;
+  }
+
+  // Filtrar
+  let rows = HIST_ROWS.filter(r=>{
+    if(desde && r.fecha < desde) return false;
+    if(hasta && r.fecha > hasta) return false;
+    if(buscar && !`${r.placa} ${r.conductor} ${r.proveedor} ${r.ruta} ${r.centro}`.toLowerCase().includes(buscar)) return false;
+    return true;
+  });
+
+  // KPIs
+  const fechasUnicas  = [...new Set(rows.map(r=>r.fecha).filter(Boolean))].sort().reverse();
+  const placasUnicas  = new Set(rows.map(r=>r.placa).filter(Boolean));
+  if(kpis){
+    kpis.style.display='';
+    document.getElementById('hk-total').textContent  = HIST_ROWS.length;
+    document.getElementById('hk-dias').textContent   = fechasUnicas.length;
+    document.getElementById('hk-placas').textContent = placasUnicas.size;
+    document.getElementById('hk-ultimo').textContent = fechasUnicas[0]||'—';
+  }
+
+  // Stats
+  document.getElementById('hist-stats').textContent = `${rows.length} registros · ${[...new Set(rows.map(r=>r.fecha).filter(Boolean))].length} fechas`;
+
+  if(empty) empty.style.display='none';
+  if(wrap)  wrap.style.display='';
+
+  // Paginación
+  const tp  = Math.ceil(rows.length/HIST_PS)||1;
+  HIST_PAGE = Math.min(HIST_PAGE, tp);
+  const sl  = rows.slice((HIST_PAGE-1)*HIST_PS, HIST_PAGE*HIST_PS);
+
+  // Render tabla
+  const estBadge = s => {
+    const m = {'APTA':'ok','ALERTA':'warn','NO APTA':'danger','SIN REG':'inactive'};
+    return `<span class="badge ${m[s]||'inactive'}">${s||'—'}</span>`;
+  };
+  const estColor = s => {
+    const m = {'VIGENTE':'#059669','VENCIDO':'#dc2626','POR VENCER':'#d97706'};
+    return `<span style="font-size:11px;font-weight:700;color:${m[s]||'#9ca3af'}">${s||'—'}</span>`;
+  };
+
+  document.getElementById('hist-tbody').innerHTML = sl.length
+    ? sl.map((r,i)=>`<tr>
+        <td class="mono" style="color:#9ca3af">${(HIST_PAGE-1)*HIST_PS+i+1}</td>
+        <td class="mono" style="font-weight:700;color:#6d28d9">${r.fecha||'—'}</td>
+        <td class="mono" style="font-weight:700;color:#1e40af">${r.placa||'—'}</td>
+        <td style="font-size:12px;font-weight:500;white-space:normal;min-width:130px">${r.conductor||'—'}</td>
+        <td style="font-size:11.5px;white-space:normal;max-width:140px">${r.proveedor||'—'}</td>
+        <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
+        <td style="font-size:11px;max-width:120px;white-space:normal">${r.ruta||'—'}</td>
+        <td style="font-size:11px">${r.turno||'—'}</td>
+        <td>${estColor(r.estLic)}</td>
+        <td>${estColor(r.estSctr)}</td>
+        <td>${estColor(r.estSoat)}</td>
+        <td>${estColor(r.estRtv)}</td>
+        <td>${estBadge(r.estadoOp)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="13" class="empty-state">Sin resultados para los filtros aplicados</td></tr>';
+
+  // Paginación
+  document.getElementById('hist-info').textContent = `${rows.length} registros · Pág ${HIST_PAGE}/${tp}`;
+  const pag = document.getElementById('hist-pag');
+  pag.innerHTML='';
+  const mk=(t,pg)=>{ const b=document.createElement('button'); b.className='pag-btn'+(pg===HIST_PAGE?' active':''); b.textContent=t; b.onclick=()=>{HIST_PAGE=pg;renderHistorial();}; pag.appendChild(b); };
+  if(HIST_PAGE>1) mk('←',HIST_PAGE-1);
+  for(let i=Math.max(1,HIST_PAGE-2);i<=Math.min(tp,HIST_PAGE+2);i++) mk(i,i);
+  if(HIST_PAGE<tp) mk('→',HIST_PAGE+1);
 }
 
 if(!localStorage.getItem('gs_url') && GS_URL){
