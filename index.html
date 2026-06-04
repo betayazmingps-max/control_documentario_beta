@@ -530,6 +530,12 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <select id="cond-fil-tipo" class="filter-sel" onchange="state.conductores.page=1;renderConductores()" style="min-width:160px">
           <option value="">Todos los servicios</option>
         </select>
+        <select id="cond-fil-sede" class="filter-sel" onchange="state.conductores.page=1;renderConductores()" style="min-width:140px">
+          <option value="">Todas las sedes</option>
+        </select>
+        <select id="cond-fil-destino" class="filter-sel" onchange="state.conductores.page=1;renderConductores()" style="min-width:160px">
+          <option value="">Todos los destinos</option>
+        </select>
         <div id="cond-modo-badge" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;display:none">📋 Reporte del día</div>
         <div id="cond-modo-badge-base" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--bg3);color:var(--text3);font-weight:600">📦 Base completa</div>
         <button class="tb-btn" id="btn-cond-modo" onclick="toggleCondModo()" style="font-size:11px">Ver reporte del día</button>
@@ -563,6 +569,12 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <select id="unid-fil-tipo" class="filter-sel" onchange="state.unidades.page=1;renderUnidades()" style="min-width:160px">
           <option value="">Todos los servicios</option>
+        </select>
+        <select id="unid-fil-sede" class="filter-sel" onchange="state.unidades.page=1;renderUnidades()" style="min-width:140px">
+          <option value="">Todas las sedes</option>
+        </select>
+        <select id="unid-fil-destino" class="filter-sel" onchange="state.unidades.page=1;renderUnidades()" style="min-width:160px">
+          <option value="">Todos los destinos</option>
         </select>
         <div id="unid-modo-badge" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;display:none">📋 Reporte del día</div>
         <div id="unid-modo-badge-base" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--bg3);color:var(--text3);font-weight:600">📦 Base completa</div>
@@ -2164,13 +2176,16 @@ function renderConductores(){
     return;
   }
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
-  const tipoFiltroC = (document.getElementById('cond-fil-tipo')||{value:''}).value;
+  const tipoFiltroC    = (document.getElementById('cond-fil-tipo')||{value:''}).value;
+  const sedeFiltroC    = (document.getElementById('cond-fil-sede')||{value:''}).value;
+  const destinoFiltroC = (document.getElementById('cond-fil-destino')||{value:''}).value;
   // Construir filas: conductores encontrados en BD + los NO encontrados del Excel
   const seen=new Set();
   let rows=[];
   REP_ROWS.forEach(r=>{
-    // Filtrar por Tipo de Servicio
-    if(tipoFiltroC && (r.tipoServicio||'') !== tipoFiltroC) return;
+    if(tipoFiltroC    && (r.tipoServicio||'').trim() !== tipoFiltroC) return;
+    if(sedeFiltroC    && (r.sede||r.sedeOrigen||'').trim() !== sedeFiltroC) return;
+    if(destinoFiltroC && (r.destino||'').trim() !== destinoFiltroC) return;
     if(r.condBD){
       // NO mostrar conductores BETA en consultas
       if(esConductorBeta(r.condBD)) return;
@@ -2335,12 +2350,17 @@ function renderUnidades(){
     return;
   }
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
-  const tipoFiltroU = (document.getElementById('unid-fil-tipo')||{value:''}).value;
+  const tipoFiltroU    = (document.getElementById('unid-fil-tipo')||{value:''}).value;
+  const sedeFiltroU    = (document.getElementById('unid-fil-sede')||{value:''}).value;
+  const destinoFiltroU = (document.getElementById('unid-fil-destino')||{value:''}).value;
   let rows;
   if(UNID_MODO_DIA && REP_ROWS.length>0){
-    const repFiltrado = tipoFiltroU
-      ? REP_ROWS.filter(r=>(r.tipoServicio||'')===tipoFiltroU)
-      : REP_ROWS;
+    const repFiltrado = REP_ROWS.filter(r=>{
+      if(tipoFiltroU    && (r.tipoServicio||'').trim() !== tipoFiltroU) return false;
+      if(sedeFiltroU    && (r.sede||r.sedeOrigen||'').trim() !== sedeFiltroU) return false;
+      if(destinoFiltroU && (r.destino||'').trim() !== destinoFiltroU) return false;
+      return true;
+    });
     rows = repFiltrado.map(r=>{
       if(r.unidBD) return r.unidBD;
       // Unidad nueva: crear con todos los campos vacíos
@@ -2868,7 +2888,12 @@ async function leerReporte(){
       ruta:      col(['RUTA','ITINERARIO','DESTINO']),
       centro:    col(['CENTRO','COSTO','PLANTA','SEDE']),
       turno:        col(['TURNO','JORNADA','HORARIO']),
-      tipoServicio: col(['TIPO DE SERVICIO','TIPO SERVICIO','TIPO','SERVICIO','MODALIDAD DE SERVICIO']),
+      tipoServicio: col(['TIPO DE SERVICIO','TIPO SERVICIO','TIPO SERVICIO']),
+      sedeOrigen:   col(['SEDE ORIGEN','ORIGEN','SEDE DE ORIGEN']),
+      destino:      col(['DESTINO','DESTINO FINAL','FUNDO','DESTINO RUTA']),
+      sede:         col(['SEDE']),
+      modalidad:    col(['MODALIDAD']),
+      tipoUnidad:   col(['TIPO UNIDAD','TIPO DE UNIDAD']),
     };
 
     // Validar que al menos existan placa o conductor
@@ -2890,7 +2915,12 @@ async function leerReporte(){
       const ruta      = COL.ruta      ? (row[COL.ruta]     ||'').toString().trim() : '';
       const centro    = COL.centro    ? (row[COL.centro]   ||'').toString().trim() : '';
       const turno        = COL.turno        ? (row[COL.turno]       ||'').toString().trim() : '';
-      const tipoServicio = COL.tipoServicio ? (row[COL.tipoServicio]||'').toString().trim().toUpperCase() : '';
+      const tipoServicio = COL.tipoServicio ? (row[COL.tipoServicio]||'').toString().trim() : '';
+      const sedeOrigen   = COL.sedeOrigen   ? (row[COL.sedeOrigen]  ||'').toString().trim() : '';
+      const destino      = COL.destino      ? (row[COL.destino]     ||'').toString().trim() : '';
+      const sede         = COL.sede         ? (row[COL.sede]        ||'').toString().trim() : '';
+      const modalidad    = COL.modalidad    ? (row[COL.modalidad]   ||'').toString().trim() : '';
+      const tipoUnidExc  = COL.tipoUnidad   ? (row[COL.tipoUnidad]  ||'').toString().trim() : '';
 
       // Omitir filas completamente vacías
       if(!placa && !conductor && !dni && !provExcel) return null;
@@ -2919,6 +2949,7 @@ async function leerReporte(){
         provExcel,
         proveedor: provExcel || condBD?.proveedor || unidBD?.proveedor || '',
         ruta, centro, turno, tipoServicio,
+        sedeOrigen, destino, sede, modalidad, tipoUnidExc,
         unidBD: unidVista,
         condBD: condVista,
         estado,
@@ -3438,17 +3469,24 @@ async function guardarReporteEnSheets(){
   }
 }
 
-// Puebla el dropdown de Tipo de Servicio con los valores del reporte
+// Puebla los dropdowns de filtros desde el reporte cargado
 function poblarFiltroTipoServicio(){
-  const tipos = [...new Set(REP_ROWS.map(r=>(r.tipoServicio||'').trim()).filter(Boolean))].sort();
-  const fill = (id) => {
+  const tipos    = [...new Set(REP_ROWS.map(r=>(r.tipoServicio||'').trim()).filter(Boolean))].sort();
+  const sedes    = [...new Set(REP_ROWS.map(r=>(r.sede||r.sedeOrigen||'').trim()).filter(Boolean))].sort();
+  const destinos = [...new Set(REP_ROWS.map(r=>(r.destino||'').trim()).filter(Boolean))].sort();
+
+  const fill = (id, vals, placeholder) => {
     const el = document.getElementById(id); if(!el) return;
-    el.innerHTML = '<option value="">Todos los servicios</option>' +
-      tipos.map(t=>`<option value="${t}">${t}</option>`).join('');
-    el.style.display = tipos.length > 0 ? '' : 'none';
+    el.innerHTML = `<option value="">${placeholder}</option>` +
+      vals.map(v=>`<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
+    el.style.display = vals.length > 0 ? '' : 'none';
   };
-  fill('cond-fil-tipo');
-  fill('unid-fil-tipo');
+  fill('cond-fil-tipo',    tipos,    'Todos los servicios');
+  fill('unid-fil-tipo',    tipos,    'Todos los servicios');
+  fill('cond-fil-sede',    sedes,    'Todas las sedes');
+  fill('unid-fil-sede',    sedes,    'Todas las sedes');
+  fill('cond-fil-destino', destinos, 'Todos los destinos');
+  fill('unid-fil-destino', destinos, 'Todos los destinos');
 }
 
 // Al cargar Excel → activar modo día automáticamente
