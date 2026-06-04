@@ -524,9 +524,12 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 
   <!-- ======== CONDUCTORES ======== -->
   <div class="page" id="page-conductores">
-    <div class="section-hd">
+    <div class="section-hd" style="flex-wrap:wrap;gap:8px">
       <div class="section-title">Conductores <span class="count-tag" id="cond-count">—</span></div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <select id="cond-fil-tipo" class="filter-sel" onchange="state.conductores.page=1;renderConductores()" style="min-width:160px">
+          <option value="">Todos los servicios</option>
+        </select>
         <div id="cond-modo-badge" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;display:none">📋 Reporte del día</div>
         <div id="cond-modo-badge-base" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--bg3);color:var(--text3);font-weight:600">📦 Base completa</div>
         <button class="tb-btn" id="btn-cond-modo" onclick="toggleCondModo()" style="font-size:11px">Ver reporte del día</button>
@@ -555,9 +558,12 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 
   <!-- ======== UNIDADES ======== -->
   <div class="page" id="page-unidades">
-    <div class="section-hd">
+    <div class="section-hd" style="flex-wrap:wrap;gap:8px">
       <div class="section-title">Unidades <span class="count-tag" id="unid-count">—</span></div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <select id="unid-fil-tipo" class="filter-sel" onchange="state.unidades.page=1;renderUnidades()" style="min-width:160px">
+          <option value="">Todos los servicios</option>
+        </select>
         <div id="unid-modo-badge" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;display:none">📋 Reporte del día</div>
         <div id="unid-modo-badge-base" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--bg3);color:var(--text3);font-weight:600">📦 Base completa</div>
         <button class="tb-btn" id="btn-unid-modo" onclick="toggleUnidModo()" style="font-size:11px">Ver reporte del día</button>
@@ -2158,10 +2164,13 @@ function renderConductores(){
     return;
   }
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
+  const tipoFiltroC = (document.getElementById('cond-fil-tipo')||{value:''}).value;
   // Construir filas: conductores encontrados en BD + los NO encontrados del Excel
   const seen=new Set();
   let rows=[];
   REP_ROWS.forEach(r=>{
+    // Filtrar por Tipo de Servicio
+    if(tipoFiltroC && (r.tipoServicio||'') !== tipoFiltroC) return;
     if(r.condBD){
       // NO mostrar conductores BETA en consultas
       if(esConductorBeta(r.condBD)) return;
@@ -2326,9 +2335,13 @@ function renderUnidades(){
     return;
   }
   const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
+  const tipoFiltroU = (document.getElementById('unid-fil-tipo')||{value:''}).value;
   let rows;
   if(UNID_MODO_DIA && REP_ROWS.length>0){
-    rows = REP_ROWS.map(r=>{
+    const repFiltrado = tipoFiltroU
+      ? REP_ROWS.filter(r=>(r.tipoServicio||'')===tipoFiltroU)
+      : REP_ROWS;
+    rows = repFiltrado.map(r=>{
       if(r.unidBD) return r.unidBD;
       // Unidad nueva: crear con todos los campos vacíos
       return {
@@ -2854,7 +2867,8 @@ async function leerReporte(){
       proveedor: col(['PROVEEDOR','EMPRESA','TRANSPORTISTA','RAZON']),
       ruta:      col(['RUTA','ITINERARIO','DESTINO']),
       centro:    col(['CENTRO','COSTO','PLANTA','SEDE']),
-      turno:     col(['TURNO','JORNADA','HORARIO']),
+      turno:        col(['TURNO','JORNADA','HORARIO']),
+      tipoServicio: col(['TIPO DE SERVICIO','TIPO SERVICIO','TIPO','SERVICIO','MODALIDAD DE SERVICIO']),
     };
 
     // Validar que al menos existan placa o conductor
@@ -2875,7 +2889,8 @@ async function leerReporte(){
       const provExcel = COL.proveedor ? (row[COL.proveedor]||'').toString().trim() : '';
       const ruta      = COL.ruta      ? (row[COL.ruta]     ||'').toString().trim() : '';
       const centro    = COL.centro    ? (row[COL.centro]   ||'').toString().trim() : '';
-      const turno     = COL.turno     ? (row[COL.turno]    ||'').toString().trim() : '';
+      const turno        = COL.turno        ? (row[COL.turno]       ||'').toString().trim() : '';
+      const tipoServicio = COL.tipoServicio ? (row[COL.tipoServicio]||'').toString().trim().toUpperCase() : '';
 
       // Omitir filas completamente vacías
       if(!placa && !conductor && !dni && !provExcel) return null;
@@ -2903,7 +2918,7 @@ async function leerReporte(){
         placa, conductor, dni,
         provExcel,
         proveedor: provExcel || condBD?.proveedor || unidBD?.proveedor || '',
-        ruta, centro, turno,
+        ruta, centro, turno, tipoServicio,
         unidBD: unidVista,
         condBD: condVista,
         estado,
@@ -3423,6 +3438,19 @@ async function guardarReporteEnSheets(){
   }
 }
 
+// Puebla el dropdown de Tipo de Servicio con los valores del reporte
+function poblarFiltroTipoServicio(){
+  const tipos = [...new Set(REP_ROWS.map(r=>(r.tipoServicio||'').trim()).filter(Boolean))].sort();
+  const fill = (id) => {
+    const el = document.getElementById(id); if(!el) return;
+    el.innerHTML = '<option value="">Todos los servicios</option>' +
+      tipos.map(t=>`<option value="${t}">${t}</option>`).join('');
+    el.style.display = tipos.length > 0 ? '' : 'none';
+  };
+  fill('cond-fil-tipo');
+  fill('unid-fil-tipo');
+}
+
 // Al cargar Excel → activar modo día automáticamente
 function postCargarReporte(){
   recalcular();
@@ -3436,7 +3464,8 @@ function postCargarReporte(){
   renderUnidades();
   renderProveedores();
   renderAlertas();
-  audPoblarFiltros(); // pobla filtros de Auditorías con Modalidad/Sede/Destino del Excel
+  audPoblarFiltros();        // filtros Auditorías
+  poblarFiltroTipoServicio(); // filtro Tipo de Servicio en Conductores y Unidades
 }
 
 // Al limpiar reporte → volver a vacío
