@@ -1657,7 +1657,7 @@ async function syncFromSheets(){
         })
         .map(o=>({
           nombre:      o.proveedor||'',
-          estado:      (o.estado||'ACTIVO').toUpperCase(),
+          estado:      'ACTIVO',
           ruc:         o.ruc||'',
           contacto:    o.contacto||'',
           celular:     o.celular||'',
