@@ -2719,7 +2719,7 @@ function calcRPcumpl(){
   const bdg=document.getElementById('rp-cumpl-badge');
   const col=pct>=80?'var(--success)':pct>=50?'var(--warning)':'var(--danger)';
   if(bar){bar.style.width=pct+'%';bar.style.background=col;}
-  if(txt)txt.textContent=ok+' / 13 — '+pct+'%';
+  if(txt)txt.textContent=ok+' / 20 — '+pct+'%';
   if(bdg){
     bdg.textContent=pct>=80?'✅ COMPLETO':pct>=50?'⏳ EN PROCESO':'❌ INCOMPLETO';
     bdg.style.background=pct>=80?'var(--success-bg)':pct>=50?'var(--warning-bg)':'var(--danger-bg)';
@@ -2739,12 +2739,28 @@ function guardarProv(){
   if(!nom){showToast&&showToast('Ingresa la razón social','error');return;}
   const docs=[];for(let i=0;i<20;i++)docs.push(document.getElementById('rp-d'+i)?.checked||false);
   const ok=docs.filter(Boolean).length;
-  const r={nombre:nom,estado:document.getElementById('rp-estado').value,zona:document.getElementById('rp-zona').value,tipo:document.getElementById('rp-tipo').value,ruc:document.getElementById('rp-ruc').value,codigo:document.getElementById('rp-codigo').value,contacto:document.getElementById('rp-contacto').value,celular:document.getElementById('rp-celular').value,correo:document.getElementById('rp-correo').value,responsable:document.getElementById('rp-resp').value,obs:document.getElementById('rp-obs').value,fechaReg:new Date().toLocaleDateString('es-PE')};
+  const gv = id => document.getElementById(id)?.value||'';
+  const r={
+    nombre:nom,
+    estado:   gv('rp-estado'),
+    zona:     gv('rp-zona'),
+    tipo:     gv('rp-tipo'),
+    ruc:      gv('rp-ruc'),
+    codigo:   gv('rp-codigo'),
+    contacto: gv('rp-contacto'),
+    celular:  gv('rp-celular'),
+    correo:   gv('rp-correo'),
+    responsable: gv('rp-resp'),
+    obs:      gv('rp-obs'),
+    fechaReg: new Date().toLocaleDateString('es-PE')
+  };
   const idx=PROVEEDORES.findIndex(p=>p.nombre===nom);
   if(idx>=0)PROVEEDORES[idx]=r;else PROVEEDORES.push(r);
   PD[nom]={docs,resp:r.responsable};savePD();
-  document.getElementById('rp-msg').textContent='✅ Guardado '+r.fechaReg;
-  showToast&&showToast('Proveedor guardado ✓','success');
+  guardarProvEnSheets(nom);
+  const msg = document.getElementById('rp-msg');
+  if(msg) msg.textContent='✅ Guardado '+r.fechaReg;
+  showToast('Proveedor guardado ✓','ok');
 }
 function limpiarProv(){
   ['rp-nombre','rp-ruc','rp-codigo','rp-contacto','rp-celular','rp-correo','rp-resp','rp-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
