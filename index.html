@@ -1657,7 +1657,7 @@ async function syncFromSheets(){
         })
         .map(o=>({
           nombre:      o.proveedor||'',
-          estado:      (o.estado||'INACTIVO').toUpperCase(),
+          estado:      (o.estado||'ACTIVO').toUpperCase(),
           ruc:         o.ruc||'',
           contacto:    o.contacto||'',
           celular:     o.celular||'',
@@ -3328,7 +3328,7 @@ async function guardarConductor(){
   const dni=document.getElementById('c-dni').value.trim();
   const nombre=document.getElementById('c-nombre').value.trim();
   if(!dni||!nombre){showToast('DNI y Conductor son obligatorios','err');return;}
-  const row={dni,conductor:nombre,estado:document.getElementById('c-estado').value,
+  const row={dni,conductor:nombre,estado:document.getElementById('c-estado').value||'ACTIVO',
     proveedor:document.getElementById('c-proveedor').value,placa:document.getElementById('c-placa').value,
     catLic:document.getElementById('c-cat-lic').value,fechaLic:document.getElementById('c-fecha-lic').value,
     restriccion:document.getElementById('c-restriccion').value,
@@ -3344,17 +3344,18 @@ async function guardarConductor(){
     docEmo:document.getElementById('ch-emo').checked?'✓':'✗'};
   recalcular();
   const idx=CONDUCTORES.findIndex(c=>c.dni===dni);
-  if(idx>=0)CONDUCTORES[idx]={...CONDUCTORES[idx],...row};
-  else CONDUCTORES.push(row);
+  if(idx>=0) CONDUCTORES[idx]={...CONDUCTORES[idx],...row};
+  else CONDUCTORES.push({...row, estado:'ACTIVO'});
+  renderConductores();
   const ok=await guardarEnSheets('CONDUCTORES',Object.keys(row),Object.values(row),'dni');
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
-  document.getElementById('c-msg').textContent=new Date().toLocaleTimeString('es-PE');
+  const cm=document.getElementById('c-msg'); if(cm) cm.textContent=new Date().toLocaleTimeString('es-PE');
 }
 async function guardarUnidad(){
   const placa=document.getElementById('u-placa').value.trim().toUpperCase();
   if(!placa){showToast('La placa es obligatoria','err');return;}
   const chs=['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'];
-  const row={placa,estado:document.getElementById('u-estado').value,
+  const row={placa,estado:document.getElementById('u-estado').value||'ACTIVO',
     proveedor:document.getElementById('u-proveedor').value,
     tipo:document.getElementById('u-tipo').value,anio:document.getElementById('u-anio').value,
     marca:document.getElementById('u-marca').value,
@@ -3373,11 +3374,12 @@ async function guardarUnidad(){
     docPoliza:document.getElementById('uch-poliza').checked?'✓':'✗'};
   recalcular();
   const idx=UNIDADES.findIndex(u=>u.placa===placa);
-  if(idx>=0)UNIDADES[idx]={...UNIDADES[idx],...row};
-  else UNIDADES.push(row);
+  if(idx>=0) UNIDADES[idx]={...UNIDADES[idx],...row};
+  else UNIDADES.push({...row, estado:'ACTIVO'});
+  renderUnidades();
   const ok=await guardarEnSheets('UNIDADES',Object.keys(row),Object.values(row),'placa');
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
-  document.getElementById('u-msg').textContent=new Date().toLocaleTimeString('es-PE');
+  const um=document.getElementById('u-msg'); if(um) um.textContent=new Date().toLocaleTimeString('es-PE');
 }
 function limpiarFormCond(){
   ['c-dni','c-nombre','c-proveedor','c-placa','c-fecha-lic','c-dias-lic','c-est-lic','c-fecha-sctr','c-dias-sctr','c-est-sctr','c-fecha-emo','c-dias-emo','c-est-emo','c-pap-cant','c-pap-firmes','c-pap-proceso','c-cumpl','c-msg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
