@@ -3004,6 +3004,7 @@ async function leerReporte(){
     showToast(msg,'ok');
 
     postCargarReporte();
+    guardarRepActivo(); // persistir en localStorage + Sheets
   } catch(e){
     console.error(e);
     showToast('Error al leer: '+e.message,'err');
@@ -3522,13 +3523,22 @@ function postCargarReporte(){
   poblarFiltroTipoServicio(); // filtro Tipo de Servicio en Conductores y Unidades
 }
 
-// Al limpiar reporte → volver a vacío
+// Al limpiar reporte → volver a vacío + borrar cache
 const limpiarReporteOrig = limpiarReporte;
 limpiarReporte = function(){
   limpiarReporteOrig();
   COND_MODO_DIA = false;
   UNID_MODO_DIA = false;
   _setBadgesModo(false, false);
+  // Borrar persistencia local y de Sheets
+  localStorage.removeItem(REP_CACHE_KEY);
+  if(GS_URL){
+    fetch(GS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ hoja:'REPORTE_ACTIVO', action:'overwrite', headers:[], rows:[] })
+    }).catch(()=>{});
+  }
   renderConductores();
   renderUnidades();
 };
@@ -4107,6 +4117,98 @@ function renderHistorial(){
   if(HIST_PAGE<tp) mk('→',HIST_PAGE+1);
 }
 
+// ═══════════════════════════════════════════════
+// PERSISTENCIA DEL REPORTE ACTIVO
+// ═══════════════════════════════════════════════
+const REP_CACHE_KEY = 'rep_activo_v1';
+
+// Guarda el reporte en localStorage + hoja REPORTE_ACTIVO de Sheets
+function guardarRepActivo(){
+  const fecha = document.getElementById('rep-fecha')?.value || '';
+  const minimal = REP_ROWS.map(r=>({
+    placa:r.placa||'', conductor:r.conductor||'', dni:r.dni||'',
+    provExcel:r.provExcel||'', proveedor:r.proveedor||'',
+    ruta:r.ruta||'', centro:r.centro||'', turno:r.turno||'',
+    tipoServicio:r.tipoServicio||'', sedeOrigen:r.sedeOrigen||'',
+    destino:r.destino||'', sede:r.sede||'', modalidad:r.modalidad||'',
+    tipoUnidExc:r.tipoUnidExc||''
+  }));
+  // localStorage (instantáneo, sin red)
+  try {
+    localStorage.setItem(REP_CACHE_KEY, JSON.stringify({fecha, rows: minimal}));
+  } catch(e){ console.warn('localStorage lleno:', e); }
+  // Sheets REPORTE_ACTIVO (para otros usuarios)
+  if(GS_URL){
+    const headers = ['PLACA','CONDUCTOR','DNI','PROVEEDOR','RUTA','CENTRO','TURNO',
+                     'TIPO_SERVICIO','SEDE_ORIGEN','DESTINO','SEDE','MODALIDAD','TIPO_UNIDAD','FECHA'];
+    const rows = minimal.map(r=>[
+      r.placa, r.conductor, r.dni, r.proveedor, r.ruta, r.centro, r.turno,
+      r.tipoServicio, r.sedeOrigen, r.destino, r.sede, r.modalidad, r.tipoUnidExc, fecha
+    ]);
+    fetch(GS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ hoja:'REPORTE_ACTIVO', action:'overwrite', headers, rows })
+    }).catch(()=>{});
+  }
+}
+
+// Restaura el reporte desde localStorage o desde Sheets
+async function restaurarRepActivo(){
+  // 1. Intentar localStorage primero (rápido)
+  try {
+    const cached = localStorage.getItem(REP_CACHE_KEY);
+    if(cached){
+      const {fecha, rows} = JSON.parse(cached);
+      if(rows && rows.length > 0){
+        _reconstruirRepRows(rows, fecha);
+        showToast(`📋 Reporte restaurado — ${REP_ROWS.length} registros (${fecha||'sin fecha'})`, 'ok');
+        return;
+      }
+    }
+  } catch(e){}
+  // 2. Intentar Sheets REPORTE_ACTIVO (para otros usuarios)
+  if(GS_URL){
+    try {
+      const raw = await leerHoja('REPORTE_ACTIVO');
+      if(raw && raw.length > 0){
+        const rows = raw.map(r=>({
+          placa:r.placa||'', conductor:r.conductor||'', dni:r.dni||'',
+          proveedor:r.proveedor||'', ruta:r.ruta||'', centro:r.centro||'',
+          turno:r.turno||'', tipoServicio:(r.tipo_servicio||r.tiposervicio||''),
+          sedeOrigen:(r.sede_origen||r.sedeorigen||''), destino:r.destino||'',
+          sede:r.sede||'', modalidad:r.modalidad||'', tipoUnidExc:(r.tipo_unidad||'')
+        }));
+        const fecha = raw[0]?.fecha || '';
+        _reconstruirRepRows(rows, fecha);
+        showToast(`📋 Reporte cargado desde Sheets — ${REP_ROWS.length} registros`, 'ok');
+      }
+    } catch(e){}
+  }
+}
+
+function _reconstruirRepRows(minimal, fecha){
+  REP_ROWS = minimal.map(r=>{
+    const unidBD = buscarPorPlaca(r.placa);
+    const condBD = buscarConductorBD(r.conductor, r.dni);
+    if(unidBD) unidBD.estado = 'ACTIVO';
+    if(condBD) condBD.estado = 'ACTIVO';
+    const condVista = condBD ? {...condBD, _enBD:true} : null;
+    const unidVista = unidBD ? {...unidBD, _enBD:true} : null;
+    return {
+      ...r,
+      provExcel: r.provExcel||r.proveedor||'',
+      unidBD: unidVista,
+      condBD: condVista,
+      estado: estadoGlobal(unidVista, condVista),
+      _nuevaConductor: !condBD && (r.conductor||r.dni),
+      _nuevaUnidad:    !unidBD && r.placa,
+    };
+  });
+  if(fecha){ const el=document.getElementById('rep-fecha'); if(el) el.value=fecha; }
+  if(REP_ROWS.length > 0) postCargarReporte();
+}
+
 if(!localStorage.getItem('gs_url') && GS_URL){
   localStorage.setItem('gs_url', GS_URL);
 }
@@ -4119,7 +4221,7 @@ if(GS_URL){
   if(lsEl) lsEl.style.display='';
   mostrarCargando(true);
   syncFromSheets()
-    .then(()=>{ recalcular(); render(); })
+    .then(()=>{ recalcular(); render(); restaurarRepActivo(); })
     .catch(e=>{ console.error(e); renderDashboard(); })
     .finally(()=>mostrarCargando(false));
 } else {
