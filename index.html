@@ -2157,7 +2157,17 @@ function renderConductores(){
   if(!COND_MODO_DIA && CONDUCTORES.length > 0) {
     const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
     const {estado}=state.conductores;
+    const tipoFiltroBase = (document.getElementById('cond-fil-tipo')||{value:''}).value;
+    // Poblar dropdown con proveedores (para filtrar en base)
+    const tiposBase = [...new Set(CONDUCTORES.filter(c=>!esConductorBeta(c)).map(c=>(c.proveedor||'').trim()).filter(Boolean))].sort();
+    const selC = document.getElementById('cond-fil-tipo');
+    if(selC && selC.options.length <= 1 && tiposBase.length > 0){
+      selC.innerHTML = '<option value="">Todos los proveedores</option>' +
+        tiposBase.map(t=>`<option value="${t}">${t}</option>`).join('');
+      selC.style.display='';
+    }
     let rows = filterData(CONDUCTORES.filter(c=>!esConductorBeta(c)), search, estado);
+    if(tipoFiltroBase) rows = rows.filter(r=>(r.proveedor||'').trim()===tipoFiltroBase);
     document.getElementById('cond-count').textContent=rows.length+' registros';
     const PS2=25; const pg=state.conductores.page;
     const sl=rows.slice((pg-1)*PS2,pg*PS2);
@@ -2331,7 +2341,17 @@ function renderUnidades(){
   if(!UNID_MODO_DIA && UNIDADES.length > 0){
     const search=(document.getElementById('search-input')||{value:''}).value.toLowerCase();
     const {estado}=state.unidades;
+    const tipoFiltroBase = (document.getElementById('unid-fil-tipo')||{value:''}).value;
+    // Poblar dropdown con tipos de unidad de la base
+    const tiposBase = [...new Set(UNIDADES.map(u=>(u.tipo||'').trim()).filter(Boolean))].sort();
+    const selU = document.getElementById('unid-fil-tipo');
+    if(selU && selU.options.length <= 1 && tiposBase.length > 0){
+      selU.innerHTML = '<option value="">Todos los tipos</option>' +
+        tiposBase.map(t=>`<option value="${t}">${t}</option>`).join('');
+      selU.style.display='';
+    }
     let rows = filterData(UNIDADES, search, estado);
+    if(tipoFiltroBase) rows = rows.filter(r=>(r.tipo||'').trim()===tipoFiltroBase);
     document.getElementById('unid-count').textContent=rows.length+' registros';
     const PS2=25; const pg=state.unidades.page;
     const sl=rows.slice((pg-1)*PS2,pg*PS2);
