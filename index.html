@@ -1464,38 +1464,47 @@ function parseCsv(text){
   });
 }
 
-// Guardar/actualizar fila (no-cors, fire-and-forget)
-async function guardarEnSheets(hoja, headers, row, keyField){
+// Orden EXACTO de columnas del Sheet UNIDADES (47 columnas)
+const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','cumpl','carpeta'];
 
+// Orden EXACTO de columnas del Sheet CONDUCTORES (33-34 columnas)
+const COLORDER_COND = ['dni','conductor','estado','proveedor','placa','tipoUnidad','centro','ruta','turno','numLic','catLic','fechaLic','diasLic','estadoLic','restriccion','celular','record','cantPapeletas','puntosFirmes','puntosProceso','puntosTotal','alertaPuntos','asegSctr','tipoSctr','fechaSctr','diasSctr','estadoSctr','docDni','docLic','docRecord','docSctr','docEmo','cumpl','carpeta'];
+
+// Convierte un registro interno → array ordenado según las columnas del Sheet
+function recordToRow(rec, order){ return order.map(k => String(rec[k] ?? '')); }
+
+// Guarda/actualiza una fila respetando el orden EXACTO de columnas
+async function guardarFilaOrdenada(hoja, rec, order, keyColIndex){
   if(!GS_URL) return false;
-
   try {
+    const row = recordToRow(rec, order);
+    await fetch(GS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ hoja, rowOrdenada: row, keyColIndex: keyColIndex||0 })
+    });
+    return true;
+  } catch(err){
+    console.error('GS ERROR:', err);
+    showToast('Error guardando en Google Sheets','err');
+    return false;
+  }
+}
 
-    const payload = {
-      hoja,
-      headers,
-      row: row.map(v => String(v || '')),
-      keyField
-    };
-
+// (Legacy) Guardar/actualizar fila por nombre de campo clave
+async function guardarEnSheets(hoja, headers, row, keyField){
+  if(!GS_URL) return false;
+  try {
+    const payload = { hoja, headers, row: row.map(v => String(v || '')), keyField };
     await fetch(GS_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
-
-    console.log('GS OK');
-
     return true;
-
   } catch(err){
-
     console.error('GS ERROR:', err);
-
     showToast('Error guardando en Google Sheets','err');
-
     return false;
   }
 }
@@ -2061,7 +2070,7 @@ async function toggleDocCond(dni, campo){
   }
   showToast(nuevoValor==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
   renderConductores();
-  if(GS_URL) guardarEnSheets('CONDUCTORES', Object.keys(CONDUCTORES[idx]), Object.values(CONDUCTORES[idx]), 'dni');
+  if(GS_URL) guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
 }
 
 // Edición inline de celda en conductor
@@ -2089,7 +2098,7 @@ async function guardarCeldaCond(dni, campo, valor){
       }
     });
   }
-  if(GS_URL) guardarEnSheets('CONDUCTORES', Object.keys(CONDUCTORES[idx]), Object.values(CONDUCTORES[idx]), 'dni');
+  if(GS_URL) guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
   showToast('✓ Guardado','ok');
   renderConductores();
 }
@@ -2249,7 +2258,7 @@ async function toggleDocUnid(placa, campo){
   }
   showToast(nuevoValor==='✓' ? '✓ Marcado' : '✗ Desmarcado','ok');
   renderUnidades();
-  if(GS_URL) guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]), 'placa');
+  if(GS_URL) guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
 }
 
 function editCeldaUnid(placa, campo, valorActual){
@@ -2280,7 +2289,7 @@ async function guardarCeldaUnid(placa, campo, valor){
       }
     });
   }
-  if(GS_URL) guardarEnSheets('UNIDADES', Object.keys(UNIDADES[idx]), Object.values(UNIDADES[idx]), 'placa');
+  if(GS_URL) guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
   showToast('✓ Guardado','ok');
   renderUnidades();
 }
@@ -3196,7 +3205,10 @@ async function guardarEdit(){
     }
   }
   // Guardar en background (sin bloquear UI)
-  if(GS_URL) guardarEnSheets(tipo==='conductor'?'CONDUCTORES':'UNIDADES', Object.keys(reg), Object.values(reg));
+  if(GS_URL){
+    if(tipo==='conductor') guardarFilaOrdenada('CONDUCTORES', reg, COLORDER_COND, 0);
+    else                   guardarFilaOrdenada('UNIDADES', reg, COLORDER_UNID, 0);
+  }
   cerrarEdit();
   render();
   showToast('✓ Fecha actualizada','ok');
@@ -3343,11 +3355,12 @@ async function guardarConductor(){
     docSctr:document.getElementById('ch-sctr').checked?'✓':'✗',
     docEmo:document.getElementById('ch-emo').checked?'✓':'✗'};
   recalcular();
-  const idx=CONDUCTORES.findIndex(c=>c.dni===dni);
+  let idx=CONDUCTORES.findIndex(c=>c.dni===dni);
   if(idx>=0) CONDUCTORES[idx]={...CONDUCTORES[idx],...row};
-  else CONDUCTORES.push({...row, estado:'ACTIVO'});
+  else { CONDUCTORES.push({...row, estado:'ACTIVO'}); idx=CONDUCTORES.length-1; }
+  recalcular();
   renderConductores();
-  const ok=await guardarEnSheets('CONDUCTORES',Object.keys(row),Object.values(row),'dni');
+  const ok=await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
   const cm=document.getElementById('c-msg'); if(cm) cm.textContent=new Date().toLocaleTimeString('es-PE');
 }
@@ -3373,11 +3386,12 @@ async function guardarUnidad(){
     docBoletin:document.getElementById('uch-boletin').checked?'✓':'✗',
     docPoliza:document.getElementById('uch-poliza').checked?'✓':'✗'};
   recalcular();
-  const idx=UNIDADES.findIndex(u=>u.placa===placa);
+  let idx=UNIDADES.findIndex(u=>u.placa===placa);
   if(idx>=0) UNIDADES[idx]={...UNIDADES[idx],...row};
-  else UNIDADES.push({...row, estado:'ACTIVO'});
+  else { UNIDADES.push({...row, estado:'ACTIVO'}); idx=UNIDADES.length-1; }
+  recalcular();
   renderUnidades();
-  const ok=await guardarEnSheets('UNIDADES',Object.keys(row),Object.values(row),'placa');
+  const ok=await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
   const um=document.getElementById('u-msg'); if(um) um.textContent=new Date().toLocaleTimeString('es-PE');
 }
