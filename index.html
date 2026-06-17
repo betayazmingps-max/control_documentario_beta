@@ -1074,7 +1074,14 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">DNI <span class="req">*</span></label><input class="form-input" type="text" id="c-dni" placeholder="12345678" oninput="buscarConductor(this.value)"></div>
           <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="c-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
           <div class="form-group"><label class="form-label">Proveedor</label><input class="form-input" type="text" id="c-proveedor" placeholder="Nombre del proveedor" list="prov-list-cond" style="text-transform:uppercase"><datalist id="prov-list-cond"></datalist></div>
-          <div class="form-group"><label class="form-label">Placa <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-placa" readonly></div>
+          <div class="form-group"><label class="form-label">Placa</label><input class="form-input" type="text" id="c-placa" placeholder="A1B234" style="text-transform:uppercase"></div>
+          <div class="form-group"><label class="form-label">Tipo Unidad</label><input class="form-input" type="text" id="c-tipo-unidad" placeholder="Ej: camión"></div>
+          <div class="form-group"><label class="form-label">Centro</label><input class="form-input" type="text" id="c-centro" placeholder="Ej: 4104"></div>
+          <div class="form-group"><label class="form-label">Ruta</label><input class="form-input" type="text" id="c-ruta" placeholder="Ej: fundo Tomasita"></div>
+          <div class="form-group"><label class="form-label">Turno</label><input class="form-input" type="text" id="c-turno" placeholder="Ej: día"></div>
+          <div class="form-group"><label class="form-label">Celular</label><input class="form-input" type="text" id="c-celular" placeholder="987654321" maxlength="9"></div>
+          <div class="form-group"><label class="form-label">N° Licencia</label><input class="form-input" type="text" id="c-num-lic" placeholder="N° licencia"></div>
+          <div class="form-group full"><label class="form-label">📁 Link Carpeta SharePoint</label><input class="form-input" type="text" id="c-carpeta" placeholder="https://..."></div>
         </div>
         <div class="form-group full"><label class="form-label">Conductor <span class="req">*</span></label><input class="form-input" type="text" id="c-nombre" placeholder="Apellidos y nombres completos" style="text-transform:uppercase"></div>
       </div>
@@ -1092,6 +1099,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <div class="form-sec-title">🏥 SCTR</div>
         <div class="form-grid g4">
           <div class="form-group"><label class="form-label">Aseguradora</label><select class="form-select" id="c-aseg-sctr"><option>SANITAS</option><option>RIMAC</option><option>MAPFRE</option><option>LA POSITIVA</option><option>PACIFICO</option><option>GRANDIA</option><option>PROTECTA</option><option>CRECER</option></select></div>
+          <div class="form-group"><label class="form-label">Tipo de SCTR</label><input class="form-input" type="text" id="c-tipo-sctr" placeholder="Ej: PENSIÓN+SALUD"></div>
           <div class="form-group"><label class="form-label">Fecha Vcto. SCTR</label><input class="form-input" type="date" id="c-fecha-sctr" onchange="calcDocDias('c-fecha-sctr','c-dias-sctr','c-est-sctr')"></div>
           <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-dias-sctr" readonly></div>
           <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-est-sctr" readonly></div>
@@ -1149,6 +1157,21 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Año Fab.</label><input class="form-input" type="number" id="u-anio" placeholder="2015" min="1980" max="2026" oninput="calcAntig()"></div>
           <div class="form-group"><label class="form-label">Antigüedad <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-antig" readonly></div>
           <div class="form-group"><label class="form-label">Marca</label><input class="form-input" type="text" id="u-marca" placeholder="Toyota"></div>
+          <div class="form-group"><label class="form-label">Detalle Centro</label><input class="form-input" type="text" id="u-detalle-centro" placeholder="Ej: PLANTA JAYANCA"></div>
+          <div class="form-group"><label class="form-label">Modalidad</label><input class="form-input" type="text" id="u-modalidad" placeholder="Ej: todo costo"></div>
+          <div class="form-group"><label class="form-label">Categoría</label><input class="form-input" type="text" id="u-categoria" placeholder="Ej: N1, M3"></div>
+          <div class="form-group"><label class="form-label">Carrocería</label><input class="form-input" type="text" id="u-carroceria" placeholder="Ej: FURGÓN"></div>
+          <div class="form-group"><label class="form-label">N° Asientos</label><input class="form-input" type="number" id="u-asientos" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">N° Pasajeros</label><input class="form-input" type="number" id="u-pasajeros" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">Ejes</label><input class="form-input" type="number" id="u-ejes" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">Ruedas</label><input class="form-input" type="number" id="u-ruedas" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">Peso Bruto</label><input class="form-input" type="text" id="u-peso-bruto" placeholder="kg"></div>
+          <div class="form-group"><label class="form-label">Peso Neto</label><input class="form-input" type="text" id="u-peso-neto" placeholder="kg"></div>
+          <div class="form-group"><label class="form-label">Reacondicionado</label><select class="form-select" id="u-reacond"><option value="">—</option><option>SI</option><option>NO</option></select></div>
+          <div class="form-group"><label class="form-label">Tiene Tarj. Prop.</label><select class="form-select" id="u-tiene-tarj"><option value="">—</option><option>SI</option><option>NO</option></select></div>
+          <div class="form-group"><label class="form-label">Propietario</label><input class="form-input" type="text" id="u-propietario" placeholder="Nombre propietario"></div>
+          <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" type="text" id="u-responsable" placeholder="Responsable"></div>
+          <div class="form-group full"><label class="form-label">📁 Link Carpeta SharePoint</label><input class="form-input" type="text" id="u-carpeta" placeholder="https://..."></div>
         </div>
       </div>
       <div class="form-sec">
@@ -1158,6 +1181,9 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Fecha Vcto. SOAT</label><input class="form-input" type="date" id="u-fecha-soat" onchange="calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat')"></div>
           <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-dias-soat" readonly></div>
           <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-est-soat" readonly></div>
+          <div class="form-group"><label class="form-label">Uso SOAT</label><input class="form-input" type="text" id="u-uso-soat" placeholder="Ej: PARTICULAR"></div>
+          <div class="form-group"><label class="form-label">Tipo de Seguro</label><input class="form-input" type="text" id="u-tipo-seguro" placeholder="Ej: VEHICULAR"></div>
+          <div class="form-group"><label class="form-label">Tipo SOAT</label><input class="form-input" type="text" id="u-tipo-soat" placeholder="Ej: ELECTRÓNICO"></div>
         </div>
       </div>
       <div class="form-sec">
@@ -3311,6 +3337,10 @@ function buscarConductor(dni){
     document.getElementById('c-restriccion').value=c.restriccion||'SIN RESTRICCIONES';
     document.getElementById('c-aseg-sctr').value=c.asegSctr||'SANITAS';
     document.getElementById('c-fecha-sctr').value=c.fechaSctr||'';
+    const sc=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
+    sc('c-tipo-unidad',c.tipoUnidad);sc('c-centro',c.centro);sc('c-ruta',c.ruta);
+    sc('c-turno',c.turno);sc('c-celular',c.celular);sc('c-num-lic',c.numLic);
+    sc('c-tipo-sctr',c.tipoSctr);sc('c-carpeta',c.carpeta);
     if(c.fechaLic)calcDocDias('c-fecha-lic','c-dias-lic','c-est-lic');
     if(c.fechaSctr)calcDocDias('c-fecha-sctr','c-dias-sctr','c-est-sctr');
     showToast('Conductor encontrado: '+c.conductor,'ok');
@@ -3329,6 +3359,14 @@ function buscarUnidad(placa){
     document.getElementById('u-fecha-soat').value=u.fechaSoat||'';
     document.getElementById('u-fecha-rtv').value=u.fechaRtv||'';
     document.getElementById('u-fecha-tc').value=u.fechaTc||'';
+    const su=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
+    su('u-centro',u.centro);su('u-detalle-centro',u.detalleCentro);su('u-modalidad',u.modalidad);
+    su('u-categoria',u.categoria);su('u-carroceria',u.carroceria);su('u-asientos',u.asientos);
+    su('u-pasajeros',u.pasajeros);su('u-ejes',u.ejes);su('u-ruedas',u.ruedas);
+    su('u-peso-bruto',u.pesoBruto);su('u-peso-neto',u.pesoNeto);su('u-reacond',u.reacondicionado);
+    su('u-tiene-tarj',u.tieneTarjProp);su('u-uso-soat',u.usoSoat);su('u-tipo-seguro',u.tipoSeguro);
+    su('u-tipo-soat',u.tipoSoat);su('u-propietario',u.propietario);su('u-responsable',u.responsable);
+    su('u-carpeta',u.carpeta);
     if(u.anio)calcAntig();
     if(u.fechaSoat)calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat');
     if(u.fechaRtv)calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv');
@@ -3340,15 +3378,23 @@ async function guardarConductor(){
   const dni=document.getElementById('c-dni').value.trim();
   const nombre=document.getElementById('c-nombre').value.trim();
   if(!dni||!nombre){showToast('DNI y Conductor son obligatorios','err');return;}
-  const row={dni,conductor:nombre,estado:document.getElementById('c-estado').value||'ACTIVO',
-    proveedor:document.getElementById('c-proveedor').value,placa:document.getElementById('c-placa').value,
-    catLic:document.getElementById('c-cat-lic').value,fechaLic:document.getElementById('c-fecha-lic').value,
-    restriccion:document.getElementById('c-restriccion').value,
-    asegSctr:document.getElementById('c-aseg-sctr').value,fechaSctr:document.getElementById('c-fecha-sctr').value,
-    tienEmo:document.getElementById('c-tiene-emo').value,fechaEmo:document.getElementById('c-fecha-emo').value,
-    cantPapeletas:document.getElementById('c-pap-cant').value||'0',
-    puntosTotal:document.getElementById('c-pap-firmes').value||'0',
-    alertaPuntos:document.getElementById('c-alerta-pap').value,
+  const gc = id => document.getElementById(id)?.value||'';
+  const row={dni,conductor:nombre,estado:gc('c-estado')||'ACTIVO',
+    proveedor:gc('c-proveedor'),placa:gc('c-placa'),
+    tipoUnidad:gc('c-tipo-unidad'),centro:gc('c-centro'),ruta:gc('c-ruta'),turno:gc('c-turno'),
+    numLic:gc('c-num-lic'),
+    catLic:gc('c-cat-lic'),fechaLic:gc('c-fecha-lic'),
+    diasLic:(gc('c-dias-lic')||'').replace('d',''),
+    restriccion:gc('c-restriccion'),celular:gc('c-celular'),
+    cantPapeletas:gc('c-pap-cant')||'0',
+    puntosFirmes:gc('c-pap-firmes')||'0',
+    puntosProceso:gc('c-pap-proceso')||'0',
+    puntosTotal:gc('c-pap-firmes')||'0',
+    alertaPuntos:gc('c-alerta-pap'),
+    asegSctr:gc('c-aseg-sctr'),tipoSctr:gc('c-tipo-sctr'),fechaSctr:gc('c-fecha-sctr'),
+    diasSctr:(gc('c-dias-sctr')||'').replace('d',''),
+    tienEmo:gc('c-tiene-emo'),fechaEmo:gc('c-fecha-emo'),
+    carpeta:gc('c-carpeta'),
     docDni:document.getElementById('ch-dni').checked?'✓':'✗',
     docLic:document.getElementById('ch-lic').checked?'✓':'✗',
     docRecord:document.getElementById('ch-record').checked?'✓':'✗',
@@ -3368,16 +3414,41 @@ async function guardarUnidad(){
   const placa=document.getElementById('u-placa').value.trim().toUpperCase();
   if(!placa){showToast('La placa es obligatoria','err');return;}
   const chs=['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'];
-  const row={placa,estado:document.getElementById('u-estado').value||'ACTIVO',
-    proveedor:document.getElementById('u-proveedor').value,
-    tipo:document.getElementById('u-tipo').value,anio:document.getElementById('u-anio').value,
-    marca:document.getElementById('u-marca').value,
-    aseguradora:document.getElementById('u-aseg-soat').value,
-    fechaSoat:document.getElementById('u-fecha-soat').value,
-    fechaRtv:document.getElementById('u-fecha-rtv').value,
-    obsRtv:document.getElementById('u-obs-rtv').value,
-    tieneTc:document.getElementById('u-tiene-tc').value,
-    fechaTc:document.getElementById('u-fecha-tc').value,
+  const gv = id => document.getElementById(id)?.value||'';
+  const row={placa,estado:gv('u-estado')||'ACTIVO',
+    proveedor:gv('u-proveedor'),
+    centro:gv('u-centro'),
+    detalleCentro:gv('u-detalle-centro'),
+    modalidad:gv('u-modalidad'),
+    tipo:gv('u-tipo'),
+    anio:gv('u-anio'),
+    antiguedad:gv('u-antig'),
+    categoria:gv('u-categoria'),
+    marca:gv('u-marca'),
+    carroceria:gv('u-carroceria'),
+    asientos:gv('u-asientos'),
+    pasajeros:gv('u-pasajeros'),
+    ejes:gv('u-ejes'),
+    ruedas:gv('u-ruedas'),
+    pesoBruto:gv('u-peso-bruto'),
+    pesoNeto:gv('u-peso-neto'),
+    reacondicionado:gv('u-reacond'),
+    tieneTarjProp:gv('u-tiene-tarj'),
+    aseguradora:gv('u-aseg-soat'),
+    fechaSoat:gv('u-fecha-soat'),
+    diasSoat:(gv('u-dias-soat')||'').replace('d',''),
+    usoSoat:gv('u-uso-soat'),
+    tipoSeguro:gv('u-tipo-seguro'),
+    tipoSoat:gv('u-tipo-soat'),
+    fechaRtv:gv('u-fecha-rtv'),
+    diasRtv:(gv('u-dias-rtv')||'').replace('d',''),
+    obsRtv:gv('u-obs-rtv'),
+    tieneTc:gv('u-tiene-tc'),
+    fechaTc:gv('u-fecha-tc'),
+    diasTc:(gv('u-dias-tc')||'').replace('d',''),
+    propietario:gv('u-propietario'),
+    responsable:gv('u-responsable'),
+    carpeta:gv('u-carpeta'),
     docTarjProp:document.getElementById('uch-tarj').checked?'✓':'✗',
     docSoat:document.getElementById('uch-soat').checked?'✓':'✗',
     docRtv:document.getElementById('uch-rtv').checked?'✓':'✗',
