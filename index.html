@@ -637,6 +637,10 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <option value="proceso">⏳ En proceso (50-79%)</option>
           <option value="incompleto">❌ Incompleto (&lt;50%)</option>
         </select>
+        <select class="filter-sel" id="pv-origen" onchange="renderProveedores()">
+          <option value="todos">Toda la base</option>
+          <option value="reporte">📋 Solo del reporte del día</option>
+        </select>
         <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="goPage('reg-proveedor',document.querySelector('.nav-item[onclick*=reg-proveedor]'))">+ Nuevo</button>
         <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="expCSVProv()">⬇ CSV</button>
       </div>
@@ -2141,6 +2145,7 @@ function renderCondRow(r, num){
 }
 
 function irRegistrarConductor(nombre, dni, proveedor, placa){
+  if(typeof cerrarDetalleProv==='function') cerrarDetalleProv();
   goPage('reg-conductor', document.querySelector('.nav-item[onclick*="reg-conductor"]'));
   setTimeout(()=>{
     const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v;};
@@ -2538,8 +2543,31 @@ function renderProveedores(){
   const zona    = (document.getElementById('pv-zona')||{value:''}).value;
   const cumplF  = (document.getElementById('pv-cumpl')||{value:''}).value;
   const tipoServ= (document.getElementById('pv-tiposerv')||{value:''}).value;
+  const origen  = (document.getElementById('pv-origen')||{value:'todos'}).value;
 
   let activos = provValidos();
+
+  // ── Enlace con el reporte del día ──
+  const hayRep = typeof REP_ROWS!=='undefined' && REP_ROWS.length>0;
+  let nuevosRep = []; // proveedores del reporte que NO están en la base
+  if(hayRep){
+    const enBase = new Set(PROVEEDORES.map(p=>(p.nombre||'').trim().toUpperCase()));
+    const provsReporte = new Set();
+    REP_ROWS.forEach(r=>{ const n=(r.proveedor||'').trim().toUpperCase(); if(n) provsReporte.add(n); });
+    // Si filtro "solo del reporte": dejar únicamente los activos que están en el reporte
+    if(origen==='reporte'){
+      activos = activos.filter(p=>provsReporte.has((p.nombre||'').trim().toUpperCase()));
+    }
+    // Proveedores del reporte que no existen en la base → tarjeta "nuevo" con botón registrar
+    const yaAg=new Set();
+    REP_ROWS.forEach(r=>{
+      const nom=(r.proveedor||'').trim(); const up=nom.toUpperCase();
+      if(nom && !enBase.has(up) && !yaAg.has(up)){
+        yaAg.add(up);
+        nuevosRep.push({nombre:nom, estado:'ACTIVO', _nuevo:true, ruc:'', zona:'', tipoServicio:r.tipoServicio||''});
+      }
+    });
+  }
 
   // KPIs (sobre todos los activos, sin filtros de búsqueda)
   let kc=0,ki=0,kx=0;
@@ -2568,7 +2596,12 @@ function renderProveedores(){
   const vistos=new Set();
   data=data.filter(p=>{const k=(p.nombre||'').trim().toUpperCase();if(vistos.has(k))return false;vistos.add(k);return true;});
 
-  document.getElementById('prov-count').textContent=data.length+' proveedores';
+  // Agregar proveedores NUEVOS del reporte (con botón registrar) — respetando búsqueda
+  let nuevosFiltrados = nuevosRep.filter(p=>!search || (p.nombre||'').toLowerCase().includes(search));
+  if(tipoServ) nuevosFiltrados = nuevosFiltrados.filter(p=>clasifServicio(provTipoServicio(p))===tipoServ);
+  data = [...nuevosFiltrados, ...data];
+
+  document.getElementById('prov-count').textContent=data.length+' proveedores'+(nuevosFiltrados.length?` · ${nuevosFiltrados.length} por registrar`:'');
 
   const provCond={},provUnid={};
   CONDUCTORES.forEach(c=>{if(c.proveedor)provCond[(c.proveedor||'').trim().toUpperCase()]=(provCond[(c.proveedor||'').trim().toUpperCase()]||0)+1;});
@@ -2582,6 +2615,20 @@ function renderProveedores(){
   }
 
   cont.innerHTML = data.map((p,i)=>{
+    // Tarjeta especial para proveedor NUEVO del reporte (sin registrar)
+    if(p._nuevo){
+      const nomEsc=(p.nombre||'').replace(/"/g,'&quot;');
+      const serv=clasifServicio(provTipoServicio(p));
+      return `<div style="background:#fffbeb;border:1.5px dashed #f59e0b;border-radius:14px;padding:16px 18px">
+        <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px">
+          <div style="font-size:13.5px;font-weight:700;color:#92400e;line-height:1.3">${p.nombre}</div>
+          <span class="badge warn" style="flex-shrink:0">NUEVO</span>
+        </div>
+        <div style="font-size:11px;color:#b45309;margin-bottom:10px">📋 Apareció en el reporte del día — no está registrado en la base</div>
+        ${serv?`<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:20px;font-weight:600">${serv}</span>`:''}
+        <button onclick="registrarProvNuevo('${nomEsc}')" style="margin-top:12px;width:100%;background:#f59e0b;color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer">✚ Registrar proveedor</button>
+      </div>`;
+    }
     const pd=getPD(p.nombre);
     const ok=pd.docs.filter(Boolean).length;
     const pct=Math.round(ok/20*100);
@@ -2633,6 +2680,21 @@ function abrirDetalleProv(i){
   const nUp=(nombre||'').trim().toUpperCase();
   const conds = CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp);
   const unids = UNIDADES.filter(u=>(u.proveedor||'').trim().toUpperCase()===nUp);
+
+  // Placas y conductores NUEVOS del reporte (no registrados en BD) para este proveedor
+  let unidsNuevas=[], condsNuevos=[];
+  if(typeof REP_ROWS!=='undefined' && REP_ROWS.length){
+    const placasBD=new Set(unids.map(u=>normPlaca(u.placa)));
+    const dnisBD=new Set(conds.map(c=>String(c.dni||'').trim()));
+    const vP=new Set(), vC=new Set();
+    REP_ROWS.forEach(r=>{
+      if((r.proveedor||'').trim().toUpperCase()!==nUp) return;
+      const pl=normPlaca(r.placa);
+      if(r.placa && !placasBD.has(pl) && !vP.has(pl)){ vP.add(pl); unidsNuevas.push(r.placa); }
+      const dn=String(r.dni||'').trim();
+      if((r.conductor||dn) && !dnisBD.has(dn) && !vC.has(dn||r.conductor)){ vC.add(dn||r.conductor); condsNuevos.push({dni:dn,nombre:r.conductor||'',placa:r.placa||''}); }
+    });
+  }
 
   const docsHtml = DOCS_PROV.map((d,di)=>{
     const tiene=pd.docs[di];
@@ -2694,6 +2756,10 @@ function abrirDetalleProv(i){
           ${u.carpeta?`<a href="${u.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
         </div>`;
       }).join(''):'<div style="font-size:11px;color:#9ca3af">Sin unidades registradas</div>'}
+      ${unidsNuevas.map(pl=>{const e=(pl||'').replace(/"/g,'&quot;');return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:var(--mono);font-weight:700;color:#92400e;font-size:12px">${pl} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVA</span></span>
+        <button onclick="abrirRegUnid2('${e}')" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
+      </div>`;}).join('')}
     </div>
 
     <!-- CONDUCTORES con su documentación -->
@@ -2715,10 +2781,22 @@ function abrirDetalleProv(i){
           ${c.carpeta?`<a href="${c.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
         </div>`;
       }).join(''):'<div style="font-size:11px;color:#9ca3af">Sin conductores registrados</div>'}
+      ${condsNuevos.map(c=>{const nm=(c.nombre||'').replace(/'/g,"\\'"),dn=(c.dni||'').replace(/'/g,"\\'"),pl=(c.placa||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:600;color:#92400e;font-size:12px">${c.nombre||'—'} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVO</span><br><span style="font-size:10px;color:#b45309;font-family:var(--mono)">DNI ${c.dni||'—'}</span></span>
+        <button onclick="irRegistrarConductor('${nm}','${dn}','${(nombre||'').replace(/'/g,"\\'")}','${pl}')" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
+      </div>`;}).join('')}
     </div>`;
   document.getElementById('pv-detalle-modal').classList.add('open');
 }
 function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); }
+function registrarProvNuevo(nom){
+  goPage('reg-proveedor', document.querySelector('.nav-item[onclick*="reg-proveedor"]'));
+  setTimeout(()=>{
+    const e=document.getElementById('rp-nombre'); if(e) e.value=nom;
+    const es=document.getElementById('rp-estado'); if(es) es.value='ACTIVO';
+  },120);
+  showToast('Completa los datos y guarda','ok');
+}
 function toggleProvDocModal(i,di){
   const nombre=PV_MAP[i]; if(!nombre) return;
   const d=getPD(nombre); d.docs[di]=!d.docs[di]; PD[nombre]=d; savePD();
@@ -4062,13 +4140,18 @@ function descargarTablaAud(){
 // ✅ FUNCIONES PARA BOTONES REGISTRAR
 function abrirRegUnid(btn){
   const placa = btn.getAttribute('data-placa');
+  abrirRegUnid2(placa);
+}
+// Abre el form de registro de unidad con la placa prellenada (desde modal proveedor)
+function abrirRegUnid2(placa){
+  cerrarDetalleProv();
   goPage('reg-unidad', document.querySelector('.nav-item[onclick*="reg-unidad"]'));
   setTimeout(()=>{
     const inp = document.getElementById('u-placa');
     if(inp) inp.value = placa;
     const est = document.getElementById('u-estado');
     if(est) est.value = 'ACTIVO';
-  },100);
+  },120);
   showToast('✓ Formulario listo. Completa los datos','ok');
 }
 function abrirRegProv(btn){
