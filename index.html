@@ -2675,15 +2675,44 @@ function abrirDetalleProv(i){
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:10px">📋 Checklist Documentario (clic para marcar)</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">${docsHtml}</div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div>
-        <div style="font-size:11px;font-weight:700;color:#9ca3af;margin-bottom:6px">🚛 UNIDADES (${unids.length})</div>
-        ${unids.length?unids.slice(0,8).map(u=>`<div style="font-size:11px;padding:4px 8px;background:#f9fafb;border-radius:6px;margin-bottom:3px;font-family:var(--mono)">${u.placa||'—'}</div>`).join(''):'<div style="font-size:11px;color:#9ca3af">Sin unidades</div>'}
-      </div>
-      <div>
-        <div style="font-size:11px;font-weight:700;color:#9ca3af;margin-bottom:6px">👤 CONDUCTORES (${conds.length})</div>
-        ${conds.length?conds.slice(0,8).map(c=>`<div style="font-size:11px;padding:4px 8px;background:#f9fafb;border-radius:6px;margin-bottom:3px">${c.conductor||'—'}</div>`).join(''):'<div style="font-size:11px;color:#9ca3af">Sin conductores</div>'}
-      </div>
+    <!-- UNIDADES con su documentación -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades (${unids.length})</div>
+    <div style="margin-bottom:16px">
+      ${unids.length?unids.map(u=>{
+        const pill=(v,lbl)=>`<span style="font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
+        const estPill=(est,lbl)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#f3f4f6','#9ca3af'];return `<span style="font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">${lbl}: ${est||'—'}</span>`;};
+        return `<div style="border:1px solid #ebebeb;border-radius:8px;padding:9px 11px;margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:12px">${u.placa||'—'}</span>
+            <span style="font-size:10px;color:#9ca3af">${u.tipo||u.marca||''}</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            ${estPill(u.estadoSoat,'SOAT')}${estPill(u.estadoRtv,'RTV')}${estPill(u.estadoTc,'T.C.')}
+            ${pill(u.docTarjProp,'T.Prop')}${pill(u.docMnto,'MNTO')}${pill(u.docBoletin,'Boletín')}${pill(u.docPoliza,'Póliza')}
+          </div>
+          ${u.carpeta?`<a href="${u.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
+        </div>`;
+      }).join(''):'<div style="font-size:11px;color:#9ca3af">Sin unidades registradas</div>'}
+    </div>
+
+    <!-- CONDUCTORES con su documentación -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores (${conds.length})</div>
+    <div>
+      ${conds.length?conds.map(c=>{
+        const pill=(v,lbl)=>`<span style="font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
+        const estPill=(est,lbl)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#f3f4f6','#9ca3af'];return `<span style="font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">${lbl}: ${est||'—'}</span>`;};
+        return `<div style="border:1px solid #ebebeb;border-radius:8px;padding:9px 11px;margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-weight:600;color:#111;font-size:12px">${c.conductor||'—'}</span>
+            <span style="font-size:10px;color:#9ca3af;font-family:var(--mono)">DNI ${c.dni||'—'}</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            ${estPill(c.estadoLic,'Lic')}${estPill(c.estadoSctr,'SCTR')}
+            ${pill(c.docDni,'DNI')}${pill(c.docLic,'Lic')}${pill(c.docRecord,'Récord')}${pill(c.docSctr,'SCTR')}${pill(c.docEmo,'EMO')}
+          </div>
+          ${c.carpeta?`<a href="${c.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
+        </div>`;
+      }).join(''):'<div style="font-size:11px;color:#9ca3af">Sin conductores registrados</div>'}
     </div>`;
   document.getElementById('pv-detalle-modal').classList.add('open');
 }
