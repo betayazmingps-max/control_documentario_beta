@@ -2725,9 +2725,12 @@ function abrirDetalleProv(i){
 
   const box=document.getElementById('pv-detalle-box');
   box.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px">
+    <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:4px">
       <div style="font-size:18px;font-weight:800;color:#111;line-height:1.3">${p.nombre}</div>
-      <button onclick="cerrarDetalleProv()" style="background:#f3f4f6;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#6b7280;flex-shrink:0">✕</button>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button onclick="editarProveedor('${(nombre||'').replace(/'/g,"\\'")}')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 14px;height:30px;cursor:pointer;font-size:12px;font-weight:700">✏️ Editar</button>
+        <button onclick="cerrarDetalleProv()" style="background:#f3f4f6;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#6b7280">✕</button>
+      </div>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
       <span class="badge ok">ACTIVO</span>
@@ -2808,6 +2811,26 @@ function abrirDetalleProv(i){
   document.getElementById('pv-detalle-modal').classList.add('open');
 }
 function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); }
+// Abre el formulario de registro con TODOS los datos del proveedor cargados (editar)
+function editarProveedor(nombre){
+  cerrarDetalleProv();
+  const p = PROVEEDORES.find(x=>x.nombre===nombre); if(!p) return;
+  goPage('reg-proveedor', document.querySelector('.nav-item[onclick*="reg-proveedor"]'));
+  setTimeout(()=>{
+    const sv=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
+    sv('rp-nombre',p.nombre); sv('rp-estado',p.estado||'ACTIVO'); sv('rp-zona',p.zona);
+    sv('rp-tipo',p.tipo); sv('rp-ruc',p.ruc); sv('rp-codigo',p.codigo);
+    sv('rp-contacto',p.contacto); sv('rp-celular',p.celular); sv('rp-correo',p.correo);
+    sv('rp-resp',p.responsable); sv('rp-tiposervicio',(p.tipoServicio||'').toUpperCase());
+    // Cargar checklist actual
+    const pd=getPD(p.nombre);
+    RP_DOCS_STATE = pd.docs.slice(0,N_DOCS_PROV);
+    while(RP_DOCS_STATE.length<N_DOCS_PROV) RP_DOCS_STATE.push(false);
+    renderRPChecklist();
+    const msg=document.getElementById('rp-msg'); if(msg) msg.textContent='✏️ Editando — modifica y guarda';
+  },130);
+  showToast('Editando proveedor — modifica y guarda','ok');
+}
 function registrarProvNuevo(nom){
   if(typeof cerrarDetalleProv==='function') cerrarDetalleProv();
   goPage('reg-proveedor', document.querySelector('.nav-item[onclick*="reg-proveedor"]'));
