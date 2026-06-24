@@ -682,8 +682,14 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         </div>
         <!-- Fila 3: 4 campos -->
         <div class="form-grid g4">
-          <div class="form-group"><label class="form-label">Código SAP</label>
-            <input class="form-input" id="rp-codigo" placeholder="134166"></div>
+          <div class="form-group"><label class="form-label">Tipo de Servicio <span class="req">*</span></label>
+            <select class="form-select" id="rp-tiposervicio" onchange="renderRPChecklist()">
+              <option value="">— Seleccionar —</option>
+              <option value="MATERIA PRIMA">MATERIA PRIMA</option>
+              <option value="CARGA SECA">CARGA SECA</option>
+              <option value="REFRIGERADO">REFRIGERADO</option>
+              <option value="FLOTA VEHICULAR">FLOTA VEHICULAR</option>
+            </select></div>
           <div class="form-group"><label class="form-label">Contacto / Rep. Legal</label>
             <input class="form-input" id="rp-contacto" placeholder="Nombre del contacto"></div>
           <div class="form-group"><label class="form-label">Celular</label>
@@ -691,74 +697,21 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Responsable</label>
             <input class="form-input" id="rp-resp" placeholder="EODAR / WMUÑOZ"></div>
         </div>
+        <div class="form-grid g2">
+          <div class="form-group"><label class="form-label">Correo</label>
+            <input class="form-input" id="rp-correo" placeholder="correo@empresa.com"></div>
+          <div class="form-group"><label class="form-label">Código SAP</label>
+            <input class="form-input" id="rp-codigo" placeholder="134166"></div>
+        </div>
       </div>
 
       <div class="form-sec">
         <div class="form-sec-title">📋 Checklist Documentario
-          <span style="margin-left:auto;font-size:11px;font-weight:400;color:var(--text3)" id="rp-cumpl-pct">0 / 20 — 0%</span>
+          <span style="margin-left:auto;font-size:11px;font-weight:400;color:var(--text3)" id="rp-cumpl-pct">0 / 0 — 0%</span>
         </div>
-        <!-- Checkboxes: 4 columnas, compactos — 20 docs reales del Sheet -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d0').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d0" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>1. Contrato</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d1').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d1" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>2. Ficha RUC</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d2').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d2" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>3. Vig. Poder/DNI</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d3').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d3" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>4. Decl.J. Conflictos</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d4').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d4" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>5. Carta Vinculac.</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d5').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d5" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>6. Comprm. Capacit.</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d6').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d6" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>7. Comprm. Transp.MP</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d7').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d7" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>8. Comprm. Tributario</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d8').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d8" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>9. Carta Descanso</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d9').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d9" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>10. Comprm. Beta</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d10').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d10" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>11. Acuerdo Seg.</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d11').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d11" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>12. Pol. Anticorrupción</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d12').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d12" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>13. Rep. Sentinel</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d13').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d13" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>14. Lista Clinton</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d14').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d14" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>15. Deuda Coactiva</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d15').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d15" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>16. Ref. Comercial</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d16').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d16" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>17. Brochure/Carta</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d17').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d17" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>18. Antec. Penales</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d18').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d18" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>19. Antec. Policial</span></label>
-          <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500;transition:.12s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=document.getElementById('rp-d19').checked?'var(--success)':'var(--border)'">
-            <input type="checkbox" id="rp-d19" onchange="calcRPcumpl()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
-            <span>20. Antec. Judicial</span></label>
+        <!-- Checklist dinámico según Tipo de Servicio -->
+        <div id="rp-checklist" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">
+          <div style="grid-column:1/-1;color:var(--text3);font-size:12px;padding:10px">⬆ Selecciona el Tipo de Servicio para ver el checklist</div>
         </div>
         <!-- Barra progreso compacta -->
         <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border-radius:6px;border:1px solid var(--border)">
@@ -1671,33 +1624,28 @@ async function syncFromSheets(){
           tipo:        o['tipo de razon social']||'',
           actividad:   o['actividad economica principal']||'',
           responsable: o.responsable||'',
-          // 20 documentos exactos del Sheet (índices 0–19)
+          tipoServicio: o['tipo de servicio']||o['tipo servicio']||o.servicio||'',
+          // 15 documentos nuevos (índices 0–14)
           docs: [
-            boolDoc(o['contrato.']),                                              // 0
+            boolDoc(o['contrato']||o['contrato.']),                               // 0
             boolDoc(o['ficha ruc']),                                              // 1
             boolDoc(o['vigencia poder o dni del representante legal']),           // 2
-            boolDoc(o['declaración jurada de conflictos de intereses']),          // 3
-            boolDoc(o['carta de vinculacion']),                                   // 4
-            boolDoc(o['carta de compromiso de capacitación de conductores']),     // 5
-            boolDoc(o['carta de compromiso transportista mp']),                   // 6
-            boolDoc(o['carta de compromiso tributario']),                         // 7
-            boolDoc(o['carta de descanso de transportista']),                     // 8
-            boolDoc(o['carta de compromiso beta']),                               // 9
-            boolDoc(o['acuerdo de seguridad']),                                   // 10
-            boolDoc(o['politica de prevención corrupción']),                      // 11
-            boolDoc(o['reporte sentinel']),                                       // 12
-            boolDoc(o['lista clinton']),                                          // 13
-            boolDoc(o['deuda coactiva']),                                         // 14
-            boolDoc(o['referencias comercial']),                                  // 15
-            boolDoc(o['brochure o carta de presentación']),                       // 16
-            boolDoc(o['antecedente penales']),                                    // 17
-            boolDoc(o['antecedente policial']),                                   // 18
-            boolDoc(o['antecedente judicial']),                                   // 19
+            boolDoc(o['carta de compromiso beta']),                              // 3
+            boolDoc(o['reporte sentinel']),                                       // 4
+            boolDoc(o['lista clinton']),                                          // 5
+            boolDoc(o['deuda coactiva']),                                         // 6
+            boolDoc(o['referencias comercial']),                                  // 7
+            boolDoc(o['brochure o carta de presentacion']||o['brochure o carta de presentación']), // 8
+            boolDoc(o['antecedentes']),                                           // 9
+            boolDoc(o['declaracion jurada de normas de seguridad']),              // 10
+            boolDoc(o['declaracion jurada de normas y politicas']),               // 11
+            boolDoc(o['cotizacion']||o['cotización']),                            // 12
+            boolDoc(o['carta de compromiso materia prima']),                      // 13
+            boolDoc(o['carta de compromiso refrigerado']),                        // 14
           ],
           cumpl:       o.cumplimiento||'—',
           pctCumpl:    o['% cumplimiento']||'',
           carpeta:     o['carpeta proveedor']||o.carpeta||'',
-          tipoServicio: o['tipo de servicio']||o['tipo servicio']||o.servicio||'',
         }));
     }
 
@@ -2419,30 +2367,50 @@ function renderUnidades(){
 // ═══════════════════════════════════════════════
 // PROVEEDORES TABLE CON CHECKLIST
 // ═══════════════════════════════════════════════
-const PD_KEY='prov_docs_v4';
+const PD_KEY='prov_docs_v5';
 let PD=JSON.parse(localStorage.getItem(PD_KEY)||'{}');
+// 15 documentos nuevos (etiquetas cortas para la UI)
 const DOCS_PROV=[
-  'Contrato',          // 0
-  'Ficha RUC',         // 1
-  'Vig.Poder/DNI',     // 2
-  'Decl.J.Conflictos', // 3
-  'Carta Vinculac.',   // 4
-  'Comprm.Capacit.',   // 5
-  'Comprm.Transp.MP',  // 6
-  'Comprm.Tribut.',    // 7
-  'C.Descanso',        // 8
-  'Comprm.Beta',       // 9
-  'Acuerdo Seg.',      // 10
-  'Pol.Anticorr.',     // 11
-  'Rep.Sentinel',      // 12
-  'Lista Clinton',     // 13
-  'Deuda Coactiva',    // 14
-  'Ref.Comercial',     // 15
-  'Brochure/Carta',    // 16
-  'Antec.Penales',     // 17
-  'Antec.Policial',    // 18
-  'Antec.Judicial',    // 19
+  'Contrato',                    // 0
+  'Ficha RUC',                   // 1
+  'Vig.Poder/DNI',               // 2
+  'Comprm.Beta',                 // 3
+  'Rep.Sentinel',                // 4
+  'Lista Clinton',               // 5
+  'Deuda Coactiva',              // 6
+  'Ref.Comercial',               // 7
+  'Brochure/Carta',              // 8
+  'Antecedentes',                // 9  (Penales+Policiales+Judiciales)
+  'Decl.J. Seguridad',           // 10
+  'Decl.J. Normas y Políticas',  // 11
+  'Cotización',                  // 12
+  'Carta Comp. Materia Prima',   // 13  (solo MATERIA PRIMA)
+  'Carta Comp. Refrigerado',     // 14  (solo REFRIGERADO)
 ];
+const N_DOCS_PROV = DOCS_PROV.length; // 15
+// Índices de docs que solo aplican a ciertas categorías
+const DOC_SOLO_MP     = 13;
+const DOC_SOLO_REFRIG = 14;
+
+// Devuelve los índices de documentos que APLICAN según la categoría del proveedor
+function docsAplicables(p){
+  const cat = clasifServicio(provTipoServicio(p));
+  const idx = [];
+  for(let i=0;i<N_DOCS_PROV;i++){
+    if(i===DOC_SOLO_MP     && cat!=='MATERIA PRIMA')  continue;
+    if(i===DOC_SOLO_REFRIG && cat!=='REFRIGERADO')    continue;
+    idx.push(i);
+  }
+  return idx;
+}
+// Cumplimiento: ok / total según docs aplicables
+function cumplProv(p){
+  const aplica = docsAplicables(p);
+  const pd = getPD(p.nombre);
+  const ok = aplica.filter(i=>pd.docs[i]).length;
+  const tot = aplica.length;
+  return { ok, tot, pct: tot?Math.round(ok/tot*100):0 };
+}
 const PV_PS=25; let PV_PAGE=1;
 
 // getPD: si hay datos locales los usa; si no, usa los docs que vienen del Sheets (p.docs)
@@ -2451,7 +2419,8 @@ function getPD(n){
     const prov = PROVEEDORES.find(p=>p.nombre===n);
     const docsBase = prov?.docs
       ? prov.docs.map(v => v==='✓')
-      : new Array(20).fill(false);
+      : new Array(N_DOCS_PROV).fill(false);
+    while(docsBase.length<N_DOCS_PROV) docsBase.push(false);
     PD[n]={docs:docsBase, resp:''};
   }
   return PD[n];
@@ -2459,35 +2428,36 @@ function getPD(n){
 function savePD(){localStorage.setItem(PD_KEY,JSON.stringify(PD));}
 
 // Columnas exactas del Sheet de PROVEEDORES (mismo orden que en Sheets)
+// Columnas exactas del Sheet PROVEEDORES (nueva estructura, 15 docs)
 const PROV_COLS = [
   'Proveedor','Estado','RUC','Contacto','Celular','Correo','Zona',
   'Tipo de Razon Social','Actividad Economica Principal','Responsable',
-  'CONTRATO.','FICHA RUC','VIGENCIA PODER O DNI DEL REPRESENTANTE LEGAL',
-  'DECLARACIÓN JURADA DE CONFLICTOS DE INTERESES','CARTA DE VINCULACION',
-  'CARTA DE COMPROMISO DE CAPACITACIÓN DE CONDUCTORES',
-  'CARTA DE COMPROMISO TRANSPORTISTA MP','CARTA DE COMPROMISO TRIBUTARIO',
-  'CARTA DE DESCANSO DE TRANSPORTISTA','CARTA DE COMPROMISO BETA',
-  'ACUERDO DE SEGURIDAD','POLITICA DE PREVENCIÓN CORRUPCIÓN',
-  'REPORTE SENTINEL','LISTA CLINTON','DEUDA COACTIVA',
-  'REFERENCIAS COMERCIAL','BROCHURE O CARTA DE PRESENTACIÓN',
-  'ANTECEDENTE PENALES','ANTECEDENTE POLICIAL','ANTECEDENTE JUDICIAL',
+  'Tipo de Servicio',
+  'CONTRATO','FICHA RUC','VIGENCIA PODER O DNI DEL REPRESENTANTE LEGAL',
+  'CARTA DE COMPROMISO BETA','REPORTE SENTINEL','LISTA CLINTON',
+  'DEUDA COACTIVA','REFERENCIAS COMERCIAL','BROCHURE O CARTA DE PRESENTACION',
+  'ANTECEDENTES','DECLARACION JURADA DE NORMAS DE SEGURIDAD',
+  'DECLARACION JURADA DE NORMAS Y POLITICAS','COTIZACION',
+  'CARTA DE COMPROMISO MATERIA PRIMA','CARTA DE COMPROMISO REFRIGERADO',
   'CUMPLIMIENTO','% cumplimiento'
 ];
 
-// Guarda el proveedor en Sheets con docs como TRUE/FALSE
+// Guarda el proveedor en Sheets con docs como VERDADERO/FALSO
 function guardarProvEnSheets(nombreProv){
   if(!GS_URL) return;
   const prov = PROVEEDORES.find(p=>p.nombre===nombreProv);
   if(!prov) return;
   const pd  = getPD(nombreProv);
-  const ok  = pd.docs.filter(Boolean).length;
-  const pct = Math.round(ok/20*100);
+  const {ok,tot,pct} = cumplProv(prov);
+  const aplica = new Set(docsAplicables(prov));
   const row = [
     prov.nombre, prov.estado||'', prov.ruc||'', prov.contacto||'',
     prov.celular||'', prov.correo||'', prov.zona||'', prov.tipo||'',
     prov.actividad||'', pd.resp||prov.responsable||'',
-    ...pd.docs.map(v => v ? 'VERDADERO' : 'FALSO'),
-    `${ok}/20 (${pct}%)`, `${pct}%`
+    prov.tipoServicio||'',
+    // 15 docs: si no aplica a la categoría → N/A
+    ...pd.docs.map((v,i)=> !aplica.has(i) ? 'N/A' : (v?'VERDADERO':'FALSO')),
+    `${ok}/${tot} (${pct}%)`, `${pct}%`
   ];
   guardarEnSheets('PROVEEDORES', PROV_COLS, row, 'Proveedor');
 }
@@ -2572,7 +2542,7 @@ function renderProveedores(){
   // KPIs (sobre todos los activos, sin filtros de búsqueda)
   let kc=0,ki=0,kx=0;
   activos.forEach(p=>{
-    const pct=Math.round(getPD(p.nombre).docs.filter(Boolean).length/20*100);
+    const pct=cumplProv(p).pct;
     if(pct>=80)kc++; else if(pct>=50)ki++; else kx++;
   });
   const sk=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -2584,7 +2554,7 @@ function renderProveedores(){
     if(zona && (p.zona||'').toUpperCase()!==zona) return false;
     if(tipoServ && clasifServicio(provTipoServicio(p))!==tipoServ) return false;
     if(cumplF){
-      const pct=Math.round(getPD(p.nombre).docs.filter(Boolean).length/20*100);
+      const pct=cumplProv(p).pct;
       if(cumplF==='completo'  && pct<80) return false;
       if(cumplF==='proceso'   && (pct<50||pct>=80)) return false;
       if(cumplF==='incompleto'&& pct>=50) return false;
@@ -2630,11 +2600,11 @@ function renderProveedores(){
       </div>`;
     }
     const pd=getPD(p.nombre);
-    const ok=pd.docs.filter(Boolean).length;
-    const pct=Math.round(ok/20*100);
+    const cmp=cumplProv(p); const ok=cmp.ok, pct=cmp.pct;
     const col=pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
     const estadoTxt=pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO';
-    const faltan=DOCS_PROV.filter((d,di)=>!pd.docs[di]);
+    const aplicaIdx=docsAplicables(p);
+    const faltan=aplicaIdx.filter(di=>!pd.docs[di]).map(di=>DOCS_PROV[di]);
     const faltanTxt = faltan.length ? faltan.slice(0,3).join(', ')+(faltan.length>3?` +${faltan.length-3} más`:'') : 'Todo completo ✓';
     const nUp=(p.nombre||'').trim().toUpperCase();
     const serv=clasifServicio(provTipoServicio(p));
@@ -2655,7 +2625,7 @@ function renderProveedores(){
         <div style="flex:1;height:8px;background:#f3f4f6;border-radius:6px;overflow:hidden">
           <div style="width:${pct}%;height:100%;background:${col}"></div>
         </div>
-        <span style="font-size:12px;font-weight:700;color:${col};font-family:var(--mono)">${ok}/20</span>
+        <span style="font-size:12px;font-weight:700;color:${col};font-family:var(--mono)">${ok}/${cmp.tot}</span>
       </div>
       <div style="font-size:11px;color:${pct>=80?'#15803d':'#b45309'};display:flex;align-items:center;gap:4px">
         ${pct>=80?'✓ '+estadoTxt:'⚠ Falta: '+faltanTxt}
@@ -2674,8 +2644,8 @@ function abrirDetalleProv(i){
   const nombre = PV_MAP[i]; if(!nombre) return;
   const p = PROVEEDORES.find(x=>x.nombre===nombre); if(!p) return;
   const pd = getPD(nombre);
-  const ok = pd.docs.filter(Boolean).length;
-  const pct = Math.round(ok/20*100);
+  const cmp = cumplProv(p); const ok = cmp.ok; const pct = cmp.pct;
+  const aplicaSet = new Set(docsAplicables(p));
   const col = pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
   const nUp=(nombre||'').trim().toUpperCase();
   const conds = CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp);
@@ -2697,10 +2667,11 @@ function abrirDetalleProv(i){
   }
 
   const docsHtml = DOCS_PROV.map((d,di)=>{
+    if(!aplicaSet.has(di)) return ''; // no aplica a esta categoría → no se muestra
     const tiene=pd.docs[di];
     return `<div onclick="toggleProvDocModal('${i}',${di})" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid ${tiene?'#bbf7d0':'#fecaca'};background:${tiene?'#f0fdf4':'#fef2f2'};border-radius:8px;cursor:pointer;font-size:11.5px">
       <span style="font-size:14px">${tiene?'✅':'❌'}</span>
-      <span style="color:${tiene?'#15803d':'#b91c1c'};font-weight:500">${di+1}. ${d}</span>
+      <span style="color:${tiene?'#15803d':'#b91c1c'};font-weight:500">${d}</span>
     </div>`;
   }).join('');
 
@@ -2731,7 +2702,7 @@ function abrirDetalleProv(i){
         </div>
         <span style="font-size:15px;font-weight:800;color:${col};font-family:var(--mono)">${pct}%</span>
       </div>
-      <div style="font-size:12px;color:#6b7280">${ok} de 20 documentos · <b style="color:${col}">${pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO'}</b></div>
+      <div style="font-size:12px;color:#6b7280">${ok} de ${cmp.tot} documentos · <b style="color:${col}">${pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO'}</b></div>
     </div>
 
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:10px">📋 Checklist Documentario (clic para marcar)</div>
@@ -2790,8 +2761,10 @@ function abrirDetalleProv(i){
 }
 function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); }
 function registrarProvNuevo(nom){
+  if(typeof cerrarDetalleProv==='function') cerrarDetalleProv();
   goPage('reg-proveedor', document.querySelector('.nav-item[onclick*="reg-proveedor"]'));
   setTimeout(()=>{
+    if(typeof limpiarProv==='function') limpiarProv();
     const e=document.getElementById('rp-nombre'); if(e) e.value=nom;
     const es=document.getElementById('rp-estado'); if(es) es.value='ACTIVO';
   },120);
@@ -2817,95 +2790,104 @@ async function toggleDocCondModal(dni, campo, i){
 
 function expCSVProv(){
   if(!PROVEEDORES.length){showToast&&showToast('Sin datos','error');return;}
-  const h=['PROVEEDOR','ESTADO','ZONA','TIPO','CODIGO','RUC','CONTACTO','DOCS_OK','PCT_CUMPL','RESPONSABLE'];
+  const h=['PROVEEDOR','ESTADO','ZONA','TIPO_SERVICIO','RUC','CONTACTO','DOCS_OK','PCT_CUMPL','RESPONSABLE'];
   const rows=PROVEEDORES.filter(p=>p.nombre&&p.nombre.length>2&&p.nombre!=='PROVEEDOR').map(p=>{
-    const pd=getPD(p.nombre);const ok=pd.docs.filter(Boolean).length;
-    return[p.nombre,p.estado,p.zona,p.tipo,p.ruc,p.contacto,ok+'/20',Math.round(ok/20*100)+'%',pd.resp||p.responsable||''];
+    const pd=getPD(p.nombre);const c=cumplProv(p);
+    return[p.nombre,p.estado,p.zona,p.tipoServicio||'',p.ruc,p.contacto,c.ok+'/'+c.tot,c.pct+'%',pd.resp||p.responsable||''];
   });
   const csv=[h,...rows].map(r=>r.map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='proveedores_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
 
 // REGISTRO PROVEEDOR
+// Dibuja el checklist según el Tipo de Servicio seleccionado
+let RP_DOCS_STATE = new Array(N_DOCS_PROV).fill(false);
+function renderRPChecklist(){
+  const cont=document.getElementById('rp-checklist'); if(!cont) return;
+  const cat=clasifServicio((document.getElementById('rp-tiposervicio')||{value:''}).value);
+  if(!cat){
+    cont.innerHTML='<div style="grid-column:1/-1;color:var(--text3);font-size:12px;padding:10px">⬆ Selecciona el Tipo de Servicio para ver el checklist</div>';
+    calcRPcumpl(); return;
+  }
+  // índices aplicables para esta categoría
+  const aplica=[];
+  for(let i=0;i<N_DOCS_PROV;i++){
+    if(i===DOC_SOLO_MP && cat!=='MATERIA PRIMA') continue;
+    if(i===DOC_SOLO_REFRIG && cat!=='REFRIGERADO') continue;
+    aplica.push(i);
+  }
+  cont.innerHTML=aplica.map(i=>`<label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:${RP_DOCS_STATE[i]?'var(--success-bg)':'var(--bg2)'};border:1.5px solid ${RP_DOCS_STATE[i]?'var(--success)':'var(--border)'};border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500">
+    <input type="checkbox" data-di="${i}" ${RP_DOCS_STATE[i]?'checked':''} onchange="RP_DOCS_STATE[${i}]=this.checked;renderRPChecklist()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
+    <span>${DOCS_PROV[i]}</span></label>`).join('');
+  calcRPcumpl();
+}
 function buscarProv(nom){
   const n=nom.trim().toUpperCase();
   if(n.length<5)return;
   const f=PROVEEDORES.find(p=>(p.nombre||'').toUpperCase().includes(n));
   if(f){
-    document.getElementById('rp-estado').value=f.estado||'ACTIVO';
-    document.getElementById('rp-zona').value=f.zona||'';
-    document.getElementById('rp-tipo').value=f.tipo||'';
-    document.getElementById('rp-ruc').value=f.ruc||'';
-    document.getElementById('rp-codigo').value=f.codigo||'';
-    document.getElementById('rp-contacto').value=f.contacto||'';
-    document.getElementById('rp-celular').value=f.celular||'';
-    document.getElementById('rp-correo').value=f.correo||'';
-    document.getElementById('rp-resp').value=f.responsable||'';
-    // Cargar checklist: primero del Sheets, luego override local
+    const sv=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
+    sv('rp-estado',f.estado||'ACTIVO'); sv('rp-zona',f.zona); sv('rp-tipo',f.tipo);
+    sv('rp-ruc',f.ruc); sv('rp-codigo',f.codigo); sv('rp-contacto',f.contacto);
+    sv('rp-celular',f.celular); sv('rp-correo',f.correo); sv('rp-resp',f.responsable);
+    sv('rp-tiposervicio',(f.tipoServicio||'').toUpperCase());
     const pd=getPD(f.nombre);
-    for(let i=0;i<20;i++){const el=document.getElementById('rp-d'+i);if(el)el.checked=pd.docs[i]||false;}
-    calcRPcumpl();
-    showToast&&showToast('Proveedor encontrado — datos cargados ✓','success');
+    RP_DOCS_STATE = pd.docs.slice(0,N_DOCS_PROV);
+    while(RP_DOCS_STATE.length<N_DOCS_PROV) RP_DOCS_STATE.push(false);
+    renderRPChecklist();
+    showToast('Proveedor encontrado — datos cargados ✓','ok');
   }
 }
 function calcRPcumpl(){
-  let ok=0;
-  for(let i=0;i<20;i++){if(document.getElementById('rp-d'+i)?.checked)ok++;}
-  const pct=Math.round(ok/20*100);
+  const cat=clasifServicio((document.getElementById('rp-tiposervicio')||{value:''}).value);
+  const aplica=[];
+  for(let i=0;i<N_DOCS_PROV;i++){
+    if(i===DOC_SOLO_MP && cat!=='MATERIA PRIMA') continue;
+    if(i===DOC_SOLO_REFRIG && cat!=='REFRIGERADO') continue;
+    aplica.push(i);
+  }
+  const tot=aplica.length, ok=aplica.filter(i=>RP_DOCS_STATE[i]).length;
+  const pct=tot?Math.round(ok/tot*100):0;
   const bar=document.getElementById('rp-cumpl-bar');
   const txt=document.getElementById('rp-cumpl-pct');
   const bdg=document.getElementById('rp-cumpl-badge');
   const col=pct>=80?'var(--success)':pct>=50?'var(--warning)':'var(--danger)';
   if(bar){bar.style.width=pct+'%';bar.style.background=col;}
-  if(txt)txt.textContent=ok+' / 20 — '+pct+'%';
+  if(txt)txt.textContent=ok+' / '+tot+' — '+pct+'%';
   if(bdg){
     bdg.textContent=pct>=80?'✅ COMPLETO':pct>=50?'⏳ EN PROCESO':'❌ INCOMPLETO';
     bdg.style.background=pct>=80?'var(--success-bg)':pct>=50?'var(--warning-bg)':'var(--danger-bg)';
     bdg.style.color=col;
   }
-  // Actualizar borde de cada checkbox según estado
-  for(let i=0;i<20;i++){
-    const el=document.getElementById('rp-d'+i);
-    if(el&&el.parentElement){
-      el.parentElement.style.borderColor=el.checked?'var(--success)':'var(--border)';
-      el.parentElement.style.background=el.checked?'var(--success-bg)':'var(--bg2)';
-    }
-  }
 }
 function guardarProv(){
   const nom=(document.getElementById('rp-nombre').value||'').trim().toUpperCase();
-  if(!nom){showToast&&showToast('Ingresa la razón social','error');return;}
-  const docs=[];for(let i=0;i<20;i++)docs.push(document.getElementById('rp-d'+i)?.checked||false);
-  const ok=docs.filter(Boolean).length;
+  if(!nom){showToast('Ingresa la razón social','err');return;}
+  const ts=(document.getElementById('rp-tiposervicio')||{value:''}).value;
+  if(!ts){showToast('Selecciona el Tipo de Servicio','err');return;}
   const gv = id => document.getElementById(id)?.value||'';
   const r={
-    nombre:nom,
-    estado:   gv('rp-estado'),
-    zona:     gv('rp-zona'),
-    tipo:     gv('rp-tipo'),
-    ruc:      gv('rp-ruc'),
-    codigo:   gv('rp-codigo'),
-    contacto: gv('rp-contacto'),
-    celular:  gv('rp-celular'),
-    correo:   gv('rp-correo'),
-    responsable: gv('rp-resp'),
-    obs:      gv('rp-obs'),
+    nombre:nom, estado:gv('rp-estado')||'ACTIVO', zona:gv('rp-zona'), tipo:gv('rp-tipo'),
+    ruc:gv('rp-ruc'), codigo:gv('rp-codigo'), contacto:gv('rp-contacto'),
+    celular:gv('rp-celular'), correo:gv('rp-correo'), responsable:gv('rp-resp'),
+    tipoServicio:ts,
+    docs: RP_DOCS_STATE.map(v=>v?'✓':'✗'),
     fechaReg: new Date().toLocaleDateString('es-PE')
   };
   const idx=PROVEEDORES.findIndex(p=>p.nombre===nom);
-  if(idx>=0)PROVEEDORES[idx]=r;else PROVEEDORES.push(r);
-  PD[nom]={docs,resp:r.responsable};savePD();
+  if(idx>=0)PROVEEDORES[idx]={...PROVEEDORES[idx],...r};else PROVEEDORES.push(r);
+  PD[nom]={docs:RP_DOCS_STATE.slice(), resp:r.responsable}; savePD();
   guardarProvEnSheets(nom);
-  const msg = document.getElementById('rp-msg');
-  if(msg) msg.textContent='✅ Guardado '+r.fechaReg;
+  const msg=document.getElementById('rp-msg'); if(msg) msg.textContent='✅ Guardado '+r.fechaReg;
   showToast('Proveedor guardado ✓','ok');
+  if(typeof renderProveedores==='function') renderProveedores();
 }
 function limpiarProv(){
-  ['rp-nombre','rp-ruc','rp-codigo','rp-contacto','rp-celular','rp-correo','rp-resp','rp-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['rp-estado','rp-zona','rp-tipo'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
-  for(let i=0;i<20;i++){const el=document.getElementById('rp-d'+i);if(el)el.checked=false;}
-  calcRPcumpl();
-  document.getElementById('rp-msg').textContent='';
+  ['rp-nombre','rp-ruc','rp-codigo','rp-contacto','rp-celular','rp-correo','rp-resp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['rp-estado','rp-zona','rp-tipo','rp-tiposervicio'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+  RP_DOCS_STATE=new Array(N_DOCS_PROV).fill(false);
+  renderRPChecklist();
+  const m=document.getElementById('rp-msg'); if(m) m.textContent='';
 }
 
 // ═══════════════════════════════════════════════
@@ -4155,15 +4137,7 @@ function abrirRegUnid2(placa){
   showToast('✓ Formulario listo. Completa los datos','ok');
 }
 function abrirRegProv(btn){
-  const nom = btn.getAttribute('data-nom');
-  goPage('reg-proveedor', document.querySelector('.nav-item[onclick*="reg-proveedor"]'));
-  setTimeout(()=>{
-    const inp = document.getElementById('rp-nombre');
-    if(inp) inp.value = nom;
-    const est = document.getElementById('rp-estado');
-    if(est) est.value = 'ACTIVO';
-  },100);
-  showToast('✓ Formulario listo. Completa los datos','ok');
+  registrarProvNuevo(btn.getAttribute('data-nom'));
 }
 
 // ═══════════════════════════════════════════════
