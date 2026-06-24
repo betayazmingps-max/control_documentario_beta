@@ -605,87 +605,53 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
     </div>
   </div>
 
-  <!-- ======== PROVEEDORES ======== -->
+  <!-- ======== PROVEEDORES (vista tarjetas) ======== -->
   <div class="page" id="page-proveedores">
+    <!-- KPIs resumen -->
+    <div class="kpi-grid cols-4" id="pv-kpis" style="margin-bottom:18px">
+      <div class="kpi-card blue"><div class="kpi-label">Proveedores Activos</div><div class="kpi-value" id="pvk-total">0</div><div class="kpi-sub">en operación</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Documentación Completa</div><div class="kpi-value" id="pvk-completos">0</div><div class="kpi-sub ok">✓ 80% o más</div></div>
+      <div class="kpi-card warn"><div class="kpi-label">Documentación Incompleta</div><div class="kpi-value" id="pvk-incompletos">0</div><div class="kpi-sub wu">⚠ les falta</div></div>
+      <div class="kpi-card danger"><div class="kpi-label">Críticos</div><div class="kpi-value" id="pvk-criticos">0</div><div class="kpi-sub bad">🔴 menos de 50%</div></div>
+    </div>
+
     <div class="section-hd" style="flex-wrap:wrap;gap:8px">
-      <div class="section-title">Proveedores — File Documentario <span class="count-tag" id="prov-count">—</span></div>
+      <div class="section-title">Proveedores Activos <span class="count-tag" id="prov-count">—</span></div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-        <!-- Búsqueda -->
-        <input class="search-box" id="pv-srch" placeholder="🔍 Buscar proveedor..."
-          oninput="PV_PAGE=1;renderProveedores()" style="width:180px">
-        <!-- Filtro zona -->
-        <select class="filter-sel" id="pv-zona" onchange="PV_PAGE=1;renderProveedores()">
+        <input class="search-box" id="pv-srch" placeholder="🔍 Buscar proveedor..." oninput="renderProveedores()" style="width:180px">
+        <select class="filter-sel" id="pv-tiposerv" onchange="renderProveedores()">
+          <option value="">Todos los servicios</option>
+          <option value="MATERIA PRIMA">Materia Prima</option>
+          <option value="CARGA SECA">Carga Seca</option>
+          <option value="REFRIGERADO">Refrigerado</option>
+          <option value="FLOTA VEHICULAR">Flota Vehicular</option>
+        </select>
+        <select class="filter-sel" id="pv-zona" onchange="renderProveedores()">
           <option value="">Todas las zonas</option>
           <option value="NORTE">Norte</option>
           <option value="SUR">Sur</option>
         </select>
-        <!-- Filtro estado -->
-        <select class="filter-sel" id="pv-est" onchange="PV_PAGE=1;renderProveedores()">
-          <option value="">Todos</option>
-          <option value="ACTIVO">Activos</option>
-          <option value="INACTIVO">Inactivos</option>
-        </select>
-        <!-- Filtro cumplimiento -->
-        <select class="filter-sel" id="pv-cumpl" onchange="PV_PAGE=1;renderProveedores()">
-          <option value="">Todos los docs</option>
+        <select class="filter-sel" id="pv-cumpl" onchange="renderProveedores()">
+          <option value="">Todo cumplimiento</option>
           <option value="completo">✅ Completo (≥80%)</option>
-          <option value="proceso">⏳ En proceso (≥50%)</option>
+          <option value="proceso">⏳ En proceso (50-79%)</option>
           <option value="incompleto">❌ Incompleto (&lt;50%)</option>
         </select>
-        <!-- Filtro tipo -->
-        <select class="filter-sel" id="pv-tipo" onchange="PV_PAGE=1;renderProveedores()">
-          <option value="">Todos los tipos</option>
-          <option value="Z.PER">Z.PER</option>
-          <option value="PIURA">PIURA</option>
-        </select>
-        <!-- Filtro responsable -->
-        <select class="filter-sel" id="pv-resp" onchange="PV_PAGE=1;renderProveedores()">
-          <option value="">Todos</option>
-          <option value="EODAR">EODAR</option>
-          <option value="WMUÑOZ">WMUÑOZ</option>
-        </select>
-        <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px"
-          onclick="goPage('reg-proveedor',document.querySelector('.nav-item[onclick*=reg-proveedor]'))">+ Nuevo</button>
-        <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px"
-          onclick="expCSVProv()">⬇ CSV</button>
+        <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="goPage('reg-proveedor',document.querySelector('.nav-item[onclick*=reg-proveedor]'))">+ Nuevo</button>
+        <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="expCSVProv()">⬇ CSV</button>
       </div>
     </div>
-    <div class="tbl-wrap">
-      <div class="tbl-scroll">
-        <table>
-          <thead><tr>
-            <th>#</th>
-            <th style="min-width:220px">Proveedor</th>
-            <th>Estado</th><th>Zona</th><th>Tipo</th><th>RUC</th><th>Contacto</th>
-            <th class="tc" title="1. Contrato">1<br><span style="font-weight:400;font-size:7px;text-transform:none">CONTRATO</span></th>
-            <th class="tc" title="2. Ficha RUC">2<br><span style="font-weight:400;font-size:7px;text-transform:none">FICHA RUC</span></th>
-            <th class="tc" title="3. Vigencia Poder / DNI Rep. Legal">3<br><span style="font-weight:400;font-size:7px;text-transform:none">VIG.PODER</span></th>
-            <th class="tc" title="4. Declaración Jurada Conflictos de Intereses">4<br><span style="font-weight:400;font-size:7px;text-transform:none">DECL.J.</span></th>
-            <th class="tc" title="5. Carta de Vinculación">5<br><span style="font-weight:400;font-size:7px;text-transform:none">VINCULAC.</span></th>
-            <th class="tc" title="6. Carta Compromiso Capacitación Conductores">6<br><span style="font-weight:400;font-size:7px;text-transform:none">CAPAC.</span></th>
-            <th class="tc" title="7. Carta Compromiso Transportista MP">7<br><span style="font-weight:400;font-size:7px;text-transform:none">TRANSP.MP</span></th>
-            <th class="tc" title="8. Carta Compromiso Tributario">8<br><span style="font-weight:400;font-size:7px;text-transform:none">TRIBUT.</span></th>
-            <th class="tc" title="9. Carta Descanso Transportista">9<br><span style="font-weight:400;font-size:7px;text-transform:none">DESCANSO</span></th>
-            <th class="tc" title="10. Carta Compromiso Beta">10<br><span style="font-weight:400;font-size:7px;text-transform:none">BETA</span></th>
-            <th class="tc" title="11. Acuerdo de Seguridad">11<br><span style="font-weight:400;font-size:7px;text-transform:none">ACDO.SEG.</span></th>
-            <th class="tc" title="12. Política Prevención Corrupción">12<br><span style="font-weight:400;font-size:7px;text-transform:none">ANTICORR.</span></th>
-            <th class="tc" title="13. Reporte Sentinel">13<br><span style="font-weight:400;font-size:7px;text-transform:none">SENTINEL</span></th>
-            <th class="tc" title="14. Lista Clinton">14<br><span style="font-weight:400;font-size:7px;text-transform:none">CLINTON</span></th>
-            <th class="tc" title="15. Deuda Coactiva">15<br><span style="font-weight:400;font-size:7px;text-transform:none">DEUDA C.</span></th>
-            <th class="tc" title="16. Referencias Comercial">16<br><span style="font-weight:400;font-size:7px;text-transform:none">REF.COM.</span></th>
-            <th class="tc" title="17. Brochure / Carta de Presentación">17<br><span style="font-weight:400;font-size:7px;text-transform:none">BROCHURE</span></th>
-            <th class="tc" title="18. Antecedente Penales">18<br><span style="font-weight:400;font-size:7px;text-transform:none">ANT.PEN.</span></th>
-            <th class="tc" title="19. Antecedente Policial">19<br><span style="font-weight:400;font-size:7px;text-transform:none">ANT.POL.</span></th>
-            <th class="tc" title="20. Antecedente Judicial">20<br><span style="font-weight:400;font-size:7px;text-transform:none">ANT.JUD.</span></th>
-            <th>Cumpl.</th>
-            <th>Resp.</th>
-            <th>Cond.</th><th>Unid.</th>
-          </tr></thead>
-          <tbody id="prov-tbody"><tr><td colspan="30" class="empty-state">Cargando...</td></tr></tbody>
-        </table>
-      </div>
-      <div class="pag-wrap"><span id="pv-info">—</span><div class="pag-btns" id="pv-pag"></div></div>
-    </div>
+
+    <!-- Grid de tarjetas -->
+    <div id="prov-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px"></div>
+    <!-- IDs ocultos para compatibilidad -->
+    <table style="display:none"><tbody id="prov-tbody"></tbody></table>
+    <span id="pv-info" style="display:none"></span><span id="pv-pag" style="display:none"></span>
+  </div>
+
+  <!-- MODAL DETALLE PROVEEDOR -->
+  <div class="modal-overlay" id="pv-detalle-modal">
+    <div class="modal" style="width:640px;max-height:88vh;overflow-y:auto" id="pv-detalle-box"></div>
   </div>
 
   <!-- ======== REGISTRO PROVEEDOR ======== -->
@@ -1727,6 +1693,7 @@ async function syncFromSheets(){
           cumpl:       o.cumplimiento||'—',
           pctCumpl:    o['% cumplimiento']||'',
           carpeta:     o['carpeta proveedor']||o.carpeta||'',
+          tipoServicio: o['tipo de servicio']||o['tipo servicio']||o.servicio||'',
         }));
     }
 
@@ -2530,206 +2497,203 @@ function updProvResp(n,v){const d=getPD(n);d.resp=v;PD[n]=d;savePD();guardarProv
 // Índice global para mapear fila → proveedor real (evita problemas con nombres especiales)
 let PV_MAP = []; // PV_MAP[i] = nombre del proveedor en la página actual
 
+function provTipoServicio(p){
+  // 1) campo propio del proveedor (si lo llenas en el Sheet)
+  if(p.tipoServicio) return p.tipoServicio.toUpperCase();
+  // 2) derivar del reporte cargado
+  if(typeof REP_ROWS!=='undefined' && REP_ROWS.length){
+    const r = REP_ROWS.find(x=>(x.proveedor||'').trim().toUpperCase()===(p.nombre||'').trim().toUpperCase());
+    if(r && r.tipoServicio) return r.tipoServicio.toUpperCase();
+  }
+  return '';
+}
+function clasifServicio(txt){
+  const t=(txt||'').toUpperCase();
+  if(t.includes('MATERIA')||t.includes('MP')) return 'MATERIA PRIMA';
+  if(t.includes('REFRIG')||t.includes('FRIO')) return 'REFRIGERADO';
+  if(t.includes('SECA')||t.includes('SECO')) return 'CARGA SECA';
+  if(t.includes('FLOTA')||t.includes('VEHIC')) return 'FLOTA VEHICULAR';
+  return t;
+}
+
+function provValidos(){
+  return PROVEEDORES.filter(p=>{
+    const n=(p.nombre||'').trim();
+    if(n.length<3) return false;
+    if(!isNaN(Number(n))&&n!=='') return false;
+    if(['PROVEEDOR','NOMBRE','EMPRESA','RUC','ESTADO','TOTAL'].includes(n.toUpperCase())) return false;
+    return (p.estado||'').toUpperCase()==='ACTIVO';
+  });
+}
+
 function renderProveedores(){
+  const cont = document.getElementById('prov-cards');
+  if(!cont) return;
   if(PROVEEDORES.length===0){
-    const tbody=document.getElementById('prov-tbody');
-    if(tbody) tbody.innerHTML='<tr><td colspan="23" class="empty-state">📋 Conecta Google Sheets o sincroniza para ver los proveedores</td></tr>';
+    cont.innerHTML='<div class="empty-state" style="grid-column:1/-1">📋 Conecta Google Sheets o sincroniza para ver los proveedores</div>';
     document.getElementById('prov-count').textContent='0 proveedores';
     return;
   }
-  // Filtros propios de la tabla de proveedores
-  const search = (document.getElementById('pv-srch')||{value:''}).value.toLowerCase();
-  const estado  = (document.getElementById('pv-est')||{value:''}).value;
+  const search  = (document.getElementById('pv-srch')||{value:''}).value.toLowerCase();
   const zona    = (document.getElementById('pv-zona')||{value:''}).value;
   const cumplF  = (document.getElementById('pv-cumpl')||{value:''}).value;
+  const tipoServ= (document.getElementById('pv-tiposerv')||{value:''}).value;
 
-  // Detectar filas no válidas: cabeceras, resúmenes estadísticos, basura
-  const esInvalida = p => {
-    const n = (p.nombre||'').trim();
-    if(n.length < 3) return true;
-    // Filtrar cabeceras o valores numéricos puros en nombre
-    if(!isNaN(Number(n)) && n !== '') return true;
-    const upperN = n.toUpperCase();
-    if(['PROVEEDOR','NOMBRE','EMPRESA','RAZÓN SOCIAL','RAZON SOCIAL','N°','#','RUC','ESTADO',
-        'TOTAL','CANTIDAD','CANT','RESUMEN','SUB TOTAL','SUBTOTAL'].includes(upperN)) return true;
-    if(/^(activos|inactivos|actualizado|total|b[12])[\s:=]/i.test(n)) return true;
-    if(/^\d+$/.test(n)) return true; // solo números
-    const est = (p.estado||'').trim().toUpperCase();
-    if(!['ACTIVO','INACTIVO'].includes(est)) return true;
-    return false;
-  };
+  let activos = provValidos();
 
-  // ✅ FILTRAR PROVEEDORES DEL REPORTE
-  let baseProv = PROVEEDORES;
-  if(REP_ROWS && REP_ROWS.length > 0){
-    const provsReporte = new Set();
-    REP_ROWS.forEach(r => {
-      const nom = (r.proveedor || '').trim().toUpperCase();
-      if(nom) provsReporte.add(nom);
-    });
-    baseProv = PROVEEDORES.filter(p => provsReporte.has((p.nombre || '').trim().toUpperCase()));
-  }
-  
-  let data=baseProv.filter(p=>{
-    if(esInvalida(p)) return false;
-    if(search&&!JSON.stringify(p).toLowerCase().includes(search)) return false;
-    if(estado&&p.estado!==estado) return false;
-    if(zona&&p.zona!==zona) return false;
-    // Filtro por tipo
-    const tipoF=(document.getElementById('pv-tipo')||{value:''}).value;
-    if(tipoF&&p.tipo!==tipoF) return false;
-    // Filtro por responsable
-    const respF=(document.getElementById('pv-resp')||{value:''}).value;
-    if(respF&&(p.responsable||'').toUpperCase()!==respF.toUpperCase()) return false;
-    // Filtro por cumplimiento documentario
+  // KPIs (sobre todos los activos, sin filtros de búsqueda)
+  let kc=0,ki=0,kx=0;
+  activos.forEach(p=>{
+    const pct=Math.round(getPD(p.nombre).docs.filter(Boolean).length/20*100);
+    if(pct>=80)kc++; else if(pct>=50)ki++; else kx++;
+  });
+  const sk=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  sk('pvk-total',activos.length); sk('pvk-completos',kc); sk('pvk-incompletos',ki); sk('pvk-criticos',kx);
+
+  // Aplicar filtros
+  let data = activos.filter(p=>{
+    if(search && !JSON.stringify(p).toLowerCase().includes(search)) return false;
+    if(zona && (p.zona||'').toUpperCase()!==zona) return false;
+    if(tipoServ && clasifServicio(provTipoServicio(p))!==tipoServ) return false;
     if(cumplF){
-      const pd2=getPD(p.nombre);
-      const pct2=Math.round(pd2.docs.filter(Boolean).length/20*100);
-      if(cumplF==='completo'   && pct2< 80) return false;
-      if(cumplF==='proceso'    && (pct2<50||pct2>=80)) return false;
-      if(cumplF==='incompleto' && pct2>=50) return false;
+      const pct=Math.round(getPD(p.nombre).docs.filter(Boolean).length/20*100);
+      if(cumplF==='completo'  && pct<80) return false;
+      if(cumplF==='proceso'   && (pct<50||pct>=80)) return false;
+      if(cumplF==='incompleto'&& pct>=50) return false;
     }
     return true;
   });
 
-  // ✅ AGREGAR PROVEEDORES NUEVOS DEL REPORTE
-  if(REP_ROWS && REP_ROWS.length > 0){
-    const provsEnBD = new Set(PROVEEDORES.map(x => (x.nombre || '').trim().toUpperCase()));
-    const yaAgregados = new Set();
-    REP_ROWS.forEach(r => {
-      const nom = (r.proveedor || '').trim();
-      const nomUp = nom.toUpperCase();
-      if(nom && !provsEnBD.has(nomUp) && !yaAgregados.has(nomUp)){
-        yaAgregados.add(nomUp);
-        data.push({
-          nombre: nom,
-          estado: 'ACTIVO',
-          _nuevoProveedor: true,
-          ruc: '', contacto: '', zona: '', tipo: '', codigo: '', responsable: '',
-          docs: Array(20).fill(false)
-        });
-      }
-    });
-  }
-
-  // Eliminar duplicados por nombre
-  const _vistos = new Set();
-  data = data.filter(p => {
-    const k = (p.nombre||'').trim().toUpperCase();
-    if(_vistos.has(k)) return false;
-    _vistos.add(k);
-    return true;
-  });
-
-  const provCond={},provUnid={};
-  CONDUCTORES.forEach(c=>{if(c.proveedor)provCond[c.proveedor]=(provCond[c.proveedor]||0)+1;});
-  UNIDADES.forEach(u=>{if(u.proveedor)provUnid[u.proveedor]=(provUnid[u.proveedor]||0)+1;});
+  // dedup
+  const vistos=new Set();
+  data=data.filter(p=>{const k=(p.nombre||'').trim().toUpperCase();if(vistos.has(k))return false;vistos.add(k);return true;});
 
   document.getElementById('prov-count').textContent=data.length+' proveedores';
-  const tp=Math.ceil(data.length/PV_PS)||1;
-  PV_PAGE=Math.min(PV_PAGE,tp);
-  const sl=data.slice((PV_PAGE-1)*PV_PS,PV_PAGE*PV_PS);
 
-  // Guardar mapa de índice → nombre para el onclick
-  PV_MAP = sl.map(p=>p.nombre);
+  const provCond={},provUnid={};
+  CONDUCTORES.forEach(c=>{if(c.proveedor)provCond[(c.proveedor||'').trim().toUpperCase()]=(provCond[(c.proveedor||'').trim().toUpperCase()]||0)+1;});
+  UNIDADES.forEach(u=>{if(u.proveedor)provUnid[(u.proveedor||'').trim().toUpperCase()]=(provUnid[(u.proveedor||'').trim().toUpperCase()]||0)+1;});
 
-  const tbody = document.getElementById('prov-tbody');
-  if(!sl.length){
-    tbody.innerHTML='<tr><td colspan="23" class="empty-state">Sin proveedores</td></tr>';
-  } else {
-    tbody.innerHTML = sl.map((p,i)=>{
-      const pd  = getPD(p.nombre);
-      const ok  = pd.docs.filter(Boolean).length;
-      const pct = Math.round(ok/20*100);
-      const bc  = pct>=80?'#22c55e':pct>=50?'#f97316':'#ef4444';
+  PV_MAP = data.map(p=>p.nombre);
 
-      // Checkboxes usando data-pi (índice en PV_MAP) y data-di (índice doc)
-      // Así evitamos inyectar el nombre del proveedor en el HTML
-      const dcs = pd.docs.map((v,di)=>`<td class="tc">
-        <div class="pv-ck" data-pi="${i}" data-di="${di}" title="${DOCS_PROV[di]}"
-          style="width:17px;height:17px;border-radius:3px;cursor:pointer;display:flex;
-          align-items:center;justify-content:center;font-size:9px;font-weight:700;
-          margin:0 auto;user-select:none;border:1.5px solid ${v?'#22c55e':'var(--border)'};
-          background:${v?'#dcfce7':'var(--bg2)'};color:#15803d">
-          ${v?'✓':''}
-        </div></td>`).join('');
-
-      return `<tr${p._nuevoProveedor ? ' style="background:rgba(16,185,129,0.05)"' : ''}>
-        <td class="mono" style="color:var(--text3)">${(PV_PAGE-1)*PV_PS+i+1}</td>
-        <td style="min-width:200px;white-space:normal;font-size:11.5px;font-weight:500">${p.nombre}${p._nuevoProveedor ? '<br><button onclick="abrirRegProv(this)" data-nom="' + (p.nombre||'').replace(/"/g,'&quot;') + '" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : ''}</td>
-        <td>${badge(p.estado||'ACTIVO')}</td>
-        <td style="font-size:11px">${p.zona||'—'}</td>
-        <td style="font-size:10.5px">${p.tipo||'—'}</td>
-        <td class="mono" style="font-size:10.5px">${p.ruc||'—'}</td>
-        <td style="font-size:11px;max-width:110px;white-space:normal">${p.contacto||'—'}</td>
-        ${dcs}
-        <td>
-          <div style="display:flex;align-items:center;gap:5px">
-            <div style="width:38px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0">
-              <div style="width:${pct}%;height:100%;background:${bc};border-radius:3px"></div>
-            </div>
-            <span style="font-size:10.5px;font-family:var(--mono);color:var(--text3)">${ok}/20</span>
-          </div>
-        </td>
-        <td><input class="pv-resp-inp" data-pi="${i}" value="${(pd.resp||p.responsable||'').replace(/"/g,'&quot;')}"
-          style="border:1px solid var(--border);border-radius:4px;padding:2px 6px;
-          font-size:10.5px;width:72px;background:var(--bg2)"></td>
-        <td class="mono" style="text-align:center">${provCond[p.nombre]||0}</td>
-        <td class="mono" style="text-align:center">${provUnid[p.nombre]||0}</td>
-      </tr>`;
-    }).join('');
-
-    // Delegar eventos en el tbody (1 listener, no 13×25 inline)
-    tbody.onclick = e=>{
-      const ck = e.target.closest('.pv-ck');
-      if(!ck) return;
-      const pi=parseInt(ck.dataset.pi), di=parseInt(ck.dataset.di);
-      const nom = PV_MAP[pi]; if(!nom) return;
-      const d=getPD(nom); d.docs[di]=!d.docs[di]; PD[nom]=d; savePD();
-      guardarProvEnSheets(nom); // guarda TRUE/FALSE en Sheets
-      // Actualizar solo ese cuadro (sin re-render completo)
-      const v=d.docs[di];
-      ck.style.border=`1.5px solid ${v?'#22c55e':'var(--border)'}`;
-      ck.style.background=v?'#dcfce7':'var(--bg2)';
-      ck.textContent=v?'✓':'';
-      // Actualizar barra de cumplimiento en esa fila
-      const ok2=d.docs.filter(Boolean).length;
-      const pct2=Math.round(ok2/20*100);
-      const bc2=pct2>=80?'#22c55e':pct2>=50?'#f97316':'#ef4444';
-      const row=ck.closest('tr');
-      if(row){
-        const bar=row.querySelector('div[style*="border-radius:3px;overflow"]>div');
-        if(bar){bar.style.width=pct2+'%';bar.style.background=bc2;}
-        const lbl=row.querySelector('span[style*="font-family:var(--mono)"]');
-        if(lbl) lbl.textContent=ok2+'/20';
-      }
-    };
-    tbody.onchange = e=>{
-      const inp = e.target.closest('.pv-resp-inp');
-      if(!inp) return;
-      const pi=parseInt(inp.dataset.pi);
-      const nom=PV_MAP[pi]; if(!nom) return;
-      updProvResp(nom, inp.value);
-    };
+  if(!data.length){
+    cont.innerHTML='<div class="empty-state" style="grid-column:1/-1">Sin proveedores para los filtros aplicados</div>';
+    return;
   }
 
-  // Paginación
-  const info=document.getElementById('pv-info');
-  const pag=document.getElementById('pv-pag');
-  if(info) info.textContent=`${data.length} proveedores · Pág ${PV_PAGE} de ${tp}`;
-  if(pag){
-    pag.innerHTML='';
-    const mk=(t,pg)=>{
-      const b=document.createElement('button');
-      b.className='pag-btn'+(pg===PV_PAGE?' active':'');
-      b.textContent=t;
-      b.onclick=()=>{PV_PAGE=pg;renderProveedores();};
-      pag.appendChild(b);
-    };
-    if(PV_PAGE>1) mk('←',PV_PAGE-1);
-    for(let i=Math.max(1,PV_PAGE-2);i<=Math.min(tp,PV_PAGE+2);i++) mk(i,i);
-    if(PV_PAGE<tp) mk('→',PV_PAGE+1);
-  }
+  cont.innerHTML = data.map((p,i)=>{
+    const pd=getPD(p.nombre);
+    const ok=pd.docs.filter(Boolean).length;
+    const pct=Math.round(ok/20*100);
+    const col=pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
+    const estadoTxt=pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO';
+    const faltan=DOCS_PROV.filter((d,di)=>!pd.docs[di]);
+    const faltanTxt = faltan.length ? faltan.slice(0,3).join(', ')+(faltan.length>3?` +${faltan.length-3} más`:'') : 'Todo completo ✓';
+    const nUp=(p.nombre||'').trim().toUpperCase();
+    const serv=clasifServicio(provTipoServicio(p));
+    return `<div onclick="abrirDetalleProv(${i})" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
+      onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.10)';this.style.transform='translateY(-2px)'"
+      onmouseout="this.style.boxShadow='';this.style.transform=''">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px">
+        <div style="font-size:13.5px;font-weight:700;color:#111;line-height:1.3">${p.nombre}</div>
+        <span class="badge ok" style="flex-shrink:0">ACTIVO</span>
+      </div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;font-family:var(--mono)">${p.ruc||'—'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        ${p.zona?`<span style="font-size:10px;background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:20px;font-weight:600">${p.zona}</span>`:''}
+        ${serv?`<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:20px;font-weight:600">${serv}</span>`:''}
+        ${(pd.resp||p.responsable)?`<span style="font-size:10px;background:#f9fafb;color:#6b7280;padding:2px 8px;border-radius:20px;font-weight:600">👤 ${pd.resp||p.responsable}</span>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="flex:1;height:8px;background:#f3f4f6;border-radius:6px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${col}"></div>
+        </div>
+        <span style="font-size:12px;font-weight:700;color:${col};font-family:var(--mono)">${ok}/20</span>
+      </div>
+      <div style="font-size:11px;color:${pct>=80?'#15803d':'#b45309'};display:flex;align-items:center;gap:4px">
+        ${pct>=80?'✓ '+estadoTxt:'⚠ Falta: '+faltanTxt}
+      </div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af">
+        <span>👤 ${provCond[nUp]||0} cond.</span>
+        <span>🚛 ${provUnid[nUp]||0} unid.</span>
+        <span style="color:var(--accent);font-weight:600">Ver detalle →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// MODAL DETALLE
+function abrirDetalleProv(i){
+  const nombre = PV_MAP[i]; if(!nombre) return;
+  const p = PROVEEDORES.find(x=>x.nombre===nombre); if(!p) return;
+  const pd = getPD(nombre);
+  const ok = pd.docs.filter(Boolean).length;
+  const pct = Math.round(ok/20*100);
+  const col = pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
+  const nUp=(nombre||'').trim().toUpperCase();
+  const conds = CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp);
+  const unids = UNIDADES.filter(u=>(u.proveedor||'').trim().toUpperCase()===nUp);
+
+  const docsHtml = DOCS_PROV.map((d,di)=>{
+    const tiene=pd.docs[di];
+    return `<div onclick="toggleProvDocModal('${i}',${di})" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid ${tiene?'#bbf7d0':'#fecaca'};background:${tiene?'#f0fdf4':'#fef2f2'};border-radius:8px;cursor:pointer;font-size:11.5px">
+      <span style="font-size:14px">${tiene?'✅':'❌'}</span>
+      <span style="color:${tiene?'#15803d':'#b91c1c'};font-weight:500">${di+1}. ${d}</span>
+    </div>`;
+  }).join('');
+
+  const box=document.getElementById('pv-detalle-box');
+  box.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px">
+      <div style="font-size:18px;font-weight:800;color:#111;line-height:1.3">${p.nombre}</div>
+      <button onclick="cerrarDetalleProv()" style="background:#f3f4f6;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#6b7280;flex-shrink:0">✕</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+      <span class="badge ok">ACTIVO</span>
+      ${p.zona?`<span style="font-size:10px;background:#eef2ff;color:#4338ca;padding:3px 9px;border-radius:20px;font-weight:600">${p.zona}</span>`:''}
+      ${clasifServicio(provTipoServicio(p))?`<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:3px 9px;border-radius:20px;font-weight:600">${clasifServicio(provTipoServicio(p))}</span>`:''}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;font-size:12px">
+      <div><span style="color:#9ca3af">RUC:</span> <b style="font-family:var(--mono)">${p.ruc||'—'}</b></div>
+      <div><span style="color:#9ca3af">Responsable:</span> <b>${pd.resp||p.responsable||'—'}</b></div>
+      <div><span style="color:#9ca3af">Contacto:</span> <b>${p.contacto||'—'}</b></div>
+      <div><span style="color:#9ca3af">Celular:</span> <b>${p.celular||'—'}</b></div>
+      <div style="grid-column:1/-1"><span style="color:#9ca3af">Correo:</span> <b>${p.correo||'—'}</b></div>
+    </div>
+
+    <div style="background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="flex:1;height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${col}"></div>
+        </div>
+        <span style="font-size:15px;font-weight:800;color:${col};font-family:var(--mono)">${pct}%</span>
+      </div>
+      <div style="font-size:12px;color:#6b7280">${ok} de 20 documentos · <b style="color:${col}">${pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO'}</b></div>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:10px">📋 Checklist Documentario (clic para marcar)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">${docsHtml}</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;margin-bottom:6px">🚛 UNIDADES (${unids.length})</div>
+        ${unids.length?unids.slice(0,8).map(u=>`<div style="font-size:11px;padding:4px 8px;background:#f9fafb;border-radius:6px;margin-bottom:3px;font-family:var(--mono)">${u.placa||'—'}</div>`).join(''):'<div style="font-size:11px;color:#9ca3af">Sin unidades</div>'}
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;margin-bottom:6px">👤 CONDUCTORES (${conds.length})</div>
+        ${conds.length?conds.slice(0,8).map(c=>`<div style="font-size:11px;padding:4px 8px;background:#f9fafb;border-radius:6px;margin-bottom:3px">${c.conductor||'—'}</div>`).join(''):'<div style="font-size:11px;color:#9ca3af">Sin conductores</div>'}
+      </div>
+    </div>`;
+  document.getElementById('pv-detalle-modal').classList.add('open');
+}
+function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); }
+function toggleProvDocModal(i,di){
+  const nombre=PV_MAP[i]; if(!nombre) return;
+  const d=getPD(nombre); d.docs[di]=!d.docs[di]; PD[nombre]=d; savePD();
+  guardarProvEnSheets(nombre);
+  abrirDetalleProv(i);   // refresca modal
+  renderProveedores();   // refresca tarjetas + KPIs
 }
 
 function expCSVProv(){
