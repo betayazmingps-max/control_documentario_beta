@@ -592,10 +592,10 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <th>SOAT ✏️</th><th>Días SOAT</th>
             <th>RTV ✏️</th><th>Días RTV</th>
             <th>T.C. ✏️</th><th>Días T.C.</th>
-            <th>T.Prop</th><th>SOAT</th><th>RTV</th><th>T.C.</th><th>MNTO</th><th>Boletín</th><th>Póliza</th>
+            <th>T.Prop</th><th>SOAT</th><th>RTV</th><th>TUC</th><th>MNTO</th><th>Boletín</th><th>Póliza</th><th>Seg.RC</th><th>Seg.Carga</th><th>CheckList</th>
             <th>Cumpl.</th><th>📁 Carpeta</th>
           </tr></thead>
-          <tbody id="unid-tbody"><tr><td colspan="28" class="empty-state">Cargando...</td></tr></tbody>
+          <tbody id="unid-tbody"><tr><td colspan="31" class="empty-state">Cargando...</td></tr></tbody>
         </table>
       </div>
       <div class="tbl-footer">
@@ -1094,6 +1094,12 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Tiene Tarj. Prop.</label><select class="form-select" id="u-tiene-tarj"><option value="">—</option><option>SI</option><option>NO</option></select></div>
           <div class="form-group"><label class="form-label">Propietario</label><input class="form-input" type="text" id="u-propietario" placeholder="Nombre propietario"></div>
           <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" type="text" id="u-responsable" placeholder="Responsable"></div>
+          <div class="form-group"><label class="form-label">Tipo de Servicio</label>
+            <select class="form-select" id="u-tiposervicio" onchange="actualizarCumplUnid()">
+              <option value="">—</option><option value="MATERIA PRIMA">MATERIA PRIMA</option>
+              <option value="CARGA SECA">CARGA SECA</option><option value="REFRIGERADO">REFRIGERADO</option>
+              <option value="FLOTA VEHICULAR">FLOTA VEHICULAR</option>
+            </select></div>
           <div class="form-group full"><label class="form-label">📁 Link Carpeta SharePoint</label><input class="form-input" type="text" id="u-carpeta" placeholder="https://..."></div>
         </div>
       </div>
@@ -1133,10 +1139,13 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <label class="check-item"><input type="checkbox" id="uch-tarj"><label for="uch-tarj">Tarj. Prop.</label></label>
           <label class="check-item"><input type="checkbox" id="uch-soat"><label for="uch-soat">SOAT</label></label>
           <label class="check-item"><input type="checkbox" id="uch-rtv"><label for="uch-rtv">Rev. Téc.</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-tc"><label for="uch-tc">Tarj. Circ.</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-tc"><label for="uch-tc">TUC</label></label>
           <label class="check-item"><input type="checkbox" id="uch-mnto"><label for="uch-mnto">Program. MNTO</label></label>
           <label class="check-item"><input type="checkbox" id="uch-boletin"><label for="uch-boletin">Boletín SUNARP</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-poliza"><label for="uch-poliza">Póliza Seguro</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-poliza"><label for="uch-poliza">Póliza</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-seguro-rc"><label for="uch-seguro-rc">Seguro RC</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-seguro-carga"><label for="uch-seguro-carga">Seguro de Carga</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-checklist"><label for="uch-checklist">Check List Recep./Devol.</label></label>
         </div>
         <div class="form-group" style="max-width:120px;"><label class="form-label">% Cumpl. <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-cumpl" readonly></div>
       </div>
@@ -1414,7 +1423,36 @@ function parseCsv(text){
 }
 
 // Orden EXACTO de columnas del Sheet UNIDADES (47 columnas)
-const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','cumpl','carpeta'];
+const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','docCheckList','cumpl','carpeta'];
+
+// Documentos de UNIDAD (10) con su etiqueta y a qué categorías aplican
+const DOCS_UNID = [
+  {campo:'docTarjProp',  lbl:'Tarj. Prop.', cat:'todos'},
+  {campo:'docSoat',      lbl:'SOAT',        cat:'todos'},
+  {campo:'docRtv',       lbl:'Rev. Tec.',   cat:'todos'},
+  {campo:'docTc',        lbl:'TUC',         cat:'todos'},
+  {campo:'docMnto',      lbl:'MNTO',        cat:'todos'},
+  {campo:'docBoletin',   lbl:'Boletín',     cat:'todos'},
+  {campo:'docPoliza',    lbl:'Póliza',      cat:['CARGA SECA','FLOTA VEHICULAR','REFRIGERADO']},
+  {campo:'docSeguroRc',  lbl:'Seguro RC',   cat:['MATERIA PRIMA']},
+  {campo:'docSeguroCarga',lbl:'Seguro Carga',cat:['CARGA SECA']},
+  {campo:'docCheckList', lbl:'Check List',  cat:['FLOTA VEHICULAR']},
+];
+// Documentos que aplican a una unidad según su categoría de servicio
+function docsUnidAplicables(catServ){
+  const cat=clasifServicio(catServ||'');
+  return DOCS_UNID.filter(d=> d.cat==='todos' || (cat && d.cat.includes(cat)));
+}
+// Deriva el tipo de servicio de una unidad: campo propio → reporte → proveedor
+function provServicioDeUnidad(u){
+  if(u.tipoServicio) return u.tipoServicio;
+  if(typeof REP_ROWS!=='undefined' && REP_ROWS.length){
+    const r=REP_ROWS.find(x=>normPlaca(x.placa)===normPlaca(u.placa));
+    if(r && r.tipoServicio) return r.tipoServicio;
+  }
+  const p=PROVEEDORES.find(pp=>(pp.nombre||'').trim().toUpperCase()===(u.proveedor||'').trim().toUpperCase());
+  return p?.tipoServicio||'';
+}
 
 // Orden EXACTO de columnas del Sheet CONDUCTORES (33-34 columnas)
 const COLORDER_COND = ['dni','conductor','estado','proveedor','placa','tipoUnidad','centro','ruta','turno','numLic','catLic','fechaLic','diasLic','estadoLic','restriccion','celular','record','cantPapeletas','puntosFirmes','puntosProceso','puntosTotal','alertaPuntos','asegSctr','tipoSctr','fechaSctr','diasSctr','estadoSctr','docDni','docLic','docRecord','docSctr','docEmo','cumpl','carpeta'];
@@ -1579,10 +1617,13 @@ async function syncFromSheets(){
         docTarjProp:   boolDoc(o['tarj. prop.']),
         docSoat:       boolDoc(o['soat']),
         docRtv:        boolDoc(o['rev. tec.']),
-        docTc:         boolDoc(o['tarj. circ.']),
+        docTc:         boolDoc(o['tuc']||o['tarj. circ.']),
         docMnto:       boolDoc(o['program mnto']),
-        docBoletin:    boolDoc(o['boletín informativo - sunarp']),
-        docPoliza:     boolDoc(o['póliza']),
+        docBoletin:    boolDoc(o['boletin informativo - sunarp']||o['boletín informativo - sunarp']),
+        docPoliza:     boolDoc(o['poliza']||o['póliza']),
+        docSeguroRc:   boolDoc(o['seguro rc']),
+        docSeguroCarga:boolDoc(o['seguro de carga']),
+        docCheckList:  boolDoc(o['check list recepcion devolucion']||o['check list recepcion y devolucion']||o['sheck list de recepcion y devolucion de unidad']),
         cumpl:         o.cumplimiento||'—',
         carpeta:       o['carpeta unidad']||o.carpeta||'',
       }));
@@ -2191,8 +2232,10 @@ async function toggleDocUnid(placa, campo){
   const nuevoValor = (actual==='✓') ? '✗' : '✓';
   UNIDADES[idx][campo] = nuevoValor;
   const u = UNIDADES[idx];
-  const docs = [u.docTarjProp,u.docSoat,u.docRtv,u.docTc,u.docMnto,u.docBoletin,u.docPoliza].filter(v=>v==='✓').length;
-  UNIDADES[idx].cumpl = `${docs}/7 (${Math.round(docs/7*100)}%)`;
+  const aplican = docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u));
+  const ok = aplican.filter(d=>u[d.campo]==='✓').length;
+  const tot = aplican.length;
+  UNIDADES[idx].cumpl = `${ok}/${tot} (${tot?Math.round(ok/tot*100):0}%)`;
   // Sincronizar con REP_ROWS si hay reporte cargado
   if(REP_ROWS.length > 0){
     REP_ROWS.forEach(r=>{
@@ -2273,6 +2316,9 @@ function renderUnidRow(r, num){
     ${chk(r.docMnto,'docMnto')}
     ${chk(r.docBoletin,'docBoletin')}
     ${chk(r.docPoliza,'docPoliza')}
+    ${chk(r.docSeguroRc,'docSeguroRc')}
+    ${chk(r.docSeguroCarga,'docSeguroCarga')}
+    ${chk(r.docCheckList,'docCheckList')}
     <td>${barCumpl(r.cumpl||'—')}</td>
     <td style="text-align:center">${r.carpeta ? `<a href="${r.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(59,130,246,0.12);color:#2563eb;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">📁 Abrir</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
   </tr>`;
@@ -2312,14 +2358,14 @@ function renderUnidades(){
     const sl=rows.slice((pg-1)*PS2,pg*PS2);
     document.getElementById('unid-tbody').innerHTML=sl.length
       ? sl.map((r,i)=>renderUnidRow(r,(pg-1)*PS2+i+1)).join('')
-      : '<tr><td colspan="21" class="empty-state">Sin unidades</td></tr>';
+      : '<tr><td colspan="31" class="empty-state">Sin unidades</td></tr>';
     renderPag('unid-pag','unid-info',pg,rows.length,v=>{ state.unidades.page=v; renderUnidades(); });
     return;
   }
   // Sin Excel cargado y modo día → mensaje
   if(!UNID_MODO_DIA && REP_ROWS.length===0){
     document.getElementById('unid-count').textContent='0 registros';
-    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="21" class="empty-state">📋 Conecta Google Sheets para cargar las unidades</td></tr>';
+    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="31" class="empty-state">📋 Conecta Google Sheets para cargar las unidades</td></tr>';
     document.getElementById('unid-info').textContent='—';
     document.getElementById('unid-pag').innerHTML='';
     return;
@@ -2346,6 +2392,8 @@ function renderUnidades(){
         diasRtv:'', estadoRtv:'', diasTc:'', estadoTc:'',
         docTarjProp:'✗', docSoat:'✗', docRtv:'✗', docTc:'✗',
         docMnto:'✗', docBoletin:'✗', docPoliza:'✗',
+        docSeguroRc:'✗', docSeguroCarga:'✗', docCheckList:'✗',
+        tipoServicio:r.tipoServicio||'',
         cumpl:'0/7 (0%)', _nuevaUnidad: true
       };
     });
@@ -2360,7 +2408,7 @@ function renderUnidades(){
   const sl=rows.slice((pg-1)*PS2,pg*PS2);
   document.getElementById('unid-tbody').innerHTML=sl.length
     ? sl.map((r,i)=>renderUnidRow(r,(pg-1)*PS2+i+1)).join('')
-    : '<tr><td colspan="21" class="empty-state">Sin unidades</td></tr>';
+    : '<tr><td colspan="31" class="empty-state">Sin unidades</td></tr>';
   renderPag('unid-pag','unid-info',pg,rows.length,v=>{ if(UNID_MODO_DIA){if(!ST.unidades)ST.unidades={};ST.unidades.page=v;}else state.unidades.page=v; renderUnidades(); });
 }
 
@@ -2721,8 +2769,8 @@ function abrirDetalleProv(i){
             <span style="font-size:10px;color:#9ca3af">${u.tipo||u.marca||''}</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:4px">
-            ${estPill(u.estadoSoat,'SOAT')}${estPill(u.estadoRtv,'RTV')}${estPill(u.estadoTc,'T.C.')}
-            ${pill(u.docTarjProp,'T.Prop','docTarjProp')}${pill(u.docSoat,'SOAT','docSoat')}${pill(u.docRtv,'RTV','docRtv')}${pill(u.docTc,'T.C.','docTc')}${pill(u.docMnto,'MNTO','docMnto')}${pill(u.docBoletin,'Boletín','docBoletin')}${pill(u.docPoliza,'Póliza','docPoliza')}
+            ${estPill(u.estadoSoat,'SOAT')}${estPill(u.estadoRtv,'RTV')}${estPill(u.estadoTc,'TUC')}
+            ${docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u)).map(d=>pill(u[d.campo],d.lbl,d.campo)).join('')}
           </div>
           ${u.carpeta?`<a href="${u.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
         </div>`;
@@ -3324,13 +3372,26 @@ function actualizarCumplCond(){
   const ok=chs.filter(id=>document.getElementById(id)?.checked).length;
   document.getElementById('c-cumpl').value=`${ok}/${chs.length} (${Math.round(ok/chs.length*100)}%)`;
 }
+// Mapeo checkbox del form → campo interno
+const UCH_MAP={'uch-tarj':'docTarjProp','uch-soat':'docSoat','uch-rtv':'docRtv','uch-tc':'docTc','uch-mnto':'docMnto','uch-boletin':'docBoletin','uch-poliza':'docPoliza','uch-seguro-rc':'docSeguroRc','uch-seguro-carga':'docSeguroCarga','uch-checklist':'docCheckList'};
 function actualizarCumplUnid(){
-  const chs=['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'];
-  const ok=chs.filter(id=>document.getElementById(id)?.checked).length;
-  document.getElementById('u-cumpl').value=`${ok}/${chs.length} (${Math.round(ok/chs.length*100)}%)`;
+  const cat=document.getElementById('u-tiposervicio')?.value||'';
+  const aplican=docsUnidAplicables(cat);
+  // mostrar/ocultar checkboxes según categoría
+  for(const [id,campo] of Object.entries(UCH_MAP)){
+    const el=document.getElementById(id);
+    if(el&&el.closest('.check-item')){
+      const aplica=aplican.some(d=>d.campo===campo);
+      el.closest('.check-item').style.display=aplica?'':'none';
+      if(!aplica) el.checked=false;
+    }
+  }
+  const ok=aplican.filter(d=>{const id=Object.keys(UCH_MAP).find(k=>UCH_MAP[k]===d.campo);return document.getElementById(id)?.checked;}).length;
+  const tot=aplican.length;
+  const cv=document.getElementById('u-cumpl'); if(cv) cv.value=`${ok}/${tot} (${tot?Math.round(ok/tot*100):0}%)`;
 }
 ['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo'].forEach(id=>document.getElementById(id)?.addEventListener('change',actualizarCumplCond));
-['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'].forEach(id=>document.getElementById(id)?.addEventListener('change',actualizarCumplUnid));
+Object.keys(UCH_MAP).forEach(id=>document.getElementById(id)?.addEventListener('change',actualizarCumplUnid));
 
 // ── AUTO-ACTIVO + AUTO-CHECKLIST al cambiar fechas ──
 // Conductor: al poner fecha licencia o SCTR vigente → ACTIVO + check automático
@@ -3478,7 +3539,6 @@ async function guardarConductor(){
 async function guardarUnidad(){
   const placa=document.getElementById('u-placa').value.trim().toUpperCase();
   if(!placa){showToast('La placa es obligatoria','err');return;}
-  const chs=['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'];
   const gv = id => document.getElementById(id)?.value||'';
   const row={placa,estado:gv('u-estado')||'ACTIVO',
     proveedor:gv('u-proveedor'),
@@ -3520,7 +3580,11 @@ async function guardarUnidad(){
     docTc:document.getElementById('uch-tc').checked?'✓':'✗',
     docMnto:document.getElementById('uch-mnto').checked?'✓':'✗',
     docBoletin:document.getElementById('uch-boletin').checked?'✓':'✗',
-    docPoliza:document.getElementById('uch-poliza').checked?'✓':'✗'};
+    docPoliza:document.getElementById('uch-poliza').checked?'✓':'✗',
+    docSeguroRc:document.getElementById('uch-seguro-rc')?.checked?'✓':'✗',
+    docSeguroCarga:document.getElementById('uch-seguro-carga')?.checked?'✓':'✗',
+    docCheckList:document.getElementById('uch-checklist')?.checked?'✓':'✗',
+    tipoServicio:document.getElementById('u-tiposervicio')?.value||''};
   recalcular();
   let idx=UNIDADES.findIndex(u=>u.placa===placa);
   if(idx>=0) UNIDADES[idx]={...UNIDADES[idx],...row};
@@ -3537,7 +3601,8 @@ function limpiarFormCond(){
 }
 function limpiarFormUnid(){
   ['u-placa','u-proveedor','u-anio','u-antig','u-marca','u-fecha-soat','u-dias-soat','u-est-soat','u-fecha-rtv','u-dias-rtv','u-est-rtv','u-obs-rtv','u-fecha-tc','u-dias-tc','u-est-tc','u-cumpl','u-msg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['uch-tarj','uch-soat','uch-rtv','uch-tc','uch-mnto','uch-boletin','uch-poliza'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+  Object.keys(UCH_MAP).forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+  const ts=document.getElementById('u-tiposervicio'); if(ts) ts.value='';
 }
 
 // ═══════════════════════════════════════════════
