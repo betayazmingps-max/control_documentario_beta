@@ -2679,7 +2679,8 @@ function abrirDetalleProv(i){
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades (${unids.length})</div>
     <div style="margin-bottom:16px">
       ${unids.length?unids.map(u=>{
-        const pill=(v,lbl)=>`<span style="font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
+        const pl=(u.placa||'').replace(/'/g,"\\'");
+        const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocUnidModal('${pl}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
         const estPill=(est,lbl)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#f3f4f6','#9ca3af'];return `<span style="font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">${lbl}: ${est||'—'}</span>`;};
         return `<div style="border:1px solid #ebebeb;border-radius:8px;padding:9px 11px;margin-bottom:6px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -2688,7 +2689,7 @@ function abrirDetalleProv(i){
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:4px">
             ${estPill(u.estadoSoat,'SOAT')}${estPill(u.estadoRtv,'RTV')}${estPill(u.estadoTc,'T.C.')}
-            ${pill(u.docTarjProp,'T.Prop')}${pill(u.docMnto,'MNTO')}${pill(u.docBoletin,'Boletín')}${pill(u.docPoliza,'Póliza')}
+            ${pill(u.docTarjProp,'T.Prop','docTarjProp')}${pill(u.docSoat,'SOAT','docSoat')}${pill(u.docRtv,'RTV','docRtv')}${pill(u.docTc,'T.C.','docTc')}${pill(u.docMnto,'MNTO','docMnto')}${pill(u.docBoletin,'Boletín','docBoletin')}${pill(u.docPoliza,'Póliza','docPoliza')}
           </div>
           ${u.carpeta?`<a href="${u.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
         </div>`;
@@ -2699,7 +2700,8 @@ function abrirDetalleProv(i){
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores (${conds.length})</div>
     <div>
       ${conds.length?conds.map(c=>{
-        const pill=(v,lbl)=>`<span style="font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
+        const dn=(c.dni||'').replace(/'/g,"\\'");
+        const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocCondModal('${dn}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
         const estPill=(est,lbl)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#f3f4f6','#9ca3af'];return `<span style="font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">${lbl}: ${est||'—'}</span>`;};
         return `<div style="border:1px solid #ebebeb;border-radius:8px;padding:9px 11px;margin-bottom:6px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -2708,7 +2710,7 @@ function abrirDetalleProv(i){
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:4px">
             ${estPill(c.estadoLic,'Lic')}${estPill(c.estadoSctr,'SCTR')}
-            ${pill(c.docDni,'DNI')}${pill(c.docLic,'Lic')}${pill(c.docRecord,'Récord')}${pill(c.docSctr,'SCTR')}${pill(c.docEmo,'EMO')}
+            ${pill(c.docDni,'DNI','docDni')}${pill(c.docLic,'Lic','docLic')}${pill(c.docRecord,'Récord','docRecord')}${pill(c.docSctr,'SCTR','docSctr')}${pill(c.docEmo,'EMO','docEmo')}
           </div>
           ${c.carpeta?`<a href="${c.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
         </div>`;
@@ -2723,6 +2725,16 @@ function toggleProvDocModal(i,di){
   guardarProvEnSheets(nombre);
   abrirDetalleProv(i);   // refresca modal
   renderProveedores();   // refresca tarjetas + KPIs
+}
+// Editar documento de UNIDAD desde el modal del proveedor
+async function toggleDocUnidModal(placa, campo, i){
+  await toggleDocUnid(placa, campo);   // actualiza UNIDADES + REP_ROWS + guarda en Sheets
+  abrirDetalleProv(i);                 // refresca el modal
+}
+// Editar documento de CONDUCTOR desde el modal del proveedor
+async function toggleDocCondModal(dni, campo, i){
+  await toggleDocCond(dni, campo);     // actualiza CONDUCTORES + REP_ROWS + guarda en Sheets
+  abrirDetalleProv(i);                 // refresca el modal
 }
 
 function expCSVProv(){
