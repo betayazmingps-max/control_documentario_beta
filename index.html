@@ -2688,8 +2688,10 @@ function renderProveedores(){
 }
 
 // MODAL DETALLE
+let PV_DETALLE_I = null; // índice del proveedor abierto en el modal (para refrescar)
 function abrirDetalleProv(i){
   const nombre = PV_MAP[i]; if(!nombre) return;
+  PV_DETALLE_I = i;
   const p = PROVEEDORES.find(x=>x.nombre===nombre); if(!p) return;
   const pd = getPD(nombre);
   const cmp = cumplProv(p); const ok = cmp.ok; const pct = cmp.pct;
@@ -2765,14 +2767,14 @@ function abrirDetalleProv(i){
       ${unids.length?unids.map(u=>{
         const pl=(u.placa||'').replace(/'/g,"\\'");
         const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocUnidModal('${pl}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
-        const estPill=(est,lbl)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#f3f4f6','#9ca3af'];return `<span style="font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">${lbl}: ${est||'—'}</span>`;};
+        const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditPlacaModal('${pl}','${diasC}','${fechaC}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
         return `<div style="border:1px solid #ebebeb;border-radius:8px;padding:9px 11px;margin-bottom:6px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:12px">${u.placa||'—'}</span>
-            <span style="font-size:10px;color:#9ca3af">${u.tipo||u.marca||''}</span>
+            <button onclick="event.stopPropagation();editarUnidad('${pl}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:4px">
-            ${estPill(u.estadoSoat,'SOAT')}${estPill(u.estadoRtv,'RTV')}${estPill(u.estadoTc,'TUC')}
+            ${estPill(u.estadoSoat,'SOAT','diasSoat','fechaSoat',u.diasSoat)}${estPill(u.estadoRtv,'RTV','diasRtv','fechaRtv',u.diasRtv)}${estPill(u.estadoTc,'TUC','diasTc','fechaTc',u.diasTc)}
             ${docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u)).map(d=>pill(u[d.campo],d.lbl,d.campo)).join('')}
           </div>
           ${u.carpeta?`<a href="${u.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
@@ -2790,14 +2792,15 @@ function abrirDetalleProv(i){
       ${conds.length?conds.map(c=>{
         const dn=(c.dni||'').replace(/'/g,"\\'");
         const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocCondModal('${dn}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
-        const estPill=(est,lbl)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#f3f4f6','#9ca3af'];return `<span style="font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">${lbl}: ${est||'—'}</span>`;};
+        const nm=(c.conductor||'').replace(/'/g,"\\'");
+        const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditDniModal('${dn}','${diasC}','${fechaC}','${nm}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
         return `<div style="border:1px solid #ebebeb;border-radius:8px;padding:9px 11px;margin-bottom:6px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-weight:600;color:#111;font-size:12px">${c.conductor||'—'}</span>
-            <span style="font-size:10px;color:#9ca3af;font-family:var(--mono)">DNI ${c.dni||'—'}</span>
+            <span style="font-weight:600;color:#111;font-size:12px">${c.conductor||'—'} <span style="font-size:10px;color:#9ca3af;font-family:var(--mono)">· DNI ${c.dni||'—'}</span></span>
+            <button onclick="event.stopPropagation();editarConductor('${dn}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:4px">
-            ${estPill(c.estadoLic,'Lic')}${estPill(c.estadoSctr,'SCTR')}
+            ${estPill(c.estadoLic,'Lic','diasLic','fechaLic',c.diasLic)}${estPill(c.estadoSctr,'SCTR','diasSctr','fechaSctr',c.diasSctr)}
             ${pill(c.docDni,'DNI','docDni')}${pill(c.docLic,'Lic','docLic')}${pill(c.docRecord,'Récord','docRecord')}${pill(c.docSctr,'SCTR','docSctr')}${pill(c.docEmo,'EMO','docEmo')}
           </div>
           ${c.carpeta?`<a href="${c.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
@@ -2810,7 +2813,17 @@ function abrirDetalleProv(i){
     </div>`;
   document.getElementById('pv-detalle-modal').classList.add('open');
 }
-function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); }
+function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); PV_DETALLE_I=null; }
+// Editar fecha de vencimiento de UNIDAD desde el modal del proveedor
+function abrirEditPlacaModal(placa, diasCampo, fechaCampo, i){
+  PV_DETALLE_I = i;
+  abrirEditPlaca(placa, diasCampo, fechaCampo); // abre el modal de fecha existente
+}
+// Editar fecha de vencimiento de CONDUCTOR desde el modal del proveedor
+function abrirEditDniModal(dni, diasCampo, fechaCampo, nombre, i){
+  PV_DETALLE_I = i;
+  abrirEditDni(dni, diasCampo, fechaCampo, nombre);
+}
 // Abre el formulario de registro con TODOS los datos del proveedor cargados (editar)
 function editarProveedor(nombre){
   cerrarDetalleProv();
@@ -3373,6 +3386,10 @@ async function guardarEdit(){
   }
   cerrarEdit();
   render();
+  // Si el modal de detalle del proveedor está abierto, refrescarlo con el nuevo valor
+  if(PV_DETALLE_I!==null && document.getElementById('pv-detalle-modal')?.classList.contains('open')){
+    abrirDetalleProv(PV_DETALLE_I);
+  }
   showToast('✓ Fecha actualizada','ok');
 }
 function cerrarEdit(){ document.getElementById('edit-modal').classList.remove('open'); editTarget=null; }
@@ -3525,6 +3542,7 @@ function buscarUnidad(placa){
 }
 // Abre el formulario de UNIDAD con todos los datos cargados (editar)
 function editarUnidad(placa){
+  if(typeof cerrarDetalleProv==='function') cerrarDetalleProv();
   const u=UNIDADES.find(x=>(x.placa||'').toUpperCase()===(placa||'').toUpperCase());
   if(!u){ showToast('Unidad no encontrada','err'); return; }
   goPage('reg-unidad', document.querySelector('.nav-item[onclick*="reg-unidad"]'));
@@ -3544,6 +3562,7 @@ function editarUnidad(placa){
 }
 // Abre el formulario de CONDUCTOR con todos los datos cargados (editar)
 function editarConductor(dni){
+  if(typeof cerrarDetalleProv==='function') cerrarDetalleProv();
   const c=CONDUCTORES.find(x=>String(x.dni||'').trim()===String(dni||'').trim());
   if(!c){ showToast('Conductor no encontrado','err'); return; }
   goPage('reg-conductor', document.querySelector('.nav-item[onclick*="reg-conductor"]'));
