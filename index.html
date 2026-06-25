@@ -332,33 +332,26 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">Principal</div>
-    <div class="nav-item active" onclick="goPage('dashboard',this)">
+    <div class="nav-item active" onclick="goPage('proveedores',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="3" y="2" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.4" fill="none" opacity=".85"/><rect x="6" y="5" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".7"/><rect x="6" y="8" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".55"/><rect x="6" y="11" width="4" height="1.5" rx=".75" fill="currentColor" opacity=".4"/></svg>
+      Proveedores
+    </div>
+    <div class="nav-item" onclick="goPage('dashboard',this)">
       <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="currentColor" opacity=".9"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="currentColor" opacity=".6"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity=".6"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="currentColor" opacity=".4"/></svg>
       Dashboard
     </div>
 
-    <div class="nav-section">Consultas</div>
-    <div class="nav-item" onclick="goPage('conductores',this)">
-      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="3" width="16" height="2" rx="1" fill="currentColor" opacity=".8"/><rect x="1" y="8" width="16" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="1" y="13" width="10" height="2" rx="1" fill="currentColor" opacity=".4"/></svg>
-      Conductores
-    </div>
-    <div class="nav-item" onclick="goPage('unidades',this)">
-      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="3" width="16" height="2" rx="1" fill="currentColor" opacity=".8"/><rect x="1" y="8" width="16" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="1" y="13" width="10" height="2" rx="1" fill="currentColor" opacity=".4"/></svg>
-      Unidades
-    </div>
-    <div class="nav-item" onclick="goPage('proveedores',this)">
-      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="1" y="3" width="16" height="2" rx="1" fill="currentColor" opacity=".8"/><rect x="1" y="8" width="16" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="1" y="13" width="10" height="2" rx="1" fill="currentColor" opacity=".4"/></svg>
-      Proveedores
-    </div>
-    <div class="nav-section">Operaciones</div>
-    <div class="nav-item" onclick="goPage('alertas',this)">
-      <svg class="nav-ico" viewBox="0 0 18 18"><path d="M9 2l1.8 5.5H17l-4.9 3.6 1.9 5.7L9 13.4l-5 3.4 1.9-5.7L1 7.5h6.2z" fill="currentColor" opacity=".7"/></svg>
-      Alertas
-    </div>
+    <div class="nav-section">Operación del día</div>
     <div class="nav-item" onclick="goPage('reporte',this)">
       <svg class="nav-ico" viewBox="0 0 18 18"><rect x="3" y="1" width="12" height="16" rx="2" fill="currentColor" opacity=".2"/><rect x="3" y="1" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.4" fill="none" opacity=".8"/><rect x="6" y="5" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".7"/><rect x="6" y="8" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".5"/><rect x="6" y="11" width="4" height="1.5" rx=".75" fill="currentColor" opacity=".4"/></svg>
       Reporte Diario
     </div>
+    <div class="nav-item" onclick="goPage('alertas',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><path d="M9 2l1.8 5.5H17l-4.9 3.6 1.9 5.7L9 13.4l-5 3.4 1.9-5.7L1 7.5h6.2z" fill="currentColor" opacity=".7"/></svg>
+      Alertas
+    </div>
+
+    <div class="nav-section">Gestión</div>
     <div class="nav-item" onclick="goPage('historial',this)">
       <svg class="nav-ico" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><rect x="5" y="5" width="4" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="5" y="9" width="8" height="1.5" rx=".75" fill="currentColor" opacity=".5"/><rect x="5" y="12" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".4"/></svg>
       Historial
@@ -384,7 +377,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   <div class="topbar">
     <div class="topbar-left">
       <div class="pulse-dot"></div>
-      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-title" id="page-title">Proveedores</div>
     </div>
     <div class="topbar-right">
       <input type="text" class="search-box" id="search-input" placeholder="🔍 Buscar..." oninput="onSearch()" style="display:none">
@@ -401,7 +394,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   <div class="content">
 
   <!-- ======== DASHBOARD ======== -->
-  <div class="page active" id="page-dashboard">
+  <div class="page" id="page-dashboard">
     <div id="gs-banner-wrap"></div>
 
     <!-- IDs ocultos para compatibilidad con JS base general (no se muestran) -->
@@ -606,7 +599,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   </div>
 
   <!-- ======== PROVEEDORES (vista tarjetas) ======== -->
-  <div class="page" id="page-proveedores">
+  <div class="page active" id="page-proveedores">
     <!-- KPIs resumen -->
     <div class="kpi-grid cols-4" id="pv-kpis" style="margin-bottom:18px">
       <div class="kpi-card blue"><div class="kpi-label">Proveedores Activos</div><div class="kpi-value" id="pvk-total">0</div><div class="kpi-sub">en operación</div></div>
@@ -1753,7 +1746,7 @@ async function conectarGS(){
 // ═══════════════════════════════════════════════
 // NAVEGACIÓN
 // ═══════════════════════════════════════════════
-let currentPage = 'dashboard';
+let currentPage = 'proveedores';
 const pageTitles = {
   dashboard:'Dashboard','reg-conductor':'Registro — Conductor',
   'reg-unidad':'Registro — Unidad','reg-proveedor':'Registro — Proveedor',
