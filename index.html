@@ -3878,11 +3878,13 @@ function renderReporteProveedores(){
   const fCat =(document.getElementById('rep-prov-cat')||{value:''}).value;
   const fDoc =(document.getElementById('rep-prov-doc')||{value:''}).value;
 
-  // Encabezado: # + Proveedor + Categoría + Sede + 15 docs + Cumpl
+  // Encabezado: # + Proveedor + Categoría + Sede + 15 docs (nombre vertical) + Cumpl
   const thead=document.getElementById('rep-prov-thead');
-  thead.innerHTML='<tr><th>#</th><th style="min-width:200px">Proveedor</th><th>Categoría</th><th>Sede</th>'+
-    DOCS_PROV.map((d,i)=>`<th class="tc" title="${d}" style="font-size:8px;font-weight:600">${i+1}</th>`).join('')+
-    '<th>Cumpl.</th></tr>';
+  thead.innerHTML='<tr style="background:#1e293b">'+
+    '<th style="color:#fff">#</th><th style="min-width:200px;color:#fff;text-align:left">Proveedor</th>'+
+    '<th style="color:#fff">Categoría</th><th style="color:#fff">Sede</th>'+
+    DOCS_PROV.map((d,i)=>`<th title="${d}" style="height:130px;padding:0;background:#1e293b"><div style="writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-size:10px;font-weight:600;color:#e2e8f0;padding:8px 2px;margin:0 auto">${i+1}. ${d}</div></th>`).join('')+
+    '<th style="color:#fff">Cumpl.</th></tr>';
 
   // Filas
   let rows=[];
@@ -3909,20 +3911,26 @@ function renderReporteProveedores(){
   if(!rows.length){ tbody.innerHTML=`<tr><td colspan="${4+DOCS_PROV.length+1}" class="empty-state">Sin proveedores para los filtros</td></tr>`; return; }
 
   tbody.innerHTML=rows.map((r,n)=>{
-    const col=r.pct>=80?'var(--green)':r.pct>=50?'var(--warn)':'var(--danger)';
+    const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
     const nomEsc=(r.p.nombre||'').replace(/'/g,"\\'");
     const cells=DOCS_PROV.map((d,i)=>{
-      if(!r.aplica.has(i)) return '<td class="tc" style="color:#d1d5db;font-size:10px">–</td>';
+      if(!r.aplica.has(i)) return '<td class="tc" style="background:#f8fafc;color:#cbd5e1;font-size:11px">–</td>';
       const tiene=r.pd.docs[i];
-      return `<td class="tc" style="cursor:pointer;font-size:14px;font-weight:700;color:${tiene?'var(--green)':'var(--text3)'}" onclick="toggleRepProvDoc('${nomEsc}',${i})" title="${d}">${tiene?'✓':'✗'}</td>`;
+      return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleRepProvDoc('${nomEsc}',${i})" title="${d}: ${tiene?'TIENE':'FALTA'}">
+        <div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${tiene?'#dcfce7':'#fee2e2'};color:${tiene?'#16a34a':'#dc2626'}">${tiene?'✓':'✗'}</div></td>`;
     }).join('');
-    return `<tr>
-      <td class="mono" style="color:var(--text3)">${n+1}</td>
-      <td style="font-weight:600;font-size:12px">${r.p.nombre}</td>
-      <td style="font-size:10px">${r.cat?`<span style="background:#f0fdf4;color:#15803d;padding:2px 7px;border-radius:10px;font-weight:600">${r.cat}</span>`:'<span style="color:#d1d5db">—</span>'}</td>
-      <td class="mono" style="font-size:10px;color:var(--text2)">${r.sedes||'—'}</td>
+    return `<tr style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+      <td class="mono" style="color:#94a3b8">${n+1}</td>
+      <td style="font-weight:700;font-size:12.5px;color:#0f172a;text-align:left">${r.p.nombre}</td>
+      <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:3px 9px;border-radius:12px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'<span style="color:#cbd5e1">—</span>'}</td>
+      <td class="mono" style="font-size:10px;color:#475569">${r.sedes||'—'}</td>
       ${cells}
-      <td style="font-weight:700;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</td>
+      <td style="padding:4px 6px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-weight:800;color:${col};font-family:var(--mono);font-size:12px">${r.ok}/${r.tot}</span>
+          <div style="width:46px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 }
