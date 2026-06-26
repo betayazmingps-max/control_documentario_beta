@@ -3759,6 +3759,7 @@ function poblarFiltroTipoServicio(){
 // Al cargar Excel → activar modo día automáticamente
 function postCargarReporte(){
   recalcular();
+  propagarCategoriasDelReporte(); // guarda la categoría del reporte en Proveedores/Unidades
   COND_MODO_DIA = true;
   UNID_MODO_DIA = true;
   ST.conductores.page=1;
@@ -3771,6 +3772,40 @@ function postCargarReporte(){
   renderAlertas();
   audPoblarFiltros();        // filtros Auditorías
   poblarFiltroTipoServicio(); // filtro Tipo de Servicio en Conductores y Unidades
+}
+
+// Si el reporte trae categoría, la guarda en PROVEEDORES y UNIDADES (sin pisar lo que ya existe distinto)
+async function propagarCategoriasDelReporte(){
+  if(!GS_URL || !REP_ROWS.length) return;
+  // 1) Categoría por proveedor (la primera no vacía que aparezca en el reporte)
+  const catProv={};
+  REP_ROWS.forEach(r=>{
+    const nom=(r.proveedor||'').trim().toUpperCase();
+    const cat=clasifServicio(r.tipoServicio||'');
+    if(nom && cat && !catProv[nom]) catProv[nom]=cat;
+  });
+  let nProv=0, nUnid=0;
+  for(const p of PROVEEDORES){
+    const nom=(p.nombre||'').trim().toUpperCase();
+    const nueva=catProv[nom];
+    if(nueva && clasifServicio(p.tipoServicio||'')!==nueva){
+      p.tipoServicio=nueva;
+      guardarProvEnSheets(p.nombre);   // escribe la columna Categoria en el Sheet
+      nProv++;
+    }
+  }
+  // 2) Categoría por unidad (placa) → solo en memoria (la unidad hereda del proveedor)
+  const catUnid={};
+  REP_ROWS.forEach(r=>{
+    const pl=normPlaca(r.placa);
+    const cat=clasifServicio(r.tipoServicio||'');
+    if(pl && cat && !catUnid[pl]) catUnid[pl]=cat;
+  });
+  for(const u of UNIDADES){
+    const nueva=catUnid[normPlaca(u.placa)];
+    if(nueva && clasifServicio(u.tipoServicio||'')!==nueva){ u.tipoServicio=nueva; nUnid++; }
+  }
+  if(nProv) showToast(`✓ Categoría guardada en ${nProv} proveedor(es)`,'ok');
 }
 
 // Al limpiar reporte → volver a vacío + borrar cache
