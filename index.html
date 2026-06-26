@@ -477,24 +477,29 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         </div>
       </div>
 
-      <!-- ── POR DOCUMENTO ── -->
-      <div style="font-size:13px;font-weight:700;color:#111;margin:22px 0 4px;display:flex;align-items:center;gap:8px">
-        <div style="width:4px;height:16px;background:#1e40af;border-radius:2px"></div>
-        🏢 Por documento — PROVEEDORES
+      <!-- ── POR DOCUMENTO (colapsables) ── -->
+      <div style="font-size:13px;font-weight:700;color:#111;margin:22px 0 12px;display:flex;align-items:center;gap:8px">
+        <div style="width:4px;height:16px;background:var(--accent);border-radius:2px"></div>
+        Detalle por documento — quién lo tiene pendiente
       </div>
-      <div id="kd-por-doc" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:10px"></div>
 
-      <div style="font-size:13px;font-weight:700;color:#111;margin:22px 0 4px;display:flex;align-items:center;gap:8px">
-        <div style="width:4px;height:16px;background:#0891b2;border-radius:2px"></div>
-        🚛 Por documento — UNIDADES
+      <div onclick="toggleDashDoc('kd-por-doc')" style="cursor:pointer;background:#fff;border:1px solid #ebebeb;border-left:4px solid #1e40af;border-radius:10px;padding:11px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:#0f172a">
+        <span>🏢 PROVEEDORES <span id="kd-cnt-doc-prov" style="font-weight:500;color:#94a3b8;font-size:11px"></span></span>
+        <span id="kd-arrow-kd-por-doc" style="color:#94a3b8">▼</span>
       </div>
-      <div id="kd-por-doc-unid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:10px"></div>
+      <div id="kd-por-doc" style="display:none;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:12px"></div>
 
-      <div style="font-size:13px;font-weight:700;color:#111;margin:22px 0 4px;display:flex;align-items:center;gap:8px">
-        <div style="width:4px;height:16px;background:#7c3aed;border-radius:2px"></div>
-        👤 Por documento — CONDUCTORES
+      <div onclick="toggleDashDoc('kd-por-doc-unid')" style="cursor:pointer;background:#fff;border:1px solid #ebebeb;border-left:4px solid #0891b2;border-radius:10px;padding:11px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:#0f172a">
+        <span>🚛 UNIDADES <span id="kd-cnt-doc-unid" style="font-weight:500;color:#94a3b8;font-size:11px"></span></span>
+        <span id="kd-arrow-kd-por-doc-unid" style="color:#94a3b8">▼</span>
       </div>
-      <div id="kd-por-doc-cond" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:10px"></div>
+      <div id="kd-por-doc-unid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:12px"></div>
+
+      <div onclick="toggleDashDoc('kd-por-doc-cond')" style="cursor:pointer;background:#fff;border:1px solid #ebebeb;border-left:4px solid #7c3aed;border-radius:10px;padding:11px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:#0f172a">
+        <span>👤 CONDUCTORES <span id="kd-cnt-doc-cond" style="font-weight:500;color:#94a3b8;font-size:11px"></span></span>
+        <span id="kd-arrow-kd-por-doc-cond" style="color:#94a3b8">▼</span>
+      </div>
+      <div id="kd-por-doc-cond" style="display:none;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:12px"></div>
     </div>
 
     <!-- IDs ocultos legacy -->
@@ -2071,6 +2076,22 @@ function renderDashboard(){
       return cardPorDoc(d.l,di,faltan,condObjs.length||1);
     }).join('');
   }
+
+  // Contadores en los encabezados colapsables (total de docs con algún faltante)
+  const nProvDocFalta = DOCS_PROV.filter((d,di)=>provObjs.some(p=>docsAplicables(p).includes(di)&&!getPD(p.nombre).docs[di])).length;
+  const nUnidDocFalta = DOCS_UNID.filter(d=>unidObjs.some(u=>docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u)).some(x=>x.campo===d.campo)&&u[d.campo]!=='✓')).length;
+  const nCondDocFalta = docsCondGlobal.filter(d=>condObjs.some(c=>c[d.c]!=='✓')).length;
+  const setTxt=(id,t)=>{const e=s(id);if(e)e.textContent=t;};
+  setTxt('kd-cnt-doc-prov', `· ${nProvDocFalta} con pendientes`);
+  setTxt('kd-cnt-doc-unid', `· ${nUnidDocFalta} con pendientes`);
+  setTxt('kd-cnt-doc-cond', `· ${nCondDocFalta} con pendientes`);
+}
+// Expandir/colapsar bloque "por documento" del dashboard
+function toggleDashDoc(id){
+  const el=document.getElementById(id); if(!el) return;
+  const open = el.style.display!=='none' && el.style.display!=='';
+  el.style.display = open ? 'none' : 'grid';
+  const ar=document.getElementById('kd-arrow-'+id); if(ar) ar.textContent = open ? '▼' : '▲';
 }
 
 // ═══════════════════════════════════════════════
@@ -2516,6 +2537,17 @@ function getPD(n){
   return PD[n];
 }
 function savePD(){localStorage.setItem(PD_KEY,JSON.stringify(PD));}
+// El Sheet es la fuente de verdad: sobrescribe el localStorage con los docs del Sheet
+// (así lo que marca un usuario lo ven todos los demás al sincronizar)
+function sincPDdesdeSheet(){
+  PROVEEDORES.forEach(p=>{
+    if(!p.nombre) return;
+    const docs = p.docs ? p.docs.map(v=>v==='✓') : new Array(N_DOCS_PROV).fill(false);
+    while(docs.length<N_DOCS_PROV) docs.push(false);
+    PD[p.nombre] = { docs, resp: (PD[p.nombre]&&PD[p.nombre].resp) || p.responsable || '' };
+  });
+  savePD();
+}
 
 // Columnas exactas del Sheet de PROVEEDORES (mismo orden que en Sheets)
 // Columnas exactas del Sheet PROVEEDORES (nueva estructura, 15 docs)
@@ -4749,7 +4781,7 @@ if(GS_URL){
   if(lsEl) lsEl.style.display='';
   mostrarCargando(true);
   syncFromSheets()
-    .then(()=>{ recalcular(); render(); restaurarRepActivo(); })
+    .then(()=>{ sincPDdesdeSheet(); recalcular(); render(); restaurarRepActivo(); })
     .catch(e=>{ console.error(e); renderDashboard(); })
     .finally(()=>mostrarCargando(false));
 } else {
