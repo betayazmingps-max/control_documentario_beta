@@ -476,6 +476,13 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="alert-card-body" id="kd-cond-falta"><div class="empty-state">—</div></div>
         </div>
       </div>
+
+      <!-- ── POR DOCUMENTO: A QUÉ PROVEEDORES LES FALTA ── -->
+      <div style="font-size:13px;font-weight:700;color:#111;margin:22px 0 12px;display:flex;align-items:center;gap:8px">
+        <div style="width:4px;height:16px;background:var(--accent);border-radius:2px"></div>
+        Por documento — a qué proveedores les falta
+      </div>
+      <div id="kd-por-doc" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
     </div>
 
     <!-- IDs ocultos legacy -->
@@ -1992,6 +1999,32 @@ function renderDashboard(){
   s('kd-cond-falta').innerHTML = condFalta.length
     ? condFalta.slice(0,15).map(x=>`<div class="alert-item"><div class="alert-name">${x.c.conductor||'—'}</div><div class="alert-meta"><span style="color:var(--text3)">${(x.c.proveedor||'').slice(0,22)}</span><span class="d-warn">Falta: ${x.falta.map(d=>d.l).slice(0,3).join(', ')}</span></div></div>`).join('')
     : '<div class="empty-state">Todos completos ✓</div>';
+
+  // ── POR DOCUMENTO: a qué proveedores les falta cada uno ──
+  const provObjs = provsHoy.map(nUp=>PROVEEDORES.find(x=>(x.nombre||'').trim().toUpperCase()===nUp)).filter(Boolean);
+  const porDoc = s('kd-por-doc');
+  if(porDoc){
+    porDoc.innerHTML = DOCS_PROV.map((docNombre,di)=>{
+      // proveedores donde el doc APLICA (según categoría) y NO lo tienen
+      const faltan = provObjs.filter(p=>{
+        const aplica = docsAplicables(p);
+        if(!aplica.includes(di)) return false;
+        return !getPD(p.nombre).docs[di];
+      });
+      const tieneCount = provObjs.filter(p=>docsAplicables(p).includes(di) && getPD(p.nombre).docs[di]).length;
+      const total = tieneCount + faltan.length;
+      const colHd = faltan.length===0 ? '#16a34a' : faltan.length>=total/2 ? '#dc2626' : '#d97706';
+      return `<div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:14px 16px;border-left:4px solid ${colHd}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:12.5px;font-weight:700;color:#0f172a">${di+1}. ${docNombre}</span>
+          <span style="font-size:11px;font-weight:800;color:${colHd};font-family:var(--mono)">${faltan.length} falta${faltan.length===1?'':'n'}</span>
+        </div>
+        ${faltan.length
+          ? `<div style="display:flex;flex-direction:column;gap:3px">${faltan.slice(0,12).map(p=>`<div style="font-size:11px;color:#475569;display:flex;align-items:center;gap:5px"><span style="color:#dc2626">✗</span> ${p.nombre}</div>`).join('')}${faltan.length>12?`<div style="font-size:10px;color:#94a3b8;margin-top:2px">+${faltan.length-12} más</div>`:''}</div>`
+          : '<div style="font-size:11px;color:#16a34a">✓ Todos lo tienen</div>'}
+      </div>`;
+    }).join('');
+  }
 }
 
 // ═══════════════════════════════════════════════
