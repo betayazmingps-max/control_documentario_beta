@@ -2621,6 +2621,45 @@ function renderProveedores(){
 
 // MODAL DETALLE
 let PV_DETALLE_I = null; // índice del proveedor abierto en el modal (para refrescar)
+let PV_VER_BASE_UNID = false, PV_VER_BASE_COND = false; // mostrar también los de base (no solo activos hoy)
+function toggleVerBaseUnid(){ PV_VER_BASE_UNID=!PV_VER_BASE_UNID; abrirDetalleProv(PV_DETALLE_I); }
+function toggleVerBaseCond(){ PV_VER_BASE_COND=!PV_VER_BASE_COND; abrirDetalleProv(PV_DETALLE_I); }
+
+// HTML de una tarjeta de UNIDAD
+function tarjetaUnidadHTML(u, i, enRuta){
+  const pl=(u.placa||'').replace(/'/g,"\\'");
+  const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocUnidModal('${pl}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
+  const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditPlacaModal('${pl}','${diasC}','${fechaC}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
+  return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:12px">${u.placa||'—'}${enRuta?' <span style="font-family:inherit;font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''}</span>
+      <button onclick="event.stopPropagation();editarUnidad('${pl}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">
+      ${estPill(u.estadoSoat,'SOAT','diasSoat','fechaSoat',u.diasSoat)}${estPill(u.estadoRtv,'RTV','diasRtv','fechaRtv',u.diasRtv)}${estPill(u.estadoTc,'TUC','diasTc','fechaTc',u.diasTc)}
+      ${docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u)).map(d=>pill(u[d.campo],d.lbl,d.campo)).join('')}
+    </div>
+    ${u.carpeta?`<a href="${u.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
+  </div>`;
+}
+// HTML de una tarjeta de CONDUCTOR
+function tarjetaConductorHTML(c, i, enRuta){
+  const dn=(c.dni||'').replace(/'/g,"\\'");
+  const nm=(c.conductor||'').replace(/'/g,"\\'");
+  const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocCondModal('${dn}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
+  const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditDniModal('${dn}','${diasC}','${fechaC}','${nm}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
+  return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-weight:600;color:#111;font-size:12px">${c.conductor||'—'}${enRuta?' <span style="font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''} <span style="font-size:10px;color:#9ca3af;font-family:var(--mono)">· DNI ${c.dni||'—'}</span></span>
+      <button onclick="event.stopPropagation();editarConductor('${dn}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">
+      ${estPill(c.estadoLic,'Lic','diasLic','fechaLic',c.diasLic)}${estPill(c.estadoSctr,'SCTR','diasSctr','fechaSctr',c.diasSctr)}
+      ${pill(c.docDni,'DNI','docDni')}${pill(c.docLic,'Lic','docLic')}${pill(c.docRecord,'Récord','docRecord')}${pill(c.docSctr,'SCTR','docSctr')}${pill(c.docEmo,'EMO','docEmo')}${pill(c.docCul,'CUL','docCul')}
+    </div>
+    ${c.carpeta?`<a href="${c.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
+  </div>`;
+}
 function abrirDetalleProv(i){
   const nombre = PV_MAP[i]; if(!nombre) return;
   PV_DETALLE_I = i;
@@ -2630,8 +2669,13 @@ function abrirDetalleProv(i){
   const aplicaSet = new Set(docsAplicables(p));
   const col = pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
   const nUp=(nombre||'').trim().toUpperCase();
-  const conds = CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp);
-  const unids = UNIDADES.filter(u=>(u.proveedor||'').trim().toUpperCase()===nUp);
+  // Dedup por placa/DNI normalizado (evita duplicados por mayúsculas/espacios)
+  const _uMap=new Map();
+  UNIDADES.filter(u=>(u.proveedor||'').trim().toUpperCase()===nUp).forEach(u=>{const k=normPlaca(u.placa);if(k&&!_uMap.has(k))_uMap.set(k,u);});
+  const unids=[..._uMap.values()];
+  const _cMap=new Map();
+  CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp).forEach(c=>{const k=String(c.dni||'').trim()||(c.conductor||'').trim().toUpperCase();if(k&&!_cMap.has(k))_cMap.set(k,c);});
+  const conds=[..._cMap.values()];
 
   // Placas y conductores NUEVOS del reporte (no registrados en BD) para este proveedor
   let unidsNuevas=[], condsNuevos=[];
@@ -2698,58 +2742,49 @@ function abrirDetalleProv(i){
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:10px">📋 Checklist Documentario (clic para marcar)</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">${docsHtml}</div>
 
-    <!-- UNIDADES con su documentación -->
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades (${unids.length})</div>
-    <div style="margin-bottom:16px">
-      ${unids.length?unids.map(u=>{
-        const enRuta = placasHoy.has(normPlaca(u.placa));
-        const pl=(u.placa||'').replace(/'/g,"\\'");
-        const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocUnidModal('${pl}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
-        const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditPlacaModal('${pl}','${diasC}','${fechaC}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
-        return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:12px">${u.placa||'—'}${enRuta?' <span style="font-family:inherit;font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''}</span>
-            <button onclick="event.stopPropagation();editarUnidad('${pl}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px">
-            ${estPill(u.estadoSoat,'SOAT','diasSoat','fechaSoat',u.diasSoat)}${estPill(u.estadoRtv,'RTV','diasRtv','fechaRtv',u.diasRtv)}${estPill(u.estadoTc,'TUC','diasTc','fechaTc',u.diasTc)}
-            ${docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u)).map(d=>pill(u[d.campo],d.lbl,d.campo)).join('')}
-          </div>
-          ${u.carpeta?`<a href="${u.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
-        </div>`;
-      }).join(''):'<div style="font-size:11px;color:#9ca3af">Sin unidades registradas</div>'}
-      ${unidsNuevas.map(pl=>{const e=(pl||'').replace(/"/g,'&quot;');return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+    <!-- UNIDADES: solo activas hoy + botón para ver base -->
+    ${(()=>{
+      const uHoy = unids.filter(u=>placasHoy.has(normPlaca(u.placa)));
+      const uBase = unids.filter(u=>!placasHoy.has(normPlaca(u.placa)));
+      const hayRep = placasHoy.size>0;
+      const listaPrincipal = hayRep ? uHoy : unids;       // si no hay reporte, muestra todas
+      const ocultas = hayRep ? uBase : [];
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades ${hayRep?`activas hoy (${uHoy.length})`:`(${unids.length})`}</div><div style="margin-bottom:8px">`;
+      html += listaPrincipal.length ? listaPrincipal.map(u=>tarjetaUnidadHTML(u,i,placasHoy.has(normPlaca(u.placa)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin unidades activas hoy</div>';
+      html += unidsNuevas.map(pl=>{const e=(pl||'').replace(/"/g,'&quot;');return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-family:var(--mono);font-weight:700;color:#92400e;font-size:12px">${pl} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVA</span></span>
         <button onclick="abrirRegUnid2('${e}')" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
-      </div>`;}).join('')}
-    </div>
+      </div>`;}).join('');
+      // Botón ver más / ocultar
+      if(ocultas.length){
+        html += `<button onclick="event.stopPropagation();toggleVerBaseUnid()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_UNID?'▲ Ocultar':'▼ Ver '+ocultas.length+' unidad(es) más en base'}</button>`;
+        if(PV_VER_BASE_UNID) html += '<div style="margin-top:8px">'+ocultas.map(u=>tarjetaUnidadHTML(u,i,false)).join('')+'</div>';
+      }
+      html+='</div>';
+      return html;
+    })()}
 
     <!-- CONDUCTORES con su documentación -->
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores (${conds.length})</div>
-    <div>
-      ${conds.length?conds.map(c=>{
-        const enRuta = dnisHoy.has(String(c.dni||'').trim()) || condsNomHoy.has((c.conductor||'').trim().toUpperCase());
-        const dn=(c.dni||'').replace(/'/g,"\\'");
-        const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocCondModal('${dn}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
-        const nm=(c.conductor||'').replace(/'/g,"\\'");
-        const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditDniModal('${dn}','${diasC}','${fechaC}','${nm}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
-        return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-weight:600;color:#111;font-size:12px">${c.conductor||'—'}${enRuta?' <span style="font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''} <span style="font-size:10px;color:#9ca3af;font-family:var(--mono)">· DNI ${c.dni||'—'}</span></span>
-            <button onclick="event.stopPropagation();editarConductor('${dn}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px">
-            ${estPill(c.estadoLic,'Lic','diasLic','fechaLic',c.diasLic)}${estPill(c.estadoSctr,'SCTR','diasSctr','fechaSctr',c.diasSctr)}
-            ${pill(c.docDni,'DNI','docDni')}${pill(c.docLic,'Lic','docLic')}${pill(c.docRecord,'Récord','docRecord')}${pill(c.docSctr,'SCTR','docSctr')}${pill(c.docEmo,'EMO','docEmo')}${pill(c.docCul,'CUL','docCul')}
-          </div>
-          ${c.carpeta?`<a href="${c.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
-        </div>`;
-      }).join(''):'<div style="font-size:11px;color:#9ca3af">Sin conductores registrados</div>'}
-      ${condsNuevos.map(c=>{const nm=(c.nombre||'').replace(/'/g,"\\'"),dn=(c.dni||'').replace(/'/g,"\\'"),pl=(c.placa||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+    ${(()=>{
+      const cActivo=c=>dnisHoy.has(String(c.dni||'').trim())||condsNomHoy.has((c.conductor||'').trim().toUpperCase());
+      const cHoy = conds.filter(cActivo);
+      const cBase = conds.filter(c=>!cActivo(c));
+      const hayRep = (dnisHoy.size>0||condsNomHoy.size>0);
+      const listaPrincipal = hayRep ? cHoy : conds;
+      const ocultas = hayRep ? cBase : [];
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores ${hayRep?`activos hoy (${cHoy.length})`:`(${conds.length})`}</div><div>`;
+      html += listaPrincipal.length ? listaPrincipal.map(c=>tarjetaConductorHTML(c,i,cActivo(c))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin conductores activos hoy</div>';
+      html += condsNuevos.map(c=>{const nm=(c.nombre||'').replace(/'/g,"\\'"),dn=(c.dni||'').replace(/'/g,"\\'"),pl=(c.placa||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-weight:600;color:#92400e;font-size:12px">${c.nombre||'—'} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVO</span><br><span style="font-size:10px;color:#b45309;font-family:var(--mono)">DNI ${c.dni||'—'}</span></span>
         <button onclick="irRegistrarConductor('${nm}','${dn}','${(nombre||'').replace(/'/g,"\\'")}','${pl}')" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
-      </div>`;}).join('')}
-    </div>`;
+      </div>`;}).join('');
+      if(ocultas.length){
+        html += `<button onclick="event.stopPropagation();toggleVerBaseCond()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_COND?'▲ Ocultar':'▼ Ver '+ocultas.length+' conductor(es) más en base'}</button>`;
+        if(PV_VER_BASE_COND) html += '<div style="margin-top:8px">'+ocultas.map(c=>tarjetaConductorHTML(c,i,false)).join('')+'</div>';
+      }
+      html+='</div>';
+      return html;
+    })()}`;
   document.getElementById('pv-detalle-modal').classList.add('open');
 }
 function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); PV_DETALLE_I=null; }
