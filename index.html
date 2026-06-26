@@ -2628,11 +2628,16 @@ function abrirDetalleProv(i){
 
   // Placas y conductores NUEVOS del reporte (no registrados en BD) para este proveedor
   let unidsNuevas=[], condsNuevos=[];
+  // Sets de lo que está OPERANDO HOY según el reporte (para marcar en verde)
+  const placasHoy=new Set(), dnisHoy=new Set(), condsNomHoy=new Set();
   if(typeof REP_ROWS!=='undefined' && REP_ROWS.length){
     const placasBD=new Set(unids.map(u=>normPlaca(u.placa)));
     const dnisBD=new Set(conds.map(c=>String(c.dni||'').trim()));
     const vP=new Set(), vC=new Set();
     REP_ROWS.forEach(r=>{
+      if(r.placa) placasHoy.add(normPlaca(r.placa));
+      if(r.dni) dnisHoy.add(String(r.dni||'').trim());
+      if(r.conductor) condsNomHoy.add((r.conductor||'').trim().toUpperCase());
       if((r.proveedor||'').trim().toUpperCase()!==nUp) return;
       const pl=normPlaca(r.placa);
       if(r.placa && !placasBD.has(pl) && !vP.has(pl)){ vP.add(pl); unidsNuevas.push(r.placa); }
@@ -2690,12 +2695,13 @@ function abrirDetalleProv(i){
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades (${unids.length})</div>
     <div style="margin-bottom:16px">
       ${unids.length?unids.map(u=>{
+        const enRuta = placasHoy.has(normPlaca(u.placa));
         const pl=(u.placa||'').replace(/'/g,"\\'");
         const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocUnidModal('${pl}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
         const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditPlacaModal('${pl}','${diasC}','${fechaC}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
-        return `<div style="border:1px solid #ebebeb;border-radius:8px;padding:9px 11px;margin-bottom:6px">
+        return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:12px">${u.placa||'—'}</span>
+            <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:12px">${u.placa||'—'}${enRuta?' <span style="font-family:inherit;font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''}</span>
             <button onclick="event.stopPropagation();editarUnidad('${pl}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:4px">
@@ -2715,13 +2721,14 @@ function abrirDetalleProv(i){
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores (${conds.length})</div>
     <div>
       ${conds.length?conds.map(c=>{
+        const enRuta = dnisHoy.has(String(c.dni||'').trim()) || condsNomHoy.has((c.conductor||'').trim().toUpperCase());
         const dn=(c.dni||'').replace(/'/g,"\\'");
         const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocCondModal('${dn}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
         const nm=(c.conductor||'').replace(/'/g,"\\'");
         const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditDniModal('${dn}','${diasC}','${fechaC}','${nm}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
-        return `<div style="border:1px solid #ebebeb;border-radius:8px;padding:9px 11px;margin-bottom:6px">
+        return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-weight:600;color:#111;font-size:12px">${c.conductor||'—'} <span style="font-size:10px;color:#9ca3af;font-family:var(--mono)">· DNI ${c.dni||'—'}</span></span>
+            <span style="font-weight:600;color:#111;font-size:12px">${c.conductor||'—'}${enRuta?' <span style="font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''} <span style="font-size:10px;color:#9ca3af;font-family:var(--mono)">· DNI ${c.dni||'—'}</span></span>
             <button onclick="event.stopPropagation();editarConductor('${dn}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:4px">
