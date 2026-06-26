@@ -515,7 +515,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <th>Placa</th><th>Centro</th><th>Cat. Lic</th>
             <th>Est. Lic</th><th>Días Lic ✏️</th>
             <th>Est. SCTR</th><th>Días SCTR ✏️</th>
-            <th>DNI</th><th>Lic</th><th>Récord</th><th>SCTR</th><th>EMO ✏️</th>
+            <th>DNI</th><th>Lic</th><th>Récord</th><th>SCTR</th><th>EMO ✏️</th><th>CUL</th>
             <th>Cumpl.</th><th>📁 Carpeta</th>
           </tr></thead>
           <tbody id="cond-tbody"><tr><td colspan="19" class="empty-state">Cargando...</td></tr></tbody>
@@ -1024,6 +1024,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <label class="check-item"><input type="checkbox" id="ch-record"><label for="ch-record">Récord de Conducir</label></label>
           <label class="check-item"><input type="checkbox" id="ch-sctr"><label for="ch-sctr">SCTR</label></label>
           <label class="check-item"><input type="checkbox" id="ch-emo"><label for="ch-emo">EMO</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-cul"><label for="ch-cul">Certificado Único Laboral</label></label>
         </div>
         <div class="form-group" style="max-width:120px;"><label class="form-label">% Cumpl. <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-cumpl" readonly></div>
       </div>
@@ -1425,7 +1426,7 @@ function provServicioDeUnidad(u){
 }
 
 // Orden EXACTO de columnas del Sheet CONDUCTORES (33-34 columnas)
-const COLORDER_COND = ['dni','conductor','estado','proveedor','placa','tipoUnidad','centro','ruta','turno','numLic','catLic','fechaLic','diasLic','estadoLic','restriccion','celular','record','cantPapeletas','puntosFirmes','puntosProceso','puntosTotal','alertaPuntos','asegSctr','tipoSctr','fechaSctr','diasSctr','estadoSctr','docDni','docLic','docRecord','docSctr','docEmo','cumpl','carpeta'];
+const COLORDER_COND = ['dni','conductor','estado','proveedor','placa','tipoUnidad','centro','ruta','turno','numLic','catLic','fechaLic','diasLic','estadoLic','restriccion','celular','record','cantPapeletas','puntosFirmes','puntosProceso','puntosTotal','alertaPuntos','asegSctr','tipoSctr','fechaSctr','diasSctr','estadoSctr','docDni','docLic','docRecord','docSctr','docEmo','docCul','cumpl','carpeta'];
 
 // Convierte un registro interno → array ordenado según las columnas del Sheet
 function recordToRow(rec, order){ return order.map(k => String(rec[k] ?? '')); }
@@ -1526,7 +1527,8 @@ async function syncFromSheets(){
         docLic:        boolDoc(o['licencia de conducir']),
         docRecord:     boolDoc(o['record de conductor']),
         docSctr:       boolDoc(o['sctr']),
-        docEmo:        boolDoc(o['emo -  examen médico ocupacional']),
+        docEmo:        boolDoc(o['emo -  examen médico ocupacional']||o['emo - examen médico ocupacional']||o['emo']),
+        docCul:        boolDoc(o['certificado unico laboral']||o['certificado único laboral']||o['cul']),
         cumpl:         o.cumplimiento||'—',
         carpeta:       o['carpeta conductor']||o.carpeta||'',
       }));
@@ -1934,7 +1936,7 @@ function renderDashboard(){
 
   // ── Desglose por documento: CONDUCTORES del reporte ──
   const condObjs=condsHoy.map(r=>r.condBD).filter(Boolean);
-  const docsCondGlobal=[{c:'docDni',l:'DNI'},{c:'docLic',l:'Licencia'},{c:'docRecord',l:'Récord'},{c:'docSctr',l:'SCTR'},{c:'docEmo',l:'EMO'}];
+  const docsCondGlobal=[{c:'docDni',l:'DNI'},{c:'docLic',l:'Licencia'},{c:'docRecord',l:'Récord'},{c:'docSctr',l:'SCTR'},{c:'docEmo',l:'EMO'},{c:'docCul',l:'Cert. Único Laboral'}];
   s('kd-docs-cond').innerHTML = condObjs.length
     ? docsCondGlobal.map(d=>bar(d.l, condObjs.filter(c=>c[d.c]==='✓').length, condObjs.length)).join('')
     : '<div class="empty-state" style="font-size:11px">Sin conductores registrados en el reporte</div>';
@@ -1972,8 +1974,8 @@ async function toggleDocCond(dni, campo){
   const nuevoValor = (CONDUCTORES[idx][campo]==='✓') ? '✗' : '✓';
   CONDUCTORES[idx][campo] = nuevoValor;
   const c = CONDUCTORES[idx];
-  const docs = [c.docDni,c.docLic,c.docRecord,c.docSctr,c.docEmo].filter(v=>v==='✓').length;
-  CONDUCTORES[idx].cumpl = `${docs}/5 (${Math.round(docs/5*100)}%)`;
+  const docs = [c.docDni,c.docLic,c.docRecord,c.docSctr,c.docEmo,c.docCul].filter(v=>v==='✓').length;
+  CONDUCTORES[idx].cumpl = `${docs}/6 (${Math.round(docs/6*100)}%)`;
   // Sincronizar con REP_ROWS si hay reporte cargado
   if(REP_ROWS.length > 0){
     REP_ROWS.forEach(r=>{
@@ -2057,6 +2059,7 @@ function renderCondRow(r, num){
     ${chk(r.docRecord,'docRecord')}
     ${chk(r.docSctr,'docSctr')}
     ${chk(r.docEmo,'docEmo')}
+    ${chk(r.docCul,'docCul')}
     <td>${barCumpl(r.cumpl||'—')}</td>
     <td style="text-align:center">${r.carpeta ? `<a href="${r.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(59,130,246,0.12);color:#2563eb;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">📁 Abrir</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
   </tr>`;
@@ -2134,7 +2137,7 @@ function renderConductores(){
         rows.push({
           dni:r.dni||'',conductor:r.conductor||'',proveedor:r.proveedor||'',
           placa:r.placa||'',estado:'—',catLic:'—',estadoLic:'—',diasLic:'',
-          estadoSctr:'—',diasSctr:'',docDni:'✗',docLic:'✗',docRecord:'✗',docSctr:'✗',docEmo:'✗',
+          estadoSctr:'—',diasSctr:'',docDni:'✗',docLic:'✗',docRecord:'✗',docSctr:'✗',docEmo:'✗',docCul:'✗',
           cumpl:'0/5 (0%)', _enBD:false
         });
       }
@@ -2737,7 +2740,7 @@ function abrirDetalleProv(i){
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:4px">
             ${estPill(c.estadoLic,'Lic','diasLic','fechaLic',c.diasLic)}${estPill(c.estadoSctr,'SCTR','diasSctr','fechaSctr',c.diasSctr)}
-            ${pill(c.docDni,'DNI','docDni')}${pill(c.docLic,'Lic','docLic')}${pill(c.docRecord,'Récord','docRecord')}${pill(c.docSctr,'SCTR','docSctr')}${pill(c.docEmo,'EMO','docEmo')}
+            ${pill(c.docDni,'DNI','docDni')}${pill(c.docLic,'Lic','docLic')}${pill(c.docRecord,'Récord','docRecord')}${pill(c.docSctr,'SCTR','docSctr')}${pill(c.docEmo,'EMO','docEmo')}${pill(c.docCul,'CUL','docCul')}
           </div>
           ${c.carpeta?`<a href="${c.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
         </div>`;
@@ -3341,7 +3344,7 @@ function calcAntig(){
   document.getElementById('u-antig').value=a>0?String(new Date().getFullYear()-a)+' años':'';
 }
 function actualizarCumplCond(){
-  const chs=['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo'];
+  const chs=['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo','ch-cul'];
   const ok=chs.filter(id=>document.getElementById(id)?.checked).length;
   document.getElementById('c-cumpl').value=`${ok}/${chs.length} (${Math.round(ok/chs.length*100)}%)`;
 }
@@ -3363,7 +3366,7 @@ function actualizarCumplUnid(){
   const tot=aplican.length;
   const cv=document.getElementById('u-cumpl'); if(cv) cv.value=`${ok}/${tot} (${tot?Math.round(ok/tot*100):0}%)`;
 }
-['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo'].forEach(id=>document.getElementById(id)?.addEventListener('change',actualizarCumplCond));
+['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo','ch-cul'].forEach(id=>document.getElementById(id)?.addEventListener('change',actualizarCumplCond));
 Object.keys(UCH_MAP).forEach(id=>document.getElementById(id)?.addEventListener('change',actualizarCumplUnid));
 
 // ── AUTO-ACTIVO + AUTO-CHECKLIST al cambiar fechas ──
@@ -3504,7 +3507,7 @@ function editarConductor(dni){
     document.getElementById('c-dni').value=c.dni||'';
     buscarConductor(c.dni);
     // checkboxes de documentos
-    const map={'ch-dni':'docDni','ch-lic':'docLic','ch-record':'docRecord','ch-sctr':'docSctr','ch-emo':'docEmo'};
+    const map={'ch-dni':'docDni','ch-lic':'docLic','ch-record':'docRecord','ch-sctr':'docSctr','ch-emo':'docEmo','ch-cul':'docCul'};
     for(const [id,campo] of Object.entries(map)){
       const el=document.getElementById(id); if(el) el.checked = c[campo]==='✓';
     }
@@ -3538,7 +3541,8 @@ async function guardarConductor(){
     docLic:document.getElementById('ch-lic').checked?'✓':'✗',
     docRecord:document.getElementById('ch-record').checked?'✓':'✗',
     docSctr:document.getElementById('ch-sctr').checked?'✓':'✗',
-    docEmo:document.getElementById('ch-emo').checked?'✓':'✗'};
+    docEmo:document.getElementById('ch-emo').checked?'✓':'✗',
+    docCul:document.getElementById('ch-cul')?.checked?'✓':'✗'};
   recalcular();
   let idx=CONDUCTORES.findIndex(c=>c.dni===dni);
   if(idx>=0) CONDUCTORES[idx]={...CONDUCTORES[idx],...row};
@@ -3610,7 +3614,7 @@ async function guardarUnidad(){
 }
 function limpiarFormCond(){
   ['c-dni','c-nombre','c-proveedor','c-placa','c-fecha-lic','c-dias-lic','c-est-lic','c-fecha-sctr','c-dias-sctr','c-est-sctr','c-fecha-emo','c-dias-emo','c-est-emo','c-pap-cant','c-pap-firmes','c-pap-proceso','c-cumpl','c-msg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+  ['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo','ch-cul'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
 }
 function limpiarFormUnid(){
   ['u-placa','u-proveedor','u-anio','u-antig','u-marca','u-fecha-soat','u-dias-soat','u-est-soat','u-fecha-rtv','u-dias-rtv','u-est-rtv','u-obs-rtv','u-fecha-tc','u-dias-tc','u-est-tc','u-cumpl','u-msg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
