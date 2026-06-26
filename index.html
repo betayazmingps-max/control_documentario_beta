@@ -1719,6 +1719,7 @@ async function syncFromSheets(){
 
     const total = condRaw.length+unidRaw.length+provRaw.length;
     if(total>0){
+      sincPDdesdeSheet();   // el Sheet manda: refresca el checklist de proveedores en TODOS los flujos
       recalcular();
       updateGSStatus(true);
 
