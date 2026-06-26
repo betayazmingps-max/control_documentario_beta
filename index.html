@@ -586,7 +586,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
         <input class="search-box" id="pv-srch" placeholder="🔍 Buscar proveedor..." oninput="renderProveedores()" style="width:180px">
         <select class="filter-sel" id="pv-tiposerv" onchange="renderProveedores()">
-          <option value="">Todos los servicios</option>
+          <option value="">Todas las categorías</option>
           <option value="MATERIA PRIMA">Materia Prima</option>
           <option value="CARGA SECA">Carga Seca</option>
           <option value="REFRIGERADO">Refrigerado</option>
@@ -628,6 +628,8 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   <div class="page" id="page-reg-proveedor">
     <div style="max-width:900px">
 
+      <button onclick="goPage('proveedores',document.querySelector('.nav-item[onclick*=proveedores]'))" style="background:#f3f4f6;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;margin-bottom:14px">← Volver a Proveedores</button>
+
       <div class="form-sec">
         <div class="form-sec-title">🏢 Datos del Proveedor</div>
         <!-- Fila 1: Nombre ocupa todo -->
@@ -648,7 +650,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         </div>
         <!-- Fila 3: 4 campos -->
         <div class="form-grid g4">
-          <div class="form-group"><label class="form-label">Tipo de Servicio <span class="req">*</span></label>
+          <div class="form-group"><label class="form-label">Categoría <span class="req">*</span></label>
             <select class="form-select" id="rp-tiposervicio" onchange="renderRPChecklist()">
               <option value="">— Seleccionar —</option>
               <option value="MATERIA PRIMA">MATERIA PRIMA</option>
@@ -675,9 +677,9 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <div class="form-sec-title">📋 Checklist Documentario
           <span style="margin-left:auto;font-size:11px;font-weight:400;color:var(--text3)" id="rp-cumpl-pct">0 / 0 — 0%</span>
         </div>
-        <!-- Checklist dinámico según Tipo de Servicio -->
+        <!-- Checklist dinámico según Categoría -->
         <div id="rp-checklist" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">
-          <div style="grid-column:1/-1;color:var(--text3);font-size:12px;padding:10px">⬆ Selecciona el Tipo de Servicio para ver el checklist</div>
+          <div style="grid-column:1/-1;color:var(--text3);font-size:12px;padding:10px">⬆ Selecciona la Categoría para ver el checklist</div>
         </div>
         <!-- Barra progreso compacta -->
         <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border-radius:6px;border:1px solid var(--border)">
@@ -957,6 +959,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   <!-- ======== REG CONDUCTOR ======== -->
   <div class="page" id="page-reg-conductor">
     <div style="max-width:1100px;">
+      <button onclick="goPage('proveedores',document.querySelector('.nav-item[onclick*=proveedores]'))" style="background:#f3f4f6;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;margin-bottom:14px">← Volver a Proveedores</button>
       <div class="form-sec">
         <div class="form-sec-title">👤 Datos del Conductor</div>
         <div class="form-grid g4">
@@ -1035,6 +1038,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   <!-- ======== REG UNIDAD ======== -->
   <div class="page" id="page-reg-unidad">
     <div style="max-width:1100px;">
+      <button onclick="goPage('proveedores',document.querySelector('.nav-item[onclick*=proveedores]'))" style="background:#f3f4f6;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;margin-bottom:14px">← Volver a Proveedores</button>
       <div class="form-sec">
         <div class="form-sec-title">🚛 Datos de la Unidad</div>
         <div class="form-grid g4">
@@ -1060,7 +1064,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Tiene Tarj. Prop.</label><select class="form-select" id="u-tiene-tarj"><option value="">—</option><option>SI</option><option>NO</option></select></div>
           <div class="form-group"><label class="form-label">Propietario</label><input class="form-input" type="text" id="u-propietario" placeholder="Nombre propietario"></div>
           <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" type="text" id="u-responsable" placeholder="Responsable"></div>
-          <div class="form-group"><label class="form-label">Tipo de Servicio</label>
+          <div class="form-group"><label class="form-label">Categoría</label>
             <select class="form-select" id="u-tiposervicio" onchange="actualizarCumplUnid()">
               <option value="">—</option><option value="MATERIA PRIMA">MATERIA PRIMA</option>
               <option value="CARGA SECA">CARGA SECA</option><option value="REFRIGERADO">REFRIGERADO</option>
@@ -1631,7 +1635,7 @@ async function syncFromSheets(){
           tipo:        o['tipo de razon social']||'',
           actividad:   o['actividad economica principal']||'',
           responsable: o.responsable||'',
-          tipoServicio: o['tipo de servicio']||o['tipo servicio']||o.servicio||'',
+          tipoServicio: o['categoria']||o['categoría']||o['tipo de servicio']||o['tipo servicio']||o.servicio||'',
           // 15 documentos nuevos (índices 0–14)
           docs: [
             boolDoc(o['contrato']||o['contrato.']),                               // 0
@@ -2405,7 +2409,7 @@ function savePD(){localStorage.setItem(PD_KEY,JSON.stringify(PD));}
 const PROV_COLS = [
   'Proveedor','Estado','RUC','Contacto','Celular','Correo','Zona',
   'Tipo de Razon Social','Actividad Economica Principal','Responsable',
-  'Tipo de Servicio',
+  'Categoria',
   'CONTRATO','FICHA RUC','VIGENCIA PODER O DNI DEL REPRESENTANTE LEGAL',
   'CARTA DE COMPROMISO BETA','REPORTE SENTINEL','LISTA CLINTON',
   'DEUDA COACTIVA','REFERENCIAS COMERCIAL','BROCHURE O CARTA DE PRESENTACION',
@@ -2821,18 +2825,15 @@ let RP_DOCS_STATE = new Array(N_DOCS_PROV).fill(false);
 function renderRPChecklist(){
   const cont=document.getElementById('rp-checklist'); if(!cont) return;
   const cat=clasifServicio((document.getElementById('rp-tiposervicio')||{value:''}).value);
-  if(!cat){
-    cont.innerHTML='<div style="grid-column:1/-1;color:var(--text3);font-size:12px;padding:10px">⬆ Selecciona el Tipo de Servicio para ver el checklist</div>';
-    calcRPcumpl(); return;
-  }
-  // índices aplicables para esta categoría
+  // índices aplicables: si no hay categoría, muestra los 13 comunes (sin los 2 específicos)
   const aplica=[];
   for(let i=0;i<N_DOCS_PROV;i++){
     if(i===DOC_SOLO_MP && cat!=='MATERIA PRIMA') continue;
     if(i===DOC_SOLO_REFRIG && cat!=='REFRIGERADO') continue;
     aplica.push(i);
   }
-  cont.innerHTML=aplica.map(i=>`<label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:${RP_DOCS_STATE[i]?'var(--success-bg)':'var(--bg2)'};border:1.5px solid ${RP_DOCS_STATE[i]?'var(--success)':'var(--border)'};border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500">
+  const aviso = !cat ? '<div style="grid-column:1/-1;color:var(--warn);font-size:11px;padding:4px 0 8px">⚠ Sin categoría: se muestran los documentos comunes. Selecciona una categoría arriba para ver los específicos (Materia Prima / Refrigerado).</div>' : '';
+  cont.innerHTML=aviso+aplica.map(i=>`<label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:${RP_DOCS_STATE[i]?'var(--success-bg)':'var(--bg2)'};border:1.5px solid ${RP_DOCS_STATE[i]?'var(--success)':'var(--border)'};border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500">
     <input type="checkbox" data-di="${i}" ${RP_DOCS_STATE[i]?'checked':''} onchange="RP_DOCS_STATE[${i}]=this.checked;renderRPChecklist()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
     <span>${DOCS_PROV[i]}</span></label>`).join('');
   calcRPcumpl();
@@ -2880,7 +2881,7 @@ function guardarProv(){
   const nom=(document.getElementById('rp-nombre').value||'').trim().toUpperCase();
   if(!nom){showToast('Ingresa la razón social','err');return;}
   const ts=(document.getElementById('rp-tiposervicio')||{value:''}).value;
-  if(!ts){showToast('Selecciona el Tipo de Servicio','err');return;}
+  if(!ts){showToast('Selecciona la Categoría','err');return;}
   const gv = id => document.getElementById(id)?.value||'';
   const r={
     nombre:nom, estado:gv('rp-estado')||'ACTIVO', zona:gv('rp-zona'), tipo:gv('rp-tipo'),
@@ -3040,7 +3041,7 @@ async function leerReporte(){
       ruta:      col(['RUTA','ITINERARIO','DESTINO']),
       centro:    col(['CENTRO','COSTO','PLANTA','SEDE']),
       turno:        col(['TURNO','JORNADA','HORARIO']),
-      tipoServicio: col(['TIPO DE SERVICIO','TIPO SERVICIO','TIPOSERVICIO']),
+      tipoServicio: col(['CATEGORIA','CATEGORÍA','TIPO DE SERVICIO','TIPO SERVICIO','TIPOSERVICIO']),
       sedeOrigen:   col(['SEDE ORIGEN','ORIGEN','SEDE DE ORIGEN']),
       destino:      col(['DESTINO','DESTINO FINAL','FUNDO','DESTINO RUTA']),
       sede:         col(['SEDE']),
