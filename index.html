@@ -788,6 +788,37 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:5px;">Carga el Excel del día</div>
       <div style="font-size:12px;">El sistema cruzará automáticamente con la base de datos</div>
     </div>
+
+    <!-- ── CUADRO DE PROVEEDORES CON CHECKLIST ── -->
+    <div id="rep-prov-wrap" style="display:none;margin-top:24px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <div style="width:4px;height:18px;background:linear-gradient(var(--green),var(--accent));border-radius:2px"></div>
+        <span style="font-size:14px;font-weight:700;color:#111">Proveedores del día — Checklist Documentario</span>
+        <span class="count-tag" id="rep-prov-count">0</span>
+        <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
+          <select class="filter-sel" id="rep-prov-sede" onchange="renderReporteProveedores()"><option value="">Todas las sedes</option></select>
+          <select class="filter-sel" id="rep-prov-cat" onchange="renderReporteProveedores()">
+            <option value="">Todas las categorías</option>
+            <option value="MATERIA PRIMA">Materia Prima</option>
+            <option value="CARGA SECA">Carga Seca</option>
+            <option value="REFRIGERADO">Refrigerado</option>
+            <option value="FLOTA VEHICULAR">Flota Vehicular</option>
+          </select>
+          <select class="filter-sel" id="rep-prov-doc" onchange="renderReporteProveedores()">
+            <option value="">Todos</option>
+            <option value="completo">✅ Completos</option>
+            <option value="incompleto">⚠ Con faltantes</option>
+            <option value="vacio">⬜ Sin ningún doc</option>
+          </select>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-scroll"><table style="min-width:1100px" id="rep-prov-table">
+          <thead id="rep-prov-thead"></thead>
+          <tbody id="rep-prov-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
   </div>
 
   <!-- ======== HISTORIAL DE REPORTES ======== -->
@@ -3816,6 +3847,90 @@ function postCargarReporte(){
   renderAlertas();
   audPoblarFiltros();        // filtros Auditorías
   poblarFiltroTipoServicio(); // filtro Tipo de Servicio en Conductores y Unidades
+  renderReporteProveedores(); // cuadro de proveedores con checklist
+}
+
+// ── Cuadro de Proveedores del día con checklist documentario (en Reporte) ──
+function renderReporteProveedores(){
+  const wrap=document.getElementById('rep-prov-wrap'); if(!wrap) return;
+  if(!REP_ROWS.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+
+  // Proveedores del reporte + las sedes donde operan hoy
+  const provSedes={};            // nUp -> Set de sedes
+  REP_ROWS.forEach(r=>{
+    const nUp=(r.proveedor||'').trim().toUpperCase(); if(!nUp) return;
+    if(!provSedes[nUp]) provSedes[nUp]=new Set();
+    if(r.centro) provSedes[nUp].add(String(r.centro).trim());
+  });
+  const provsHoy=Object.keys(provSedes);
+
+  // Poblar filtro de sedes (una sola vez por carga)
+  const selSede=document.getElementById('rep-prov-sede');
+  if(selSede){
+    const sedes=[...new Set(REP_ROWS.map(r=>String(r.centro||'').trim()).filter(Boolean))].sort();
+    const actual=selSede.value;
+    selSede.innerHTML='<option value="">Todas las sedes</option>'+sedes.map(s=>`<option value="${s}">${s}</option>`).join('');
+    selSede.value=actual;
+  }
+
+  const fSede=(document.getElementById('rep-prov-sede')||{value:''}).value;
+  const fCat =(document.getElementById('rep-prov-cat')||{value:''}).value;
+  const fDoc =(document.getElementById('rep-prov-doc')||{value:''}).value;
+
+  // Encabezado: # + Proveedor + Categoría + Sede + 15 docs + Cumpl
+  const thead=document.getElementById('rep-prov-thead');
+  thead.innerHTML='<tr><th>#</th><th style="min-width:200px">Proveedor</th><th>Categoría</th><th>Sede</th>'+
+    DOCS_PROV.map((d,i)=>`<th class="tc" title="${d}" style="font-size:8px;font-weight:600">${i+1}</th>`).join('')+
+    '<th>Cumpl.</th></tr>';
+
+  // Filas
+  let rows=[];
+  provsHoy.forEach(nUp=>{
+    const p=PROVEEDORES.find(x=>(x.nombre||'').trim().toUpperCase()===nUp);
+    if(!p) return;
+    const cat=clasifServicio(provTipoServicio(p));
+    if(fCat && cat!==fCat) return;
+    if(fSede && !provSedes[nUp].has(fSede)) return;
+    const pd=getPD(p.nombre);
+    const aplica=docsAplicables(p);
+    const ok=aplica.filter(i=>pd.docs[i]).length;
+    const tot=aplica.length;
+    const pct=tot?Math.round(ok/tot*100):0;
+    if(fDoc==='completo'  && pct<100) return;
+    if(fDoc==='incompleto'&& (pct===100||ok===0)) return;
+    if(fDoc==='vacio'     && ok!==0) return;
+    rows.push({p,cat,sedes:[...provSedes[nUp]].join(', '),pd,aplica:new Set(aplica),ok,tot,pct});
+  });
+  rows.sort((a,b)=>a.pct-b.pct);
+
+  document.getElementById('rep-prov-count').textContent=rows.length+' proveedores';
+  const tbody=document.getElementById('rep-prov-tbody');
+  if(!rows.length){ tbody.innerHTML=`<tr><td colspan="${4+DOCS_PROV.length+1}" class="empty-state">Sin proveedores para los filtros</td></tr>`; return; }
+
+  tbody.innerHTML=rows.map((r,n)=>{
+    const col=r.pct>=80?'var(--green)':r.pct>=50?'var(--warn)':'var(--danger)';
+    const nomEsc=(r.p.nombre||'').replace(/'/g,"\\'");
+    const cells=DOCS_PROV.map((d,i)=>{
+      if(!r.aplica.has(i)) return '<td class="tc" style="color:#d1d5db;font-size:10px">–</td>';
+      const tiene=r.pd.docs[i];
+      return `<td class="tc" style="cursor:pointer;font-size:14px;font-weight:700;color:${tiene?'var(--green)':'var(--text3)'}" onclick="toggleRepProvDoc('${nomEsc}',${i})" title="${d}">${tiene?'✓':'✗'}</td>`;
+    }).join('');
+    return `<tr>
+      <td class="mono" style="color:var(--text3)">${n+1}</td>
+      <td style="font-weight:600;font-size:12px">${r.p.nombre}</td>
+      <td style="font-size:10px">${r.cat?`<span style="background:#f0fdf4;color:#15803d;padding:2px 7px;border-radius:10px;font-weight:600">${r.cat}</span>`:'<span style="color:#d1d5db">—</span>'}</td>
+      <td class="mono" style="font-size:10px;color:var(--text2)">${r.sedes||'—'}</td>
+      ${cells}
+      <td style="font-weight:700;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</td>
+    </tr>`;
+  }).join('');
+}
+// Marcar/desmarcar un doc desde el cuadro de reporte (guarda en Sheets)
+function toggleRepProvDoc(nombre,di){
+  const pd=getPD(nombre); pd.docs[di]=!pd.docs[di]; PD[nombre]=pd; savePD();
+  guardarProvEnSheets(nombre);
+  renderReporteProveedores();
 }
 
 // Si el reporte trae categoría, la guarda en PROVEEDORES y UNIDADES (sin pisar lo que ya existe distinto)
