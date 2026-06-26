@@ -477,12 +477,24 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         </div>
       </div>
 
-      <!-- ── POR DOCUMENTO: A QUÉ PROVEEDORES LES FALTA ── -->
-      <div style="font-size:13px;font-weight:700;color:#111;margin:22px 0 12px;display:flex;align-items:center;gap:8px">
-        <div style="width:4px;height:16px;background:var(--accent);border-radius:2px"></div>
-        Por documento — a qué proveedores les falta
+      <!-- ── POR DOCUMENTO ── -->
+      <div style="font-size:13px;font-weight:700;color:#111;margin:22px 0 4px;display:flex;align-items:center;gap:8px">
+        <div style="width:4px;height:16px;background:#1e40af;border-radius:2px"></div>
+        🏢 Por documento — PROVEEDORES
       </div>
-      <div id="kd-por-doc" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
+      <div id="kd-por-doc" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:10px"></div>
+
+      <div style="font-size:13px;font-weight:700;color:#111;margin:22px 0 4px;display:flex;align-items:center;gap:8px">
+        <div style="width:4px;height:16px;background:#0891b2;border-radius:2px"></div>
+        🚛 Por documento — UNIDADES
+      </div>
+      <div id="kd-por-doc-unid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:10px"></div>
+
+      <div style="font-size:13px;font-weight:700;color:#111;margin:22px 0 4px;display:flex;align-items:center;gap:8px">
+        <div style="width:4px;height:16px;background:#7c3aed;border-radius:2px"></div>
+        👤 Por documento — CONDUCTORES
+      </div>
+      <div id="kd-por-doc-cond" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:10px"></div>
     </div>
 
     <!-- IDs ocultos legacy -->
@@ -2023,6 +2035,40 @@ function renderDashboard(){
           ? `<div style="display:flex;flex-direction:column;gap:3px">${faltan.slice(0,12).map(p=>`<div style="font-size:11px;color:#475569;display:flex;align-items:center;gap:5px"><span style="color:#dc2626">✗</span> ${p.nombre}</div>`).join('')}${faltan.length>12?`<div style="font-size:10px;color:#94a3b8;margin-top:2px">+${faltan.length-12} más</div>`:''}</div>`
           : '<div style="font-size:11px;color:#16a34a">✓ Todos lo tienen</div>'}
       </div>`;
+    }).join('');
+  }
+
+  // Helper genérico para tarjetas "por documento"
+  const cardPorDoc=(docNombre,di,faltanLista,total)=>{
+    const colHd = faltanLista.length===0 ? '#16a34a' : faltanLista.length>=total/2 ? '#dc2626' : '#d97706';
+    return `<div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:14px 16px;border-left:4px solid ${colHd}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12.5px;font-weight:700;color:#0f172a">${di+1}. ${docNombre}</span>
+        <span style="font-size:11px;font-weight:800;color:${colHd};font-family:var(--mono)">${faltanLista.length} falta${faltanLista.length===1?'':'n'}</span>
+      </div>
+      ${faltanLista.length
+        ? `<div style="display:flex;flex-direction:column;gap:3px">${faltanLista.slice(0,12).map(t=>`<div style="font-size:11px;color:#475569;display:flex;align-items:center;gap:5px"><span style="color:#dc2626">✗</span> ${t}</div>`).join('')}${faltanLista.length>12?`<div style="font-size:10px;color:#94a3b8;margin-top:2px">+${faltanLista.length-12} más</div>`:''}</div>`
+        : '<div style="font-size:11px;color:#16a34a">✓ Todos lo tienen</div>'}
+    </div>`;
+  };
+
+  // ── POR DOCUMENTO: UNIDADES ──
+  const porDocU = s('kd-por-doc-unid');
+  if(porDocU){
+    porDocU.innerHTML = DOCS_UNID.map((d,di)=>{
+      const aplicaU = u=>docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u)).some(x=>x.campo===d.campo);
+      const faltan = unidObjs.filter(u=>aplicaU(u) && u[d.campo]!=='✓').map(u=>`${u.placa||'—'} · ${(u.proveedor||'').slice(0,18)}`);
+      const total = unidObjs.filter(aplicaU).length;
+      return cardPorDoc(d.lbl,di,faltan,total||1);
+    }).join('');
+  }
+
+  // ── POR DOCUMENTO: CONDUCTORES ──
+  const porDocC = s('kd-por-doc-cond');
+  if(porDocC){
+    porDocC.innerHTML = docsCondGlobal.map((d,di)=>{
+      const faltan = condObjs.filter(c=>c[d.c]!=='✓').map(c=>`${c.conductor||'—'} · ${(c.proveedor||'').slice(0,18)}`);
+      return cardPorDoc(d.l,di,faltan,condObjs.length||1);
     }).join('');
   }
 }
