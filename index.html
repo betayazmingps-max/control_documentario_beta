@@ -2681,19 +2681,24 @@ function abrirDetalleProv(i){
   let unidsNuevas=[], condsNuevos=[];
   // Sets de lo que está OPERANDO HOY según el reporte (para marcar en verde)
   const placasHoy=new Set(), dnisHoy=new Set(), condsNomHoy=new Set();
+  const normNombre=s=>(s||'').toString().toUpperCase().trim().replace(/\s+/g,' ');
   if(typeof REP_ROWS!=='undefined' && REP_ROWS.length){
     const placasBD=new Set(unids.map(u=>normPlaca(u.placa)));
-    const dnisBD=new Set(conds.map(c=>String(c.dni||'').trim()));
+    const dnisBD=new Set(conds.map(c=>String(c.dni||'').trim()).filter(Boolean));
+    const nombresBD=new Set(conds.map(c=>normNombre(c.conductor)).filter(Boolean));
     const vP=new Set(), vC=new Set();
     REP_ROWS.forEach(r=>{
       if(r.placa) placasHoy.add(normPlaca(r.placa));
       if(r.dni) dnisHoy.add(String(r.dni||'').trim());
-      if(r.conductor) condsNomHoy.add((r.conductor||'').trim().toUpperCase());
+      if(r.conductor) condsNomHoy.add(normNombre(r.conductor));
       if((r.proveedor||'').trim().toUpperCase()!==nUp) return;
       const pl=normPlaca(r.placa);
       if(r.placa && !placasBD.has(pl) && !vP.has(pl)){ vP.add(pl); unidsNuevas.push(r.placa); }
       const dn=String(r.dni||'').trim();
-      if((r.conductor||dn) && !dnisBD.has(dn) && !vC.has(dn||r.conductor)){ vC.add(dn||r.conductor); condsNuevos.push({dni:dn,nombre:r.conductor||'',placa:r.placa||''}); }
+      const nom=normNombre(r.conductor);
+      const yaExiste = (dn && dnisBD.has(dn)) || (nom && nombresBD.has(nom));  // existe por DNI o por nombre
+      const key = dn||nom;
+      if((r.conductor||dn) && !yaExiste && !vC.has(key)){ vC.add(key); condsNuevos.push({dni:dn,nombre:r.conductor||'',placa:r.placa||''}); }
     });
   }
 
@@ -2766,7 +2771,7 @@ function abrirDetalleProv(i){
 
     <!-- CONDUCTORES con su documentación -->
     ${(()=>{
-      const cActivo=c=>dnisHoy.has(String(c.dni||'').trim())||condsNomHoy.has((c.conductor||'').trim().toUpperCase());
+      const cActivo=c=>(String(c.dni||'').trim()&&dnisHoy.has(String(c.dni||'').trim()))||condsNomHoy.has(normNombre(c.conductor));
       const cHoy = conds.filter(cActivo);
       const cBase = conds.filter(c=>!cActivo(c));
       const hayRep = (dnisHoy.size>0||condsNomHoy.size>0);
