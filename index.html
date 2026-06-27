@@ -4047,10 +4047,13 @@ function renderReporteProveedores(){
     DOCS_PROV.map((d,i)=>`<th class="tc" title="${i+1}. ${d}" style="font-size:9.5px;font-weight:700">${DOCS_PROV_ABBR[i]||(i+1)}</th>`).join('')+
     '<th>Cumpl.</th></tr>';
 
-  // TODOS los proveedores activos (no solo del reporte)
+  // Si hay reporte cargado → solo proveedores del reporte; si no → toda la base activa
+  const hayRep=(typeof REP_ROWS!=='undefined' && REP_ROWS.length>0);
+  const provsRep = hayRep ? new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()).filter(Boolean)) : null;
   let rows=[];
   provValidos().forEach(p=>{
     const nUp=(p.nombre||'').trim().toUpperCase();
+    if(provsRep && !provsRep.has(nUp)) return;
     if(fSearch && !JSON.stringify(p).toLowerCase().includes(fSearch)) return;
     const cat=clasifServicio(provTipoServicio(p));
     if(fCat && cat!==fCat) return;
@@ -4128,11 +4131,15 @@ function renderChecklistUnid(){
   thead.innerHTML='<tr><th>#</th><th style="min-width:90px;text-align:left">Placa</th><th style="min-width:150px;text-align:left">Proveedor</th><th>Categoría</th>'+
     DOCS_UNID.map(d=>`<th class="tc" title="${d.lbl}" style="font-size:9.5px;font-weight:700">${d.lbl}</th>`).join('')+'<th>Cumpl.</th></tr>';
 
+  // Si hay reporte → solo placas del reporte
+  const hayRep=(typeof REP_ROWS!=='undefined' && REP_ROWS.length>0);
+  const placasRep = hayRep ? new Set(REP_ROWS.map(r=>normPlaca(r.placa)).filter(Boolean)) : null;
   // dedup por placa
   const _m=new Map();
   UNIDADES.filter(u=>(u.estado||'').toUpperCase()==='ACTIVO').forEach(u=>{const k=normPlaca(u.placa);if(k&&!_m.has(k))_m.set(k,u);});
   let rows=[];
   [..._m.values()].forEach(u=>{
+    if(placasRep && !placasRep.has(normPlaca(u.placa))) return;
     if(fSearch && !((u.placa||'')+' '+(u.proveedor||'')).toLowerCase().includes(fSearch)) return;
     const cat=clasifServicio(u.tipoServicio||provServicioDeUnidad(u));
     if(fCat && cat!==fCat) return;
@@ -4178,10 +4185,20 @@ function renderChecklistCond(){
   thead.innerHTML='<tr><th>#</th><th style="min-width:170px;text-align:left">Conductor</th><th>DNI</th><th style="min-width:140px;text-align:left">Proveedor</th>'+
     DOCS_C.map(d=>`<th class="tc" style="font-size:9.5px;font-weight:700">${d.l}</th>`).join('')+'<th>Cumpl.</th></tr>';
 
+  // Si hay reporte → solo conductores del reporte (por DNI o nombre)
+  const hayRep=(typeof REP_ROWS!=='undefined' && REP_ROWS.length>0);
+  const normNom=s=>(s||'').toString().toUpperCase().trim().replace(/\s+/g,' ');
+  const dnisRep = hayRep ? new Set(REP_ROWS.map(r=>String(r.dni||'').trim()).filter(Boolean)) : null;
+  const nomsRep = hayRep ? new Set(REP_ROWS.map(r=>normNom(r.conductor)).filter(Boolean)) : null;
   const _m=new Map();
   CONDUCTORES.filter(c=>(c.estado||'').toUpperCase()==='ACTIVO').forEach(c=>{const k=String(c.dni||'').trim()||(c.conductor||'').trim().toUpperCase();if(k&&!_m.has(k))_m.set(k,c);});
   let rows=[];
   [..._m.values()].forEach(c=>{
+    if(hayRep){
+      const dn=String(c.dni||'').trim();
+      const enRep=(dn&&dnisRep.has(dn))||nomsRep.has(normNom(c.conductor));
+      if(!enRep) return;
+    }
     if(fSearch && !((c.conductor||'')+' '+(c.dni||'')+' '+(c.proveedor||'')).toLowerCase().includes(fSearch)) return;
     const ok=DOCS_C.filter(d=>c[d.c]==='✓').length;
     const tot=DOCS_C.length;
