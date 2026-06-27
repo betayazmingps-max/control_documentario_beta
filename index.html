@@ -352,6 +352,10 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
     </div>
 
     <div class="nav-section">Gestión</div>
+    <div class="nav-item" onclick="goPage('checklist',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><path d="M5 6l2 2 3-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/><rect x="5" y="11" width="8" height="1.5" rx=".75" fill="currentColor" opacity=".5"/></svg>
+      Checklist Docs
+    </div>
     <div class="nav-item" onclick="goPage('historial',this)">
       <svg class="nav-ico" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><rect x="5" y="5" width="4" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="5" y="9" width="8" height="1.5" rx=".75" fill="currentColor" opacity=".5"/><rect x="5" y="12" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".4"/></svg>
       Historial
@@ -813,13 +817,24 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div style="font-size:12px;">El sistema cruzará automáticamente con la base de datos</div>
     </div>
 
-    <!-- ── CUADRO DE PROVEEDORES CON CHECKLIST ── -->
-    <div id="rep-prov-wrap" style="display:none;margin-top:24px">
+  </div>
+
+  <!-- ======== CHECKLIST DOCUMENTARIO ======== -->
+  <div class="page" id="page-checklist">
+    <!-- Tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid #ebebeb">
+      <button class="cl-tab active" data-clt="prov" onclick="clTab('prov')" style="background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:9px 16px;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer">🏢 Proveedores</button>
+      <button class="cl-tab" data-clt="unid" onclick="clTab('unid')" style="background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:9px 16px;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer">🚛 Unidades</button>
+      <button class="cl-tab" data-clt="cond" onclick="clTab('cond')" style="background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:9px 16px;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer">👤 Conductores</button>
+    </div>
+
+    <!-- TAB PROVEEDORES -->
+    <div id="cl-prov" class="cl-panel">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <div style="width:4px;height:18px;background:linear-gradient(var(--green),var(--accent));border-radius:2px"></div>
-        <span style="font-size:14px;font-weight:700;color:#111">Proveedores del día — Checklist Documentario</span>
+        <span style="font-size:14px;font-weight:700;color:#111">Checklist de Proveedores</span>
         <span class="count-tag" id="rep-prov-count">0</span>
         <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
+          <input class="search-box" id="rep-prov-srch" placeholder="🔍 Buscar..." oninput="renderReporteProveedores()" style="width:150px">
           <select class="filter-sel" id="rep-prov-sede" onchange="renderReporteProveedores()"><option value="">Todas las sedes</option></select>
           <select class="filter-sel" id="rep-prov-cat" onchange="renderReporteProveedores()">
             <option value="">Todas las categorías</option>
@@ -836,12 +851,48 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           </select>
         </div>
       </div>
-      <div class="tbl-wrap">
-        <div class="tbl-scroll"><table style="min-width:1100px" id="rep-prov-table">
-          <thead id="rep-prov-thead"></thead>
-          <tbody id="rep-prov-tbody"></tbody>
-        </table></div>
+      <div class="tbl-wrap"><div class="tbl-scroll"><table style="min-width:1100px"><thead id="rep-prov-thead"></thead><tbody id="rep-prov-tbody"></tbody></table></div></div>
+    </div>
+
+    <!-- TAB UNIDADES -->
+    <div id="cl-unid" class="cl-panel" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-size:14px;font-weight:700;color:#111">Checklist de Unidades</span>
+        <span class="count-tag" id="cl-unid-count">0</span>
+        <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
+          <input class="search-box" id="cl-unid-srch" placeholder="🔍 Placa o proveedor..." oninput="renderChecklistUnid()" style="width:170px">
+          <select class="filter-sel" id="cl-unid-cat" onchange="renderChecklistUnid()">
+            <option value="">Todas las categorías</option>
+            <option value="MATERIA PRIMA">Materia Prima</option>
+            <option value="CARGA SECA">Carga Seca</option>
+            <option value="REFRIGERADO">Refrigerado</option>
+            <option value="FLOTA VEHICULAR">Flota Vehicular</option>
+          </select>
+          <select class="filter-sel" id="cl-unid-doc" onchange="renderChecklistUnid()">
+            <option value="">Todos</option>
+            <option value="completo">✅ Completos</option>
+            <option value="incompleto">⚠ Con faltantes</option>
+          </select>
+        </div>
       </div>
+      <div class="tbl-wrap"><div class="tbl-scroll"><table style="min-width:900px"><thead id="cl-unid-thead"></thead><tbody id="cl-unid-tbody"></tbody></table></div></div>
+    </div>
+
+    <!-- TAB CONDUCTORES -->
+    <div id="cl-cond" class="cl-panel" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-size:14px;font-weight:700;color:#111">Checklist de Conductores</span>
+        <span class="count-tag" id="cl-cond-count">0</span>
+        <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
+          <input class="search-box" id="cl-cond-srch" placeholder="🔍 Nombre, DNI o proveedor..." oninput="renderChecklistCond()" style="width:200px">
+          <select class="filter-sel" id="cl-cond-doc" onchange="renderChecklistCond()">
+            <option value="">Todos</option>
+            <option value="completo">✅ Completos</option>
+            <option value="incompleto">⚠ Con faltantes</option>
+          </select>
+        </div>
+      </div>
+      <div class="tbl-wrap"><div class="tbl-scroll"><table style="min-width:760px"><thead id="cl-cond-thead"></thead><tbody id="cl-cond-tbody"></tbody></table></div></div>
     </div>
   </div>
 
@@ -1787,6 +1838,7 @@ const pageTitles = {
   'reg-unidad':'Registro — Unidad','reg-proveedor':'Registro — Proveedor',
   conductores:'Conductores',unidades:'Unidades',proveedores:'Proveedores',
   alertas:'Alertas Críticas',reporte:'Reporte Diario',
+  checklist:'Checklist Documentario',
   historial:'Historial de Reportes',auditorias:'Auditorías'
 };
 const showSearch = ['conductores','unidades','proveedores'];
@@ -1817,6 +1869,7 @@ function render() {
   else if(currentPage==='proveedores') renderProveedores();
   else if(currentPage==='alertas') renderAlertas();
   else if(currentPage==='reporte') renderReporte();
+  else if(currentPage==='checklist') renderChecklist();
 }
 function onSearch(){ state[currentPage]&&(state[currentPage].page=1,state[currentPage].search=document.getElementById('search-input').value.toLowerCase()); render(); }
 function onFilter(){ state[currentPage]&&(state[currentPage].page=1,state[currentPage].estado=document.getElementById('filter-estado').value); render(); }
@@ -3961,52 +4014,47 @@ function postCargarReporte(){
   renderAlertas();
   audPoblarFiltros();        // filtros Auditorías
   poblarFiltroTipoServicio(); // filtro Tipo de Servicio en Conductores y Unidades
-  renderReporteProveedores(); // cuadro de proveedores con checklist
 }
 
 // ── Cuadro de Proveedores del día con checklist documentario (en Reporte) ──
 function renderReporteProveedores(){
-  const wrap=document.getElementById('rep-prov-wrap'); if(!wrap) return;
-  if(!REP_ROWS.length){ wrap.style.display='none'; return; }
-  wrap.style.display='block';
+  const thead=document.getElementById('rep-prov-thead'); if(!thead) return;
 
-  // Proveedores del reporte + las sedes donde operan hoy
-  const provSedes={};            // nUp -> Set de sedes
-  REP_ROWS.forEach(r=>{
+  // Sedes donde opera cada proveedor (según el reporte, si hay)
+  const provSedes={};
+  if(typeof REP_ROWS!=='undefined') REP_ROWS.forEach(r=>{
     const nUp=(r.proveedor||'').trim().toUpperCase(); if(!nUp) return;
     if(!provSedes[nUp]) provSedes[nUp]=new Set();
     if(r.centro) provSedes[nUp].add(String(r.centro).trim());
   });
-  const provsHoy=Object.keys(provSedes);
 
-  // Poblar filtro de sedes (una sola vez por carga)
+  // Poblar filtro de sedes
   const selSede=document.getElementById('rep-prov-sede');
   if(selSede){
-    const sedes=[...new Set(REP_ROWS.map(r=>String(r.centro||'').trim()).filter(Boolean))].sort();
+    const sedes=[...new Set((REP_ROWS||[]).map(r=>String(r.centro||'').trim()).filter(Boolean))].sort();
     const actual=selSede.value;
     selSede.innerHTML='<option value="">Todas las sedes</option>'+sedes.map(s=>`<option value="${s}">${s}</option>`).join('');
     selSede.value=actual;
   }
 
+  const fSearch=(document.getElementById('rep-prov-srch')||{value:''}).value.toLowerCase();
   const fSede=(document.getElementById('rep-prov-sede')||{value:''}).value;
   const fCat =(document.getElementById('rep-prov-cat')||{value:''}).value;
   const fDoc =(document.getElementById('rep-prov-doc')||{value:''}).value;
 
-  // Encabezado horizontal normal con abreviaturas
-  const thead=document.getElementById('rep-prov-thead');
   thead.innerHTML='<tr>'+
-    '<th>#</th><th style="min-width:190px;text-align:left">Proveedor</th><th>Categoría</th><th>Sede</th>'+
+    '<th>#</th><th style="min-width:190px;text-align:left">Proveedor</th><th>Categoría</th><th>Zona/Sede</th>'+
     DOCS_PROV.map((d,i)=>`<th class="tc" title="${i+1}. ${d}" style="font-size:9.5px;font-weight:700">${DOCS_PROV_ABBR[i]||(i+1)}</th>`).join('')+
     '<th>Cumpl.</th></tr>';
 
-  // Filas
+  // TODOS los proveedores activos (no solo del reporte)
   let rows=[];
-  provsHoy.forEach(nUp=>{
-    const p=PROVEEDORES.find(x=>(x.nombre||'').trim().toUpperCase()===nUp);
-    if(!p) return;
+  provValidos().forEach(p=>{
+    const nUp=(p.nombre||'').trim().toUpperCase();
+    if(fSearch && !JSON.stringify(p).toLowerCase().includes(fSearch)) return;
     const cat=clasifServicio(provTipoServicio(p));
     if(fCat && cat!==fCat) return;
-    if(fSede && !provSedes[nUp].has(fSede)) return;
+    if(fSede && !(provSedes[nUp]&&provSedes[nUp].has(fSede))) return;
     const pd=getPD(p.nombre);
     const aplica=docsAplicables(p);
     const ok=aplica.filter(i=>pd.docs[i]).length;
@@ -4015,7 +4063,8 @@ function renderReporteProveedores(){
     if(fDoc==='completo'  && pct<100) return;
     if(fDoc==='incompleto'&& (pct===100||ok===0)) return;
     if(fDoc==='vacio'     && ok!==0) return;
-    rows.push({p,cat,sedes:[...provSedes[nUp]].join(', '),pd,aplica:new Set(aplica),ok,tot,pct});
+    const sedeTxt = (provSedes[nUp]&&provSedes[nUp].size)?[...provSedes[nUp]].join(', '):(p.zona||'—');
+    rows.push({p,cat,sedes:sedeTxt,pd,aplica:new Set(aplica),ok,tot,pct});
   });
   rows.sort((a,b)=>a.pct-b.pct);
 
@@ -4053,6 +4102,116 @@ function toggleRepProvDoc(nombre,di){
   guardarProvEnSheets(nombre);
   renderReporteProveedores();
 }
+
+// ── PÁGINA CHECKLIST: tabs ──
+function clTab(tab){
+  document.querySelectorAll('.cl-tab').forEach(b=>{
+    const on=b.getAttribute('data-clt')===tab;
+    b.style.borderBottomColor=on?'var(--accent)':'transparent';
+    b.style.color=on?'var(--accent)':'#6b7280';
+  });
+  document.querySelectorAll('.cl-panel').forEach(p=>p.style.display='none');
+  const panel=document.getElementById('cl-'+tab); if(panel) panel.style.display='block';
+  if(tab==='prov') renderReporteProveedores();
+  if(tab==='unid') renderChecklistUnid();
+  if(tab==='cond') renderChecklistCond();
+}
+function renderChecklist(){ renderReporteProveedores(); renderChecklistUnid(); renderChecklistCond(); }
+
+// ── CHECKLIST UNIDADES ──
+function renderChecklistUnid(){
+  const thead=document.getElementById('cl-unid-thead'); if(!thead) return;
+  const fSearch=(document.getElementById('cl-unid-srch')||{value:''}).value.toLowerCase();
+  const fCat=(document.getElementById('cl-unid-cat')||{value:''}).value;
+  const fDoc=(document.getElementById('cl-unid-doc')||{value:''}).value;
+
+  thead.innerHTML='<tr><th>#</th><th style="min-width:90px;text-align:left">Placa</th><th style="min-width:150px;text-align:left">Proveedor</th><th>Categoría</th>'+
+    DOCS_UNID.map(d=>`<th class="tc" title="${d.lbl}" style="font-size:9.5px;font-weight:700">${d.lbl}</th>`).join('')+'<th>Cumpl.</th></tr>';
+
+  // dedup por placa
+  const _m=new Map();
+  UNIDADES.filter(u=>(u.estado||'').toUpperCase()==='ACTIVO').forEach(u=>{const k=normPlaca(u.placa);if(k&&!_m.has(k))_m.set(k,u);});
+  let rows=[];
+  [..._m.values()].forEach(u=>{
+    if(fSearch && !((u.placa||'')+' '+(u.proveedor||'')).toLowerCase().includes(fSearch)) return;
+    const cat=clasifServicio(u.tipoServicio||provServicioDeUnidad(u));
+    if(fCat && cat!==fCat) return;
+    const aplica=docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u));
+    const ok=aplica.filter(d=>u[d.campo]==='✓').length;
+    const tot=aplica.length;
+    const pct=tot?Math.round(ok/tot*100):0;
+    if(fDoc==='completo'   && pct<100) return;
+    if(fDoc==='incompleto' && pct===100) return;
+    rows.push({u,cat,aplica:new Set(aplica.map(d=>d.campo)),ok,tot,pct});
+  });
+  rows.sort((a,b)=>a.pct-b.pct);
+  document.getElementById('cl-unid-count').textContent=rows.length+' unidades';
+  const tbody=document.getElementById('cl-unid-tbody');
+  if(!rows.length){ tbody.innerHTML=`<tr><td colspan="${4+DOCS_UNID.length+1}" class="empty-state">Sin unidades para los filtros</td></tr>`; return; }
+  tbody.innerHTML=rows.map((r,n)=>{
+    const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
+    const pl=(r.u.placa||'').replace(/'/g,"\\'");
+    const cells=DOCS_UNID.map(d=>{
+      if(!r.aplica.has(d.campo)) return '<td class="tc" style="background:#f8fafc;color:#cbd5e1">–</td>';
+      const v=r.u[d.campo]==='✓';
+      return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleClUnidDoc('${pl}','${d.campo}')" title="${d.lbl}"><div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${v?'#dcfce7':'#fee2e2'};color:${v?'#16a34a':'#dc2626'}">${v?'✓':'✗'}</div></td>`;
+    }).join('');
+    return `<tr style="border-bottom:1px solid #f1f5f9">
+      <td class="mono" style="color:#94a3b8">${n+1}</td>
+      <td class="mono" style="font-weight:700;text-align:left;color:var(--accent2)">${r.u.placa||'—'}</td>
+      <td style="font-size:11px;text-align:left">${(r.u.proveedor||'—').slice(0,28)}</td>
+      <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'—'}</td>
+      ${cells}
+      <td><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-weight:800;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</span><div style="width:42px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div></div></td>
+    </tr>`;
+  }).join('');
+}
+function toggleClUnidDoc(placa,campo){ toggleDocUnid(placa,campo).then(()=>renderChecklistUnid()); }
+
+// ── CHECKLIST CONDUCTORES ──
+function renderChecklistCond(){
+  const thead=document.getElementById('cl-cond-thead'); if(!thead) return;
+  const fSearch=(document.getElementById('cl-cond-srch')||{value:''}).value.toLowerCase();
+  const fDoc=(document.getElementById('cl-cond-doc')||{value:''}).value;
+  const DOCS_C=[{c:'docDni',l:'DNI'},{c:'docLic',l:'Licencia'},{c:'docRecord',l:'Récord'},{c:'docSctr',l:'SCTR'},{c:'docEmo',l:'EMO'},{c:'docCul',l:'CUL'}];
+
+  thead.innerHTML='<tr><th>#</th><th style="min-width:170px;text-align:left">Conductor</th><th>DNI</th><th style="min-width:140px;text-align:left">Proveedor</th>'+
+    DOCS_C.map(d=>`<th class="tc" style="font-size:9.5px;font-weight:700">${d.l}</th>`).join('')+'<th>Cumpl.</th></tr>';
+
+  const _m=new Map();
+  CONDUCTORES.filter(c=>(c.estado||'').toUpperCase()==='ACTIVO').forEach(c=>{const k=String(c.dni||'').trim()||(c.conductor||'').trim().toUpperCase();if(k&&!_m.has(k))_m.set(k,c);});
+  let rows=[];
+  [..._m.values()].forEach(c=>{
+    if(fSearch && !((c.conductor||'')+' '+(c.dni||'')+' '+(c.proveedor||'')).toLowerCase().includes(fSearch)) return;
+    const ok=DOCS_C.filter(d=>c[d.c]==='✓').length;
+    const tot=DOCS_C.length;
+    const pct=Math.round(ok/tot*100);
+    if(fDoc==='completo'   && pct<100) return;
+    if(fDoc==='incompleto' && pct===100) return;
+    rows.push({c,ok,tot,pct});
+  });
+  rows.sort((a,b)=>a.pct-b.pct);
+  document.getElementById('cl-cond-count').textContent=rows.length+' conductores';
+  const tbody=document.getElementById('cl-cond-tbody');
+  if(!rows.length){ tbody.innerHTML=`<tr><td colspan="${4+DOCS_C.length+1}" class="empty-state">Sin conductores para los filtros</td></tr>`; return; }
+  tbody.innerHTML=rows.map((r,n)=>{
+    const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
+    const dn=(r.c.dni||'').replace(/'/g,"\\'");
+    const cells=DOCS_C.map(d=>{
+      const v=r.c[d.c]==='✓';
+      return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleClCondDoc('${dn}','${d.c}')" title="${d.l}"><div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${v?'#dcfce7':'#fee2e2'};color:${v?'#16a34a':'#dc2626'}">${v?'✓':'✗'}</div></td>`;
+    }).join('');
+    return `<tr style="border-bottom:1px solid #f1f5f9">
+      <td class="mono" style="color:#94a3b8">${n+1}</td>
+      <td style="font-weight:700;text-align:left;font-size:11.5px">${r.c.conductor||'—'}</td>
+      <td class="mono" style="font-size:10px">${r.c.dni||'—'}</td>
+      <td style="font-size:11px;text-align:left">${(r.c.proveedor||'—').slice(0,24)}</td>
+      ${cells}
+      <td><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-weight:800;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</span><div style="width:42px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div></div></td>
+    </tr>`;
+  }).join('');
+}
+function toggleClCondDoc(dni,campo){ toggleDocCond(dni,campo).then(()=>renderChecklistCond()); }
 
 // Si el reporte trae categoría, la guarda en PROVEEDORES y UNIDADES (sin pisar lo que ya existe distinto)
 async function propagarCategoriasDelReporte(){
