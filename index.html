@@ -849,6 +849,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <option value="incompleto">⚠ Con faltantes</option>
             <option value="vacio">⬜ Sin ningún doc</option>
           </select>
+          <button class="btn-secondary" style="padding:6px 12px;font-size:11.5px" onclick="exportarChecklist('prov')">⬇ Excel</button>
         </div>
       </div>
       <div class="tbl-wrap"><div class="tbl-scroll"><table style="min-width:1100px"><thead id="rep-prov-thead"></thead><tbody id="rep-prov-tbody"></tbody></table></div></div>
@@ -873,6 +874,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <option value="completo">✅ Completos</option>
             <option value="incompleto">⚠ Con faltantes</option>
           </select>
+          <button class="btn-secondary" style="padding:6px 12px;font-size:11.5px" onclick="exportarChecklist('unid')">⬇ Excel</button>
         </div>
       </div>
       <div class="tbl-wrap"><div class="tbl-scroll"><table style="min-width:900px"><thead id="cl-unid-thead"></thead><tbody id="cl-unid-tbody"></tbody></table></div></div>
@@ -890,6 +892,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <option value="completo">✅ Completos</option>
             <option value="incompleto">⚠ Con faltantes</option>
           </select>
+          <button class="btn-secondary" style="padding:6px 12px;font-size:11.5px" onclick="exportarChecklist('cond')">⬇ Excel</button>
         </div>
       </div>
       <div class="tbl-wrap"><div class="tbl-scroll"><table style="min-width:760px"><thead id="cl-cond-thead"></thead><tbody id="cl-cond-tbody"></tbody></table></div></div>
@@ -4070,6 +4073,7 @@ function renderReporteProveedores(){
     rows.push({p,cat,sedes:sedeTxt,pd,aplica:new Set(aplica),ok,tot,pct});
   });
   rows.sort((a,b)=>a.pct-b.pct);
+  window._CL_PROV_ROWS=rows;
 
   document.getElementById('rep-prov-count').textContent=rows.length+' proveedores';
   const tbody=document.getElementById('rep-prov-tbody');
@@ -4152,6 +4156,7 @@ function renderChecklistUnid(){
     rows.push({u,cat,aplica:new Set(aplica.map(d=>d.campo)),ok,tot,pct});
   });
   rows.sort((a,b)=>a.pct-b.pct);
+  window._CL_UNID_ROWS=rows;
   document.getElementById('cl-unid-count').textContent=rows.length+' unidades';
   const tbody=document.getElementById('cl-unid-tbody');
   if(!rows.length){ tbody.innerHTML=`<tr><td colspan="${4+DOCS_UNID.length+1}" class="empty-state">Sin unidades para los filtros</td></tr>`; return; }
@@ -4208,6 +4213,7 @@ function renderChecklistCond(){
     rows.push({c,ok,tot,pct});
   });
   rows.sort((a,b)=>a.pct-b.pct);
+  window._CL_COND_ROWS=rows; window._CL_COND_DOCS=DOCS_C;
   document.getElementById('cl-cond-count').textContent=rows.length+' conductores';
   const tbody=document.getElementById('cl-cond-tbody');
   if(!rows.length){ tbody.innerHTML=`<tr><td colspan="${4+DOCS_C.length+1}" class="empty-state">Sin conductores para los filtros</td></tr>`; return; }
@@ -4229,6 +4235,45 @@ function renderChecklistCond(){
   }).join('');
 }
 function toggleClCondDoc(dni,campo){ toggleDocCond(dni,campo).then(()=>renderChecklistCond()); }
+
+// ── Exportar cuadros del Checklist a Excel (CSV con BOM, lo abre Excel) ──
+function exportarChecklist(tipo){
+  const esc=v=>{const s=String(v==null?'':v);return (s.includes(';')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s;};
+  let headers=[], filas=[], nombre='checklist';
+
+  if(tipo==='prov'){
+    const rows=window._CL_PROV_ROWS||[];
+    headers=['#','Proveedor','Categoría','Zona/Sede',...DOCS_PROV,'Cumplimiento','%'];
+    filas=rows.map((r,n)=>[n+1,r.p.nombre,r.cat||'',r.sedes||'',
+      ...DOCS_PROV.map((d,i)=> !r.aplica.has(i)?'N/A':(r.pd.docs[i]?'SI':'NO')),
+      `${r.ok}/${r.tot}`, `${r.pct}%`]);
+    nombre='checklist_proveedores';
+  } else if(tipo==='unid'){
+    const rows=window._CL_UNID_ROWS||[];
+    headers=['#','Placa','Proveedor','Categoría',...DOCS_UNID.map(d=>d.lbl),'Cumplimiento','%'];
+    filas=rows.map((r,n)=>[n+1,r.u.placa||'',r.u.proveedor||'',r.cat||'',
+      ...DOCS_UNID.map(d=> !r.aplica.has(d.campo)?'N/A':(r.u[d.campo]==='✓'?'SI':'NO')),
+      `${r.ok}/${r.tot}`, `${r.pct}%`]);
+    nombre='checklist_unidades';
+  } else if(tipo==='cond'){
+    const rows=window._CL_COND_ROWS||[]; const docs=window._CL_COND_DOCS||[];
+    headers=['#','Conductor','DNI','Proveedor',...docs.map(d=>d.l),'Cumplimiento','%'];
+    filas=rows.map((r,n)=>[n+1,r.c.conductor||'',r.c.dni||'',r.c.proveedor||'',
+      ...docs.map(d=> r.c[d.c]==='✓'?'SI':'NO'),
+      `${r.ok}/${r.tot}`, `${r.pct}%`]);
+    nombre='checklist_conductores';
+  }
+  if(!filas.length){ showToast('No hay datos para exportar','err'); return; }
+
+  const csv=[headers,...filas].map(row=>row.map(esc).join(';')).join('\r\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`${nombre}_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✓ Exportado a Excel','ok');
+}
 
 // Si el reporte trae categoría, la guarda en PROVEEDORES y UNIDADES (sin pisar lo que ya existe distinto)
 async function propagarCategoriasDelReporte(){
