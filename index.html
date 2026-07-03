@@ -699,6 +699,8 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Código SAP</label>
             <input class="form-input" id="rp-codigo" placeholder="134166"></div>
         </div>
+        <div class="form-group full" style="margin-top:10px"><label class="form-label">📁 Link Carpeta SharePoint</label>
+          <input class="form-input" type="text" id="rp-carpeta" placeholder="https://..."></div>
       </div>
 
       <div class="form-sec">
@@ -2613,7 +2615,7 @@ function sincPDdesdeSheet(){
 const PROV_COLS = [
   'Proveedor','Estado','RUC','Contacto','Celular','Correo','Zona',
   'Tipo de Razon Social','Actividad Economica Principal','Responsable',
-  'Categoria',
+  'Categoria','Carpeta Proveedor',
   'CONTRATO','FICHA RUC','VIGENCIA PODER O DNI DEL REPRESENTANTE LEGAL',
   'CARTA DE COMPROMISO BETA','REPORTE SENTINEL','LISTA CLINTON',
   'DEUDA COACTIVA','REFERENCIAS COMERCIAL','BROCHURE O CARTA DE PRESENTACION',
@@ -2635,7 +2637,7 @@ function guardarProvEnSheets(nombreProv){
     prov.nombre, prov.estado||'', prov.ruc||'', prov.contacto||'',
     prov.celular||'', prov.correo||'', prov.zona||'', prov.tipo||'',
     prov.actividad||'', pd.resp||prov.responsable||'',
-    prov.tipoServicio||'',
+    prov.tipoServicio||'', prov.carpeta||'',
     // 15 docs: si no aplica a la categoría → N/A
     ...pd.docs.map((v,i)=> !aplica.has(i) ? 'N/A' : (v?'VERDADERO':'FALSO')),
     `${ok}/${tot} (${pct}%)`, `${pct}%`
@@ -2882,7 +2884,7 @@ function abrirDetalleProv(i){
   let unidsNuevas=[], condsNuevos=[];
   // Sets de lo que está OPERANDO HOY según el reporte (para marcar en verde)
   const placasHoy=new Set(), dnisHoy=new Set(), condsNomHoy=new Set();
-  const normNombre=s=>(s||'').toString().toUpperCase().trim().replace(/\s+/g,' ');
+  const normNombre=nombreKey; // ignora mayúsculas/minúsculas, acentos y orden de palabras
   if(typeof REP_ROWS!=='undefined' && REP_ROWS.length){
     const placasBD=new Set(unids.map(u=>normPlaca(u.placa)));
     const dnisBD=new Set(conds.map(c=>String(c.dni||'').trim()).filter(Boolean));
@@ -2933,6 +2935,7 @@ function abrirDetalleProv(i){
       <div><span style="color:#9ca3af">Contacto:</span> <b>${p.contacto||'—'}</b></div>
       <div><span style="color:#9ca3af">Celular:</span> <b>${p.celular||'—'}</b></div>
       <div style="grid-column:1/-1"><span style="color:#9ca3af">Correo:</span> <b>${p.correo||'—'}</b></div>
+      <div style="grid-column:1/-1">${p.carpeta?`<a href="${p.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,0.12);color:#2563eb;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none">📁 Abrir carpeta SharePoint</a>`:'<span style="color:#9ca3af;font-size:11px">Sin carpeta SharePoint</span>'}</div>
     </div>
 
     <div style="background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:16px">
@@ -3015,6 +3018,7 @@ function editarProveedor(nombre){
     sv('rp-tipo',p.tipo); sv('rp-ruc',p.ruc); sv('rp-codigo',p.codigo);
     sv('rp-contacto',p.contacto); sv('rp-celular',p.celular); sv('rp-correo',p.correo);
     sv('rp-resp',p.responsable); sv('rp-tiposervicio',(p.tipoServicio||'').toUpperCase());
+    sv('rp-carpeta',p.carpeta);
     // Cargar checklist actual
     const pd=getPD(p.nombre);
     RP_DOCS_STATE = pd.docs.slice(0,N_DOCS_PROV);
@@ -3091,7 +3095,7 @@ function buscarProv(nom){
     sv('rp-estado',f.estado||'ACTIVO'); sv('rp-zona',f.zona); sv('rp-tipo',f.tipo);
     sv('rp-ruc',f.ruc); sv('rp-codigo',f.codigo); sv('rp-contacto',f.contacto);
     sv('rp-celular',f.celular); sv('rp-correo',f.correo); sv('rp-resp',f.responsable);
-    sv('rp-tiposervicio',(f.tipoServicio||'').toUpperCase());
+    sv('rp-tiposervicio',(f.tipoServicio||'').toUpperCase()); sv('rp-carpeta',f.carpeta);
     const pd=getPD(f.nombre);
     RP_DOCS_STATE = pd.docs.slice(0,N_DOCS_PROV);
     while(RP_DOCS_STATE.length<N_DOCS_PROV) RP_DOCS_STATE.push(false);
@@ -3131,6 +3135,7 @@ function guardarProv(){
     nombre:nom, estado:gv('rp-estado')||'ACTIVO', zona:gv('rp-zona'), tipo:gv('rp-tipo'),
     ruc:gv('rp-ruc'), codigo:gv('rp-codigo'), contacto:gv('rp-contacto'),
     celular:gv('rp-celular'), correo:gv('rp-correo'), responsable:gv('rp-resp'),
+    carpeta:gv('rp-carpeta'),
     tipoServicio:ts,
     docs: RP_DOCS_STATE.map(v=>v?'✓':'✗'),
     fechaReg: new Date().toLocaleDateString('es-PE')
@@ -3144,7 +3149,7 @@ function guardarProv(){
   if(typeof renderProveedores==='function') renderProveedores();
 }
 function limpiarProv(){
-  ['rp-nombre','rp-ruc','rp-codigo','rp-contacto','rp-celular','rp-correo','rp-resp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['rp-nombre','rp-ruc','rp-codigo','rp-contacto','rp-celular','rp-correo','rp-resp','rp-carpeta'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['rp-estado','rp-zona','rp-tipo','rp-tiposervicio'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
   RP_DOCS_STATE=new Array(N_DOCS_PROV).fill(false);
   renderRPChecklist();
@@ -3194,6 +3199,11 @@ function normText(s){
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/\s+/g,' ');
 }
+// Clave de nombre insensible a mayúsculas/acentos y AL ORDEN de las palabras
+// (ej: "PEREZ GOMEZ JUAN" y "JUAN PEREZ GOMEZ" generan la misma clave)
+function nombreKey(s){
+  return normText(s).split(' ').filter(Boolean).sort().join(' ');
+}
 function buscarConductorBD(nombre,dni){
   if(dni){
     // DNI: quitar decimales .0, espacios y ceros iniciales en comparación
@@ -3206,10 +3216,14 @@ function buscarConductorBD(nombre,dni){
   }
   if(nombre){
     const nNorm=normText(nombre);
-    // Búsqueda exacta primero
+    // 1. Búsqueda exacta (misma mayúscula/minúscula, mismo orden)
     const exact=CONDUCTORES.find(c=>c.conductor&&normText(c.conductor)===nNorm);
     if(exact) return exact;
-    // Búsqueda parcial: todos los tokens del Excel están en el nombre BD
+    // 2. Mismas palabras SIN importar el orden (típico: Apellidos/Nombres invertidos)
+    const nKey=nombreKey(nombre);
+    const porOrden=CONDUCTORES.find(c=>c.conductor&&nombreKey(c.conductor)===nKey);
+    if(porOrden) return porOrden;
+    // 3. Búsqueda parcial: todos los tokens del Excel están en el nombre BD (sin importar orden)
     const tokens=nNorm.split(' ').filter(t=>t.length>2);
     if(tokens.length>=2){
       return CONDUCTORES.find(c=>{
