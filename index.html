@@ -3282,11 +3282,15 @@ async function leerReporte(){
 
     if(rows.length===0){showToast('No se encontraron filas de datos','err');return;}
 
-    // ── Detectar columnas flexiblemente ──────────────────────────────────────
+    // ── Detectar columnas flexiblemente (con límites de palabra) ─────────────
     const hkeys=Object.keys(rows[0]||{});
     const col=(keywords)=>{
       for(const kw of (Array.isArray(keywords)?keywords:[keywords])){
-        const f=hkeys.find(h=>h.toUpperCase().includes(kw.toUpperCase()));
+        const kwEsc = kw.toUpperCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+        // La palabra clave debe aparecer como palabra completa (o separada por espacio/punto/guion/número),
+        // no como substring dentro de otra palabra (ej: 'ID' no debe matchear 'ACTIVIDAD', 'CI' no debe matchear 'SERVICIO')
+        const re = new RegExp('(^|[^A-ZÑ])'+kwEsc+'([^A-ZÑ]|$)');
+        const f=hkeys.find(h=>re.test(h.toUpperCase()));
         if(f) return f;
       }
       return null;
@@ -3294,7 +3298,7 @@ async function leerReporte(){
     const COL={
       placa:     col(['PLACA','MATRICULA','PATENTE']),
       conductor: col(['CONDUCTOR','NOMBRE CONDUCTOR','CHOFER','OPERADOR']),
-      dni:       col(['DNI','DOC','DOCUMENTO','CI','CEDULA','ID']),
+      dni:       col(['DNI','DOC','DOCUMENTO','CEDULA','CI','ID']),
       proveedor: col(['PROVEEDOR','EMPRESA','TRANSPORTISTA','RAZON']),
       ruta:      col(['RUTA','ITINERARIO','DESTINO']),
       centro:    col(['CENTRO','COSTO','PLANTA','SEDE']),
