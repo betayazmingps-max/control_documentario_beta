@@ -1505,7 +1505,7 @@ function parseCsv(text){
 }
 
 // Orden EXACTO de columnas del Sheet UNIDADES (47 columnas)
-const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','docCheckList','cumpl','carpeta'];
+const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','docCheckList','cumpl','carpeta'];
 
 // Documentos de UNIDAD (10) con su etiqueta y a qué categorías aplican
 const DOCS_UNID = [
@@ -2615,14 +2615,14 @@ function sincPDdesdeSheet(){
 const PROV_COLS = [
   'Proveedor','Estado','RUC','Contacto','Celular','Correo','Zona',
   'Tipo de Razon Social','Actividad Economica Principal','Responsable',
-  'Categoria','Carpeta Proveedor',
+  'Categoria',
   'CONTRATO','FICHA RUC','VIGENCIA PODER O DNI DEL REPRESENTANTE LEGAL',
   'CARTA DE COMPROMISO BETA','REPORTE SENTINEL','LISTA CLINTON',
   'DEUDA COACTIVA','REFERENCIAS COMERCIAL','BROCHURE O CARTA DE PRESENTACION',
   'ANTECEDENTES','DECLARACION JURADA DE NORMAS DE SEGURIDAD',
   'DECLARACION JURADA DE NORMAS Y POLITICAS','COTIZACION',
   'CARTA DE COMPROMISO MATERIA PRIMA','CARTA DE COMPROMISO REFRIGERADO',
-  'CUMPLIMIENTO','% cumplimiento'
+  'CUMPLIMIENTO','% cumplimiento','Carpeta Proveedor'
 ];
 
 // Guarda el proveedor en Sheets con docs como VERDADERO/FALSO
@@ -2637,10 +2637,10 @@ function guardarProvEnSheets(nombreProv){
     prov.nombre, prov.estado||'', prov.ruc||'', prov.contacto||'',
     prov.celular||'', prov.correo||'', prov.zona||'', prov.tipo||'',
     prov.actividad||'', pd.resp||prov.responsable||'',
-    prov.tipoServicio||'', prov.carpeta||'',
+    prov.tipoServicio||'',
     // 15 docs: si no aplica a la categoría → N/A
     ...pd.docs.map((v,i)=> !aplica.has(i) ? 'N/A' : (v?'VERDADERO':'FALSO')),
-    `${ok}/${tot} (${pct}%)`, `${pct}%`
+    `${ok}/${tot} (${pct}%)`, `${pct}%`, prov.carpeta||''
   ];
   guardarEnSheets('PROVEEDORES', PROV_COLS, row, 'Proveedor');
 }
