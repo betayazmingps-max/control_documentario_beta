@@ -730,19 +730,37 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 
   <!-- ======== ALERTAS ======== -->
   <div class="page" id="page-alertas">
-    <div class="section-hd"><div class="section-title">Licencias Críticas — Conductores</div></div>
-    <div class="tbl-wrap" style="margin-bottom:20px">
-      <div class="tbl-scroll"><table>
-        <thead><tr><th>#</th><th>Conductor</th><th>DNI</th><th>Proveedor</th><th>Días Lic.</th><th>Estado</th><th>Días SCTR</th><th>Estado SCTR</th></tr></thead>
-        <tbody id="alerta-cond-tbody"><tr><td colspan="8" class="empty-state">Sin alertas</td></tr></tbody>
-      </table></div>
+    <div id="alertas-sin-reporte" class="empty-state" style="padding:60px 20px;background:#fff;border:1px solid #ebebeb;border-radius:14px;">
+      📑 Carga el <b>Reporte Diario</b> (pestaña "Reporte Diario") para ver aquí las alertas de vencimiento de hoy.
     </div>
-    <div class="section-hd"><div class="section-title">SOAT/RTV Críticos — Unidades</div></div>
-    <div class="tbl-wrap">
-      <div class="tbl-scroll"><table>
-        <thead><tr><th>#</th><th>Placa</th><th>Proveedor</th><th>Tipo</th><th>Días SOAT</th><th>Estado SOAT</th><th>Días RTV</th><th>Estado RTV</th></tr></thead>
-        <tbody id="alerta-unid-tbody"><tr><td colspan="8" class="empty-state">Sin alertas</td></tr></tbody>
-      </table></div>
+    <div id="alertas-contenido" style="display:none">
+      <div class="kpi-grid cols-4" id="alertas-kpi-row">
+        <div class="kpi-card blue"><div class="kpi-label">Reporte del día</div><div class="kpi-value" id="al-fecha" style="font-size:20px">—</div><div class="kpi-sub" id="al-registros">0 registros</div></div>
+        <div class="kpi-card danger"><div class="kpi-label">Documentos Vencidos</div><div class="kpi-value" id="al-vencidos">0</div><div class="kpi-sub bad">Renovar urgente</div></div>
+        <div class="kpi-card warn"><div class="kpi-label">Por Vencer (≤30d)</div><div class="kpi-value" id="al-porvencer">0</div><div class="kpi-sub wu">Gestionar renovación</div></div>
+        <div class="kpi-card purple"><div class="kpi-label">Proveedores a Contactar</div><div class="kpi-value" id="al-proveedores">0</div><div class="kpi-sub">Con docs pendientes</div></div>
+      </div>
+
+      <div class="rep-filters" style="margin-bottom:14px;">
+        <span style="font-size:11px;color:var(--text2);font-weight:600;">Filtrar:</span>
+        <button class="rep-btn active" data-f="todos" onclick="filtrarAlertas('todos',this)">Todos</button>
+        <button class="rep-btn" data-f="vencido" onclick="filtrarAlertas('vencido',this)">🔴 Vencidos</button>
+        <button class="rep-btn" data-f="porvencer" onclick="filtrarAlertas('porvencer',this)">🟡 Por Vencer</button>
+        <button class="rep-btn" data-f="conductor" onclick="filtrarAlertas('conductor',this)">👤 Conductores</button>
+        <button class="rep-btn" data-f="unidad" onclick="filtrarAlertas('unidad',this)">🚚 Unidades</button>
+        <input type="text" class="search-box" style="width:220px;margin-left:auto" id="alertas-search" placeholder="🔍 Buscar placa, nombre, proveedor..." oninput="renderAlertas()">
+      </div>
+
+      <div class="section-hd"><div class="section-title">Documentos para Renovar</div><span class="count-tag" id="alertas-count">0</span></div>
+      <div class="tbl-wrap">
+        <div class="tbl-scroll"><table>
+          <thead><tr>
+            <th>#</th><th>Documento</th><th>Tipo</th><th>Placa / Conductor</th><th>Proveedor</th>
+            <th>Rep. Legal</th><th>Celular</th><th>Correo</th><th>Vence en</th><th>Estado</th><th>Acción</th>
+          </tr></thead>
+          <tbody id="alertas-tbody"><tr><td colspan="11" class="empty-state">Sin alertas</td></tr></tbody>
+        </table></div>
+      </div>
     </div>
   </div>
 
@@ -3220,26 +3238,118 @@ function limpiarProv(){
 // ═══════════════════════════════════════════════
 // ALERTAS
 // ═══════════════════════════════════════════════
+// Doc.s que se evalúan para las alertas del reporte del día
+const ALERTAS_DOCS = [
+  {campo:'diasLic',  estado:'estadoLic',  nombre:'Licencia de Conducir',   tipo:'conductor'},
+  {campo:'diasSctr', estado:'estadoSctr', nombre:'SCTR',                   tipo:'conductor'},
+  {campo:'diasEmo',  estado:'estadoEmo',  nombre:'Examen Médico (EMO)',    tipo:'conductor'},
+  {campo:'diasSoat', estado:'estadoSoat', nombre:'SOAT',                   tipo:'unidad'},
+  {campo:'diasRtv',  estado:'estadoRtv',  nombre:'Revisión Técnica (RTV)', tipo:'unidad'},
+  {campo:'diasTc',   estado:'estadoTc',   nombre:'Tarjeta de Circulación', tipo:'unidad'},
+];
+let ALERTAS_FILTRO='todos';
+function filtrarAlertas(f, btn){
+  ALERTAS_FILTRO=f;
+  document.querySelectorAll('#page-alertas .rep-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderAlertas();
+}
+function buscarProveedorPorNombre(nombre){
+  const nUp=(nombre||'').trim().toUpperCase();
+  if(!nUp) return null;
+  return PROVEEDORES.find(p=>(p.nombre||'').trim().toUpperCase()===nUp)||null;
+}
+// Construye la lista de alertas (documentos vencidos/por vencer) SOLO de las
+// unidades y conductores que aparecen en el Reporte Diario cargado (REP_ROWS).
+function calcularAlertasDelDia(){
+  const alertas=[];
+  const vistos=new Set();
+  REP_ROWS.forEach(r=>{
+    const c=r.condBD, u=r.unidBD;
+    ALERTAS_DOCS.forEach(d=>{
+      const rec = d.tipo==='conductor' ? c : u;
+      if(!rec) return;
+      const est = rec[d.estado];
+      if(est!=='VENCIDO' && est!=='POR VENCER') return;
+      const idClave = d.tipo==='unidad' ? (r.placa||'') : (r.dni||r.conductor||'');
+      const key = d.tipo+'|'+d.nombre+'|'+idClave;
+      if(vistos.has(key)) return; // evita duplicar si la misma placa/conductor aparece 2 veces en el reporte
+      vistos.add(key);
+      const dias = parseInt(rec[d.campo]);
+      const prov = buscarProveedorPorNombre(r.proveedor);
+      alertas.push({
+        documento: d.nombre,
+        tipo: d.tipo,
+        idText: d.tipo==='unidad' ? (r.placa||'—') : (r.conductor||'—'),
+        proveedor: r.proveedor||'—',
+        contacto: prov?.contacto||'—',
+        celular: prov?.celular||'',
+        correo: prov?.correo||'',
+        dias: isNaN(dias)?null:dias,
+        estado: est
+      });
+    });
+  });
+  // Vencidos primero, luego por días restantes ascendente
+  alertas.sort((a,b)=>{
+    if(a.estado!==b.estado) return a.estado==='VENCIDO'?-1:1;
+    return (a.dias??999)-(b.dias??999);
+  });
+  return alertas;
+}
 function renderAlertas(){
-  const la=CONDUCTORES.filter(c=>{const d=parseInt(c.diasLic);return !isNaN(d)&&d<=30;}).sort((a,b)=>parseInt(a.diasLic)-parseInt(b.diasLic));
-  document.getElementById('alerta-cond-tbody').innerHTML=la.length?la.map((r,i)=>`<tr>
-    <td class="mono" style="color:var(--text3)">${i+1}</td>
-    <td style="font-size:12px;font-weight:500">${r.conductor||'—'}</td>
-    <td class="mono">${r.dni||'—'}</td>
-    <td style="font-size:11px">${r.proveedor||'—'}</td>
-    <td>${diasCell(r.diasLic)}</td><td>${badge(r.estadoLic||'—')}</td>
-    <td>${diasCell(r.diasSctr)}</td><td>${badge(r.estadoSctr||'—')}</td>
-  </tr>`).join(''):'<tr><td colspan="8" class="empty-state">Sin alertas ✓</td></tr>';
+  const sinRep=document.getElementById('alertas-sin-reporte');
+  const cont  =document.getElementById('alertas-contenido');
+  const tbody =document.getElementById('alertas-tbody');
+  if(!sinRep||!cont||!tbody) return;
 
-  const ua=UNIDADES.filter(u=>u.estadoSoat==='VENCIDO'||parseInt(u.diasSoat)<=30).sort((a,b)=>parseInt(a.diasSoat)-parseInt(b.diasSoat));
-  document.getElementById('alerta-unid-tbody').innerHTML=ua.length?ua.map((r,i)=>`<tr>
+  if(!REP_ROWS.length){
+    sinRep.style.display='';
+    cont.style.display='none';
+    return;
+  }
+  sinRep.style.display='none';
+  cont.style.display='';
+
+  const alertas=calcularAlertasDelDia();
+
+  // KPIs
+  const fecha=document.getElementById('rep-fecha')?.value||'—';
+  document.getElementById('al-fecha').textContent=fecha;
+  document.getElementById('al-registros').textContent=REP_ROWS.length+' registros del día';
+  document.getElementById('al-vencidos').textContent=alertas.filter(a=>a.estado==='VENCIDO').length;
+  document.getElementById('al-porvencer').textContent=alertas.filter(a=>a.estado==='POR VENCER').length;
+  document.getElementById('al-proveedores').textContent=new Set(alertas.map(a=>a.proveedor)).size;
+
+  // Filtro + búsqueda
+  const busc=(document.getElementById('alertas-search')?.value||'').toLowerCase();
+  const filtradas=alertas.filter(a=>{
+    if(ALERTAS_FILTRO==='vencido'   && a.estado!=='VENCIDO') return false;
+    if(ALERTAS_FILTRO==='porvencer' && a.estado!=='POR VENCER') return false;
+    if(ALERTAS_FILTRO==='conductor' && a.tipo!=='conductor') return false;
+    if(ALERTAS_FILTRO==='unidad'    && a.tipo!=='unidad') return false;
+    if(busc && !`${a.documento} ${a.idText} ${a.proveedor} ${a.contacto}`.toLowerCase().includes(busc)) return false;
+    return true;
+  });
+
+  document.getElementById('alertas-count').textContent=filtradas.length;
+
+  tbody.innerHTML = filtradas.length ? filtradas.map((a,i)=>`<tr>
     <td class="mono" style="color:var(--text3)">${i+1}</td>
-    <td class="mono" style="font-weight:700;color:var(--danger)">${r.placa||'—'}</td>
-    <td style="font-size:11px">${r.proveedor||'—'}</td>
-    <td style="font-size:11px">${r.tipo||'—'}</td>
-    <td>${diasCell(r.diasSoat)}</td><td>${badge(r.estadoSoat||'—')}</td>
-    <td>${diasCell(r.diasRtv)}</td><td>${badge(r.estadoRtv||'—')}</td>
-  </tr>`).join(''):'<tr><td colspan="8" class="empty-state">Sin alertas ✓</td></tr>';
+    <td style="font-size:12px;font-weight:600">${a.documento}</td>
+    <td style="font-size:11.5px;white-space:nowrap">${a.tipo==='unidad'?'🚚 Unidad':'👤 Conductor'}</td>
+    <td class="mono" style="font-weight:700;color:${a.tipo==='unidad'?'#1e40af':'#111'}">${a.idText}</td>
+    <td style="font-size:11.5px;white-space:normal;max-width:160px">${a.proveedor}</td>
+    <td style="font-size:11.5px;white-space:normal;max-width:150px">${a.contacto||'—'}</td>
+    <td class="mono" style="font-size:11.5px">${a.celular||'—'}</td>
+    <td style="font-size:11px;white-space:normal;max-width:150px">${a.correo||'—'}</td>
+    <td>${diasCell(a.dias)}</td>
+    <td>${badge(a.estado)}</td>
+    <td style="white-space:nowrap">
+      ${a.celular?`<a href="tel:${a.celular}" class="tb-btn" style="padding:4px 8px;font-size:12px;text-decoration:none;display:inline-flex;margin-right:4px" title="Llamar a ${a.celular}">📞</a>`:''}
+      ${a.correo?`<a href="mailto:${a.correo}" class="tb-btn" style="padding:4px 8px;font-size:12px;text-decoration:none;display:inline-flex" title="Escribir a ${a.correo}">✉</a>`:''}
+    </td>
+  </tr>`).join('') : '<tr><td colspan="11" class="empty-state">Sin alertas para los filtros aplicados ✓</td></tr>';
 }
 
 // ═══════════════════════════════════════════════
@@ -3546,6 +3656,7 @@ function limpiarReporte(){
   document.getElementById('btn-guardar-reporte').style.display='none';
   document.querySelectorAll('.rep-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('.rep-btn[data-f="todos"]')?.classList.add('active');
+  renderAlertas();
 }
 function exportarReporteCsv(){
   if(!REP_ROWS.length){showToast('Sin datos','err');return;}
