@@ -874,6 +874,17 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 
   <!-- ======== CHECKLIST DOCUMENTARIO ======== -->
   <div class="page" id="page-checklist">
+    <!-- Filtro compartido: aplica a las 3 pestañas (Proveedores, Unidades, Conductores) -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--text2);font-weight:600">🚛 Filtrar por Grupo de Vehículo (todo):</span>
+      <select class="filter-sel" id="cl-grupo-filtro" onchange="renderChecklist()">
+        <option value="">Todos los grupos</option>
+      </select>
+      <span style="font-size:11px;color:var(--text2);font-weight:600;margin-left:10px">📋 Tipo de Servicio (todo):</span>
+      <select class="filter-sel" id="cl-tiposerv-filtro" onchange="renderChecklist()">
+        <option value="">Todos los tipos</option>
+      </select>
+    </div>
     <!-- Tabs -->
     <div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid #ebebeb">
       <button class="cl-tab active" data-clt="prov" onclick="clTab('prov')" style="background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:9px 16px;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer">🏢 Proveedores</button>
@@ -3658,6 +3669,7 @@ async function leerReporte(){
       sede:         col(['SEDE']),
       modalidad:    col(['MODALIDAD']),
       tipoUnidad:   col(['TIPO UNIDAD','TIPO DE UNIDAD']),
+      grupo:        col(['GRUPO DE VEHICULO','GRUPO VEHICULO','GRUPO VEHÍCULO','GRUPO DE VEHÍCULO','GRUPO']),
     };
 
     // Validar que al menos existan placa o conductor
@@ -3685,6 +3697,7 @@ async function leerReporte(){
       const sede         = COL.sede         ? (row[COL.sede]        ||'').toString().trim() : '';
       const modalidad    = COL.modalidad    ? (row[COL.modalidad]   ||'').toString().trim() : '';
       const tipoUnidExc  = COL.tipoUnidad   ? (row[COL.tipoUnidad]  ||'').toString().trim() : '';
+      const grupo        = COL.grupo        ? (row[COL.grupo]       ||'').toString().trim() : '';
 
       // Omitir filas completamente vacías
       if(!placa && !conductor && !dni && !provExcel) return null;
@@ -3713,7 +3726,7 @@ async function leerReporte(){
         provExcel,
         proveedor: provExcel || condBD?.proveedor || unidBD?.proveedor || '',
         ruta, centro, turno, tipoServicio,
-        sedeOrigen, destino, sede, modalidad, tipoUnidExc,
+        sedeOrigen, destino, sede, modalidad, tipoUnidExc, grupo,
         unidBD: unidVista,
         condBD: condVista,
         estado,
@@ -4402,12 +4415,16 @@ function postCargarReporte(){
 function renderReporteProveedores(){
   const thead=document.getElementById('rep-prov-thead'); if(!thead) return;
 
-  // Sedes donde opera cada proveedor (según el reporte, si hay)
-  const provSedes={};
+  // Sedes, Grupos y Tipo de Servicio donde opera cada proveedor (según el reporte, si hay)
+  const provSedes={}, provGrupos={}, provTiposServ={};
   if(typeof REP_ROWS!=='undefined') REP_ROWS.forEach(r=>{
     const nUp=(r.proveedor||'').trim().toUpperCase(); if(!nUp) return;
     if(!provSedes[nUp]) provSedes[nUp]=new Set();
     if(r.centro) provSedes[nUp].add(String(r.centro).trim());
+    if(!provGrupos[nUp]) provGrupos[nUp]=new Set();
+    if(r.grupo) provGrupos[nUp].add(String(r.grupo).trim());
+    if(!provTiposServ[nUp]) provTiposServ[nUp]=new Set();
+    if(r.tipoServicio) provTiposServ[nUp].add(String(r.tipoServicio).trim());
   });
 
   // Poblar filtro de sedes
@@ -4423,6 +4440,8 @@ function renderReporteProveedores(){
   const fSede=(document.getElementById('rep-prov-sede')||{value:''}).value;
   const fCat =(document.getElementById('rep-prov-cat')||{value:''}).value;
   const fDoc =(document.getElementById('rep-prov-doc')||{value:''}).value;
+  const fGrupo=(document.getElementById('cl-grupo-filtro')||{value:''}).value;
+  const fTipoServ=(document.getElementById('cl-tiposerv-filtro')||{value:''}).value;
 
   thead.innerHTML='<tr>'+
     '<th>#</th><th style="min-width:190px;text-align:left">Proveedor</th><th>Categoría</th><th>Zona/Sede</th>'+
@@ -4440,6 +4459,8 @@ function renderReporteProveedores(){
     const cat=clasifServicio(provTipoServicio(p));
     if(fCat && cat!==fCat) return;
     if(fSede && !(provSedes[nUp]&&provSedes[nUp].has(fSede))) return;
+    if(fGrupo && !(provGrupos[nUp]&&provGrupos[nUp].has(fGrupo))) return;
+    if(fTipoServ && !(provTiposServ[nUp]&&provTiposServ[nUp].has(fTipoServ))) return;
     const pd=getPD(p.nombre);
     const aplica=docsAplicables(p);
     const ok=aplica.filter(i=>pd.docs[i]).length;
@@ -4528,7 +4549,23 @@ function clTab(tab){
   if(tab==='unid') renderChecklistUnid();
   if(tab==='cond') renderChecklistCond();
 }
-function renderChecklist(){ renderReporteProveedores(); renderChecklistUnid(); renderChecklistCond(); }
+// Puebla el select de Grupo de Vehículo con los valores únicos que trae el reporte diario
+function poblarFiltroGrupoCl(){
+  const sel=document.getElementById('cl-grupo-filtro'); if(!sel) return;
+  const grupos=[...new Set((REP_ROWS||[]).map(r=>(r.grupo||'').trim()).filter(Boolean))].sort();
+  const actual=sel.value;
+  sel.innerHTML='<option value="">Todos los grupos</option>'+grupos.map(g=>`<option value="${g}">${g}</option>`).join('');
+  if(grupos.includes(actual)) sel.value=actual;
+}
+// Puebla el select de Tipo de Servicio (tal como viene en el reporte diario) con los valores únicos
+function poblarFiltroTipoServCl(){
+  const sel=document.getElementById('cl-tiposerv-filtro'); if(!sel) return;
+  const tipos=[...new Set((REP_ROWS||[]).map(r=>(r.tipoServicio||'').trim()).filter(Boolean))].sort();
+  const actual=sel.value;
+  sel.innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option value="${t}">${t}</option>`).join('');
+  if(tipos.includes(actual)) sel.value=actual;
+}
+function renderChecklist(){ poblarFiltroGrupoCl(); poblarFiltroTipoServCl(); renderReporteProveedores(); renderChecklistUnid(); renderChecklistCond(); }
 
 // ── CHECKLIST UNIDADES ──
 function renderChecklistUnid(){
@@ -4536,6 +4573,8 @@ function renderChecklistUnid(){
   const fSearch=(document.getElementById('cl-unid-srch')||{value:''}).value.toLowerCase();
   const fCat=(document.getElementById('cl-unid-cat')||{value:''}).value;
   const fDoc=(document.getElementById('cl-unid-doc')||{value:''}).value;
+  const fGrupo=(document.getElementById('cl-grupo-filtro')||{value:''}).value;
+  const fTipoServ=(document.getElementById('cl-tiposerv-filtro')||{value:''}).value;
 
   thead.innerHTML='<tr><th>#</th><th style="min-width:90px;text-align:left">Placa</th><th style="min-width:150px;text-align:left">Proveedor</th><th>Categoría</th>'+
     DOCS_UNID.map(d=>`<th class="tc" title="${d.lbl}" style="font-size:9.5px;font-weight:700">${d.lbl}</th>`).join('')+'<th>Cumpl.</th></tr>';
@@ -4543,12 +4582,24 @@ function renderChecklistUnid(){
   // Si hay reporte → solo placas del reporte
   const hayRep=(typeof REP_ROWS!=='undefined' && REP_ROWS.length>0);
   const placasRep = hayRep ? new Set(REP_ROWS.map(r=>normPlaca(r.placa)).filter(Boolean)) : null;
+  // Grupo de vehículo y Tipo de Servicio por placa (según el reporte del día)
+  const placaGrupos={}, placaTiposServ={};
+  if(hayRep) REP_ROWS.forEach(r=>{
+    const pn=normPlaca(r.placa); if(!pn) return;
+    if(!placaGrupos[pn]) placaGrupos[pn]=new Set();
+    if(r.grupo) placaGrupos[pn].add(String(r.grupo).trim());
+    if(!placaTiposServ[pn]) placaTiposServ[pn]=new Set();
+    if(r.tipoServicio) placaTiposServ[pn].add(String(r.tipoServicio).trim());
+  });
   // dedup por placa
   const _m=new Map();
   UNIDADES.filter(u=>(u.estado||'').toUpperCase()==='ACTIVO').forEach(u=>{const k=normPlaca(u.placa);if(k&&!_m.has(k))_m.set(k,u);});
   let rows=[];
   [..._m.values()].forEach(u=>{
-    if(placasRep && !placasRep.has(normPlaca(u.placa))) return;
+    const pn=normPlaca(u.placa);
+    if(placasRep && !placasRep.has(pn)) return;
+    if(fGrupo && !(placaGrupos[pn]&&placaGrupos[pn].has(fGrupo))) return;
+    if(fTipoServ && !(placaTiposServ[pn]&&placaTiposServ[pn].has(fTipoServ))) return;
     if(fSearch && !((u.placa||'')+' '+(u.proveedor||'')).toLowerCase().includes(fSearch)) return;
     const cat=clasifServicio(u.tipoServicio||provServicioDeUnidad(u));
     if(fCat && cat!==fCat) return;
@@ -4608,6 +4659,8 @@ function renderChecklistCond(){
   const thead=document.getElementById('cl-cond-thead'); if(!thead) return;
   const fSearch=(document.getElementById('cl-cond-srch')||{value:''}).value.toLowerCase();
   const fDoc=(document.getElementById('cl-cond-doc')||{value:''}).value;
+  const fGrupo=(document.getElementById('cl-grupo-filtro')||{value:''}).value;
+  const fTipoServ=(document.getElementById('cl-tiposerv-filtro')||{value:''}).value;
   const DOCS_C=[{c:'docDni',l:'DNI'},{c:'docLic',l:'Licencia'},{c:'docRecord',l:'Récord'},{c:'docSctr',l:'SCTR'},{c:'docEmo',l:'EMO'},{c:'docCul',l:'CUL'}];
 
   thead.innerHTML='<tr><th>#</th><th style="min-width:170px;text-align:left">Conductor</th><th>DNI</th><th style="min-width:140px;text-align:left">Proveedor</th>'+
@@ -4618,6 +4671,15 @@ function renderChecklistCond(){
   const normNom=s=>(s||'').toString().toUpperCase().trim().replace(/\s+/g,' ');
   const dnisRep = hayRep ? new Set(REP_ROWS.map(r=>String(r.dni||'').trim()).filter(Boolean)) : null;
   const nomsRep = hayRep ? new Set(REP_ROWS.map(r=>normNom(r.conductor)).filter(Boolean)) : null;
+  // Grupo de vehículo y Tipo de Servicio por DNI y por nombre (según el reporte del día)
+  const dniGrupos={}, nomGrupos={}, dniTiposServ={}, nomTiposServ={};
+  if(hayRep) REP_ROWS.forEach(r=>{
+    const dn=String(r.dni||'').trim(); const nm=normNom(r.conductor);
+    if(r.grupo && dn){ if(!dniGrupos[dn]) dniGrupos[dn]=new Set(); dniGrupos[dn].add(String(r.grupo).trim()); }
+    if(r.grupo && nm){ if(!nomGrupos[nm]) nomGrupos[nm]=new Set(); nomGrupos[nm].add(String(r.grupo).trim()); }
+    if(r.tipoServicio && dn){ if(!dniTiposServ[dn]) dniTiposServ[dn]=new Set(); dniTiposServ[dn].add(String(r.tipoServicio).trim()); }
+    if(r.tipoServicio && nm){ if(!nomTiposServ[nm]) nomTiposServ[nm]=new Set(); nomTiposServ[nm].add(String(r.tipoServicio).trim()); }
+  });
   const _m=new Map();
   CONDUCTORES.filter(c=>(c.estado||'').toUpperCase()==='ACTIVO').forEach(c=>{const k=String(c.dni||'').trim()||(c.conductor||'').trim().toUpperCase();if(k&&!_m.has(k))_m.set(k,c);});
   let rows=[];
@@ -4626,6 +4688,16 @@ function renderChecklistCond(){
       const dn=String(c.dni||'').trim();
       const enRep=(dn&&dnisRep.has(dn))||nomsRep.has(normNom(c.conductor));
       if(!enRep) return;
+    }
+    if(fGrupo){
+      const dn=String(c.dni||'').trim(); const nm=normNom(c.conductor);
+      const grpsC = (dn&&dniGrupos[dn]) || nomGrupos[nm];
+      if(!grpsC || !grpsC.has(fGrupo)) return;
+    }
+    if(fTipoServ){
+      const dn=String(c.dni||'').trim(); const nm=normNom(c.conductor);
+      const tsC = (dn&&dniTiposServ[dn]) || nomTiposServ[nm];
+      if(!tsC || !tsC.has(fTipoServ)) return;
     }
     if(fSearch && !((c.conductor||'')+' '+(c.dni||'')+' '+(c.proveedor||'')).toLowerCase().includes(fSearch)) return;
     const ok=DOCS_C.filter(d=>c[d.c]==='✓').length;
@@ -5355,7 +5427,7 @@ function guardarRepActivo(){
     ruta:r.ruta||'', centro:r.centro||'', turno:r.turno||'',
     tipoServicio:r.tipoServicio||'', sedeOrigen:r.sedeOrigen||'',
     destino:r.destino||'', sede:r.sede||'', modalidad:r.modalidad||'',
-    tipoUnidExc:r.tipoUnidExc||''
+    tipoUnidExc:r.tipoUnidExc||'', grupo:r.grupo||''
   }));
   // localStorage (instantáneo, sin red)
   try {
@@ -5364,10 +5436,10 @@ function guardarRepActivo(){
   // Sheets REPORTE_ACTIVO (para otros usuarios)
   if(GS_URL){
     const headers = ['PLACA','CONDUCTOR','DNI','PROVEEDOR','RUTA','CENTRO','TURNO',
-                     'TIPO_SERVICIO','SEDE_ORIGEN','DESTINO','SEDE','MODALIDAD','TIPO_UNIDAD','FECHA'];
+                     'TIPO_SERVICIO','SEDE_ORIGEN','DESTINO','SEDE','MODALIDAD','TIPO_UNIDAD','GRUPO','FECHA'];
     const rows = minimal.map(r=>[
       r.placa, r.conductor, r.dni, r.proveedor, r.ruta, r.centro, r.turno,
-      r.tipoServicio, r.sedeOrigen, r.destino, r.sede, r.modalidad, r.tipoUnidExc, fecha
+      r.tipoServicio, r.sedeOrigen, r.destino, r.sede, r.modalidad, r.tipoUnidExc, r.grupo, fecha
     ]);
     fetch(GS_URL, {
       method:'POST',
@@ -5401,7 +5473,8 @@ async function restaurarRepActivo(){
           proveedor:r.proveedor||'', ruta:r.ruta||'', centro:r.centro||'',
           turno:r.turno||'', tipoServicio:(r.tipo_servicio||r.tiposervicio||''),
           sedeOrigen:(r.sede_origen||r.sedeorigen||''), destino:r.destino||'',
-          sede:r.sede||'', modalidad:r.modalidad||'', tipoUnidExc:(r.tipo_unidad||'')
+          sede:r.sede||'', modalidad:r.modalidad||'', tipoUnidExc:(r.tipo_unidad||''),
+          grupo:r.grupo||''
         }));
         const fecha = raw[0]?.fecha || '';
         _reconstruirRepRows(rows, fecha);
