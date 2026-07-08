@@ -3360,6 +3360,10 @@ function previewRepNombre(i){document.getElementById('rep-nombre').textContent=i
 function normPlaca(p){
   return (p||'').toString().toUpperCase().trim().replace(/[\s\-\.]/g,'');
 }
+// Clave de DNI insensible a ceros a la izquierda y decimales tipo Excel (12345.0)
+function normDni(d){
+  return String(d||'').trim().replace(/\.0+$/,'').replace(/^0+(?=\d)/,'');
+}
 function buscarPorPlaca(p){
   const pn=normPlaca(p);
   if(!pn) return null;
@@ -3675,7 +3679,8 @@ let editTarget=null;
 
 // Abre el modal de edición de fecha buscando por placa (unidades) o por DNI (conductores)
 function abrirEditPlaca(placa, diasCampo, fechaCampo){
-  const idx = UNIDADES.findIndex(u=>u.placa===(placa||'').replace(/\\'/g,"'"));
+  const placaClean=(placa||'').replace(/\\'/g,"'");
+  const idx = UNIDADES.findIndex(u=>normPlaca(u.placa)===normPlaca(placaClean));
   if(idx<0){ showToast('Unidad no encontrada en BD','err'); return; }
   const label = {fechaSoat:'SOAT',fechaRtv:'RTV',fechaTc:'T.C.'}[fechaCampo]||fechaCampo;
   editTarget={tipo:'unidad',idx,diasCampo,fechaCampo};
@@ -3685,7 +3690,7 @@ function abrirEditPlaca(placa, diasCampo, fechaCampo){
   document.getElementById('edit-modal').classList.add('open');
 }
 function abrirEditDni(dni, diasCampo, fechaCampo, nombre){
-  const idx = CONDUCTORES.findIndex(c=>c.dni===String(dni).trim());
+  const idx = CONDUCTORES.findIndex(c=>normDni(c.dni)===normDni(dni));
   if(idx<0){ showToast('Conductor no encontrado en BD','err'); return; }
   const label = {fechaLic:'Licencia',fechaSctr:'SCTR',fechaEmo:'EMO'}[fechaCampo]||fechaCampo;
   editTarget={tipo:'conductor',idx,diasCampo,fechaCampo};
@@ -3863,7 +3868,7 @@ function poblarDatalistProv(){
 
 function buscarConductor(dni){
   if(!dni||dni.length<7)return;
-  const c=CONDUCTORES.find(x=>x.dni===dni);
+  const c=CONDUCTORES.find(x=>normDni(x.dni)===normDni(dni));
   if(c){
     document.getElementById('c-nombre').value=c.conductor||'';
     document.getElementById('c-proveedor').value=c.proveedor||'';
@@ -3885,7 +3890,7 @@ function buscarConductor(dni){
 }
 function buscarUnidad(placa){
   if(!placa||placa.length<5)return;
-  const u=UNIDADES.find(x=>x.placa&&x.placa.toUpperCase()===placa.toUpperCase());
+  const u=UNIDADES.find(x=>normPlaca(x.placa)===normPlaca(placa));
   if(u){
     document.getElementById('u-proveedor').value=u.proveedor||'';
     document.getElementById('u-estado').value=u.estado||'ACTIVO';
@@ -3914,7 +3919,7 @@ function buscarUnidad(placa){
 // Abre el formulario de UNIDAD con todos los datos cargados (editar)
 function editarUnidad(placa){
   if(typeof cerrarDetalleProv==='function') cerrarDetalleProv();
-  const u=UNIDADES.find(x=>(x.placa||'').toUpperCase()===(placa||'').toUpperCase());
+  const u=UNIDADES.find(x=>normPlaca(x.placa)===normPlaca(placa));
   if(!u){ showToast('Unidad no encontrada','err'); return; }
   goPage('reg-unidad', document.querySelector('.nav-item[onclick*="reg-unidad"]'));
   setTimeout(()=>{
@@ -3934,7 +3939,7 @@ function editarUnidad(placa){
 // Abre el formulario de CONDUCTOR con todos los datos cargados (editar)
 function editarConductor(dni){
   if(typeof cerrarDetalleProv==='function') cerrarDetalleProv();
-  const c=CONDUCTORES.find(x=>String(x.dni||'').trim()===String(dni||'').trim());
+  const c=CONDUCTORES.find(x=>normDni(x.dni)===normDni(dni));
   if(!c){ showToast('Conductor no encontrado','err'); return; }
   goPage('reg-conductor', document.querySelector('.nav-item[onclick*="reg-conductor"]'));
   setTimeout(()=>{
@@ -3979,7 +3984,13 @@ async function guardarConductor(){
     docEmo:document.getElementById('ch-emo').checked?'✓':'✗',
     docCul:document.getElementById('ch-cul')?.checked?'✓':'✗'};
   recalcular();
-  let idx=CONDUCTORES.findIndex(c=>c.dni===dni);
+  // Buscar por DNI normalizado (sin ceros a la izquierda / decimales de Excel)
+  let idx=CONDUCTORES.findIndex(c=>normDni(c.dni)===normDni(dni));
+  // Si no hay match por DNI, buscar por nombre (sin importar mayúsculas/orden Apellidos-Nombres)
+  if(idx<0){
+    const nKey=nombreKey(nombre);
+    idx=CONDUCTORES.findIndex(c=>c.conductor&&nombreKey(c.conductor)===nKey);
+  }
   if(idx>=0) CONDUCTORES[idx]={...CONDUCTORES[idx],...row};
   else { CONDUCTORES.push({...row, estado:'ACTIVO'}); idx=CONDUCTORES.length-1; }
   recalcular();
@@ -4038,7 +4049,7 @@ async function guardarUnidad(){
     docCheckList:document.getElementById('uch-checklist')?.checked?'✓':'✗',
     tipoServicio:document.getElementById('u-tiposervicio')?.value||''};
   recalcular();
-  let idx=UNIDADES.findIndex(u=>u.placa===placa);
+  let idx=UNIDADES.findIndex(u=>normPlaca(u.placa)===normPlaca(placa));
   if(idx>=0) UNIDADES[idx]={...UNIDADES[idx],...row};
   else { UNIDADES.push({...row, estado:'ACTIVO'}); idx=UNIDADES.length-1; }
   recalcular();
