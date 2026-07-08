@@ -1699,11 +1699,11 @@ async function syncFromSheets(){
         ruta:          o.ruta||'',
         turno:         o.turno||'',
         numLic:        o['n° licencia de conducir']||'',
-        catLic:        o['categoría licencia']||'',
-        fechaLic:      o['fecha de revalidación']||'',
-        diasLic:       o['días vencimiento lic.']||'',
+        catLic:        o['categoria licencia']||'',
+        fechaLic:      o['fecha de revalidacion']||'',
+        diasLic:       o['dias vencimiento lic.']||'',
         estadoLic:     (o['estado licencia']||'').toString().toUpperCase(),
-        restriccion:   o['restricción']||'',
+        restriccion:   o['restriccion']||'',
         celular:       o.celular||'',
         record:        o['record papeletas (mtc)']||'',
         cantPapeletas: o['cantidad papeletas']||'0',
@@ -1714,14 +1714,14 @@ async function syncFromSheets(){
         asegSctr:      o['aseguradora sctr']||'',
         tipoSctr:      o['tipo de sctr']||'',
         fechaSctr:     o['fecha vencimiento sctr']||'',
-        diasSctr:      o['días vencimiento sctr']||'',
+        diasSctr:      o['dias vencimiento sctr']||'',
         estadoSctr:    (o['estado sctr']||'').toString().toUpperCase(),
         docDni:        boolDoc(o['dni']),
         docLic:        boolDoc(o['licencia de conducir']),
         docRecord:     boolDoc(o['record de conductor']),
         docSctr:       boolDoc(o['sctr']),
-        docEmo:        boolDoc(o['emo -  examen médico ocupacional']||o['emo - examen médico ocupacional']||o['emo']),
-        docCul:        boolDoc(o['certificado unico laboral']||o['certificado único laboral']||o['cul']),
+        docEmo:        boolDoc(o['emo -  examen medico ocupacional']||o['emo - examen medico ocupacional']||o['emo']),
+        docCul:        boolDoc(o['certificado unico laboral']||o['cul']),
         cumpl:         o.cumplimiento||'—',
         carpeta:       o['carpeta conductor']||o.carpeta||'',
       }));
@@ -1741,18 +1741,18 @@ async function syncFromSheets(){
     // Boletín Informativo - SUNARP | Póliza | Cumplimiento
     if(unidRaw.length>0){
       UNIDADES = unidRaw.map(o=>({
-        placa: o.placa||o['placa del vehiculo']||o['placa vehiculo']||o['placa del vehículo']||o['n placa']||o['nro placa']||o['matricula']||o['número de placa']||o['numero de placa']||Object.values(o).find(v=>v&&/^[A-Z0-9]{5,7}$/.test(String(v).trim().replace(/[\-\s]/g,'')))||'',
+        placa: o.placa||o['placa del vehiculo']||o['placa vehiculo']||o['n placa']||o['nro placa']||o['matricula']||o['numero de placa']||Object.values(o).find(v=>v&&/^[A-Z0-9]{5,7}$/.test(String(v).trim().replace(/[\-\s]/g,'')))||'',
         estado:        (o.estado||'').toString().trim().toUpperCase()||'ACTIVO',
         proveedor:     o.proveedor||'',
         centro:        o.centro||'',
         detalleCentro: o['detalle centro']||'',
         modalidad:     o.modalidad||'',
         tipo:          o['tipo de unidad']||'',
-        anio:          o['año fab.']||'',
-        antiguedad:    o['antigüedad']||'',
-        categoria:     o['categoría']||'',
+        anio:          o['ano fab.']||'',
+        antiguedad:    o['antiguedad']||'',
+        categoria:     o['categoria']||'',
         marca:         o.marca||'',
-        carroceria:    o['carrocería']||'',
+        carroceria:    o['carroceria']||'',
         asientos:      o['n° asientos']||'',
         pasajeros:     o['n° pasajeros']||'',
         ejes:          o.ejes||'',
@@ -1762,19 +1762,19 @@ async function syncFromSheets(){
         reacondicionado: o.reacondicionado||'',
         tieneTarjProp: o['tiene tarj. prop.']||'',
         fechaSoat:     o['fecha vencimiento soat']||'',
-        diasSoat:      o['días vencimiento soat']||'',
+        diasSoat:      o['dias vencimiento soat']||'',
         estadoSoat:    (o['alerta soat']||'').toString().toUpperCase(),
         usoSoat:       o['uso soat']||'',
         tipoSeguro:    o['tipo de seguro']||'',
         aseguradora:   o.aseguradora||'',
         tipoSoat:      o['tipo soat']||'',
         fechaRtv:      o['fecha vencimiento rtv']||'',
-        diasRtv:       o['días vencimiento rtv']||'',
+        diasRtv:       o['dias vencimiento rtv']||'',
         estadoRtv:     (o['alerta rtv']||'').toString().toUpperCase(),
         obsRtv:        o.observaciones||'',
         tieneTc:       o['¿tiene t.c.?']||'',
         fechaTc:       o['fecha vencimiento t.c.']||'',
-        diasTc:        o['días vencimiento t.c.']||'',
+        diasTc:        o['dias vencimiento t.c.']||'',
         estadoTc:      (o['alerta t.c.']||'').toString().toUpperCase(),
         propietario:   o.propietario||'',
         responsable:   o.responsable||'',
@@ -1784,8 +1784,8 @@ async function syncFromSheets(){
         docRtv:        boolDoc(o['rev. tec.']),
         docTc:         boolDoc(o['tuc']||o['tarj. circ.']),
         docMnto:       boolDoc(o['program mnto']),
-        docBoletin:    boolDoc(o['boletin informativo - sunarp']||o['boletín informativo - sunarp']),
-        docPoliza:     boolDoc(o['poliza']||o['póliza']),
+        docBoletin:    boolDoc(o['boletin informativo - sunarp']),
+        docPoliza:     boolDoc(o['poliza']),
         docSeguroRc:   boolDoc(o['seguro rc']),
         docSeguroCarga:boolDoc(o['seguro de carga']),
         docCheckList:  boolDoc(o['check list recepcion devolucion']||o['check list recepcion y devolucion']||o['sheck list de recepcion y devolucion de unidad']),
@@ -1830,7 +1830,7 @@ async function syncFromSheets(){
           tipo:        o['tipo de razon social']||'',
           actividad:   o['actividad economica principal']||'',
           responsable: o.responsable||'',
-          tipoServicio: o['categoria']||o['categoría']||o['tipo de servicio']||o['tipo servicio']||o.servicio||'',
+          tipoServicio: o['categoria']||o['tipo de servicio']||o['tipo servicio']||o.servicio||'',
           // 15 documentos nuevos (índices 0–14)
           docs: [
             boolDoc(o['contrato']||o['contrato.']),                               // 0
@@ -1841,11 +1841,11 @@ async function syncFromSheets(){
             boolDoc(o['lista clinton']),                                          // 5
             boolDoc(o['deuda coactiva']),                                         // 6
             boolDoc(o['referencias comercial']),                                  // 7
-            boolDoc(o['brochure o carta de presentacion']||o['brochure o carta de presentación']), // 8
+            boolDoc(o['brochure o carta de presentacion']), // 8
             boolDoc(o['antecedentes']),                                           // 9
             boolDoc(o['declaracion jurada de normas de seguridad']),              // 10
             boolDoc(o['declaracion jurada de normas y politicas']),               // 11
-            boolDoc(o['cotizacion']||o['cotización']),                            // 12
+            boolDoc(o['cotizacion']),                            // 12
             boolDoc(o['carta de compromiso materia prima']),                      // 13
             boolDoc(o['carta de compromiso refrigerado']),                        // 14
           ],
