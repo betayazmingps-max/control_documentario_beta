@@ -2961,13 +2961,19 @@ function abrirDetalleProv(i){
     REP_ROWS.forEach(r=>{
       if(r.placa) placasHoy.add(normPlaca(r.placa));
       if(r.dni) dnisHoy.add(String(r.dni||'').trim());
-      if(r.conductor) condsNomHoy.add(normNombre(r.conductor));
+      // Si el conductor ya fue resuelto contra la BD (por DNI, orden de nombre o tipeo similar),
+      // usamos el nombre TAL COMO ESTÁ EN LA BD para que la tarjeta correspondiente se marque activa hoy.
+      if(r.condBD && r.condBD.dni) dnisHoy.add(String(r.condBD.dni||'').trim());
+      if(r.condBD && r.condBD.conductor) condsNomHoy.add(normNombre(r.condBD.conductor));
+      else if(r.conductor) condsNomHoy.add(normNombre(r.conductor));
       if((r.proveedor||'').trim().toUpperCase()!==nUp) return;
       const pl=normPlaca(r.placa);
       if(r.placa && !placasBD.has(pl) && !vP.has(pl)){ vP.add(pl); unidsNuevas.push(r.placa); }
       const dn=String(r.dni||'').trim();
       const nom=normNombre(r.conductor);
-      const yaExiste = (dn && dnisBD.has(dn)) || (nom && nombresBD.has(nom));  // existe por DNI o por nombre
+      // "Ya existe" se apoya en el match ya resuelto por buscarConductorBD (tolera typos/orden/mayúsculas),
+      // no solo en comparación exacta de DNI o nombre.
+      const yaExiste = !!r.condBD || (dn && dnisBD.has(dn)) || (nom && nombresBD.has(nom));
       const key = dn||nom;
       if((r.conductor||dn) && !yaExiste && !vC.has(key)){ vC.add(key); condsNuevos.push({dni:dn,nombre:r.conductor||'',placa:r.placa||''}); }
     });
