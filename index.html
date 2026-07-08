@@ -3379,6 +3379,23 @@ function normText(s){
 function nombreKey(s){
   return normText(s).split(' ').filter(Boolean).sort().join(' ');
 }
+// Distancia de edición (Levenshtein) — para tolerar errores de tipeo en nombres
+function levenshtein(a,b){
+  const m=a.length, n=b.length;
+  if(m===0) return n;
+  if(n===0) return m;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){
+    const curr=[i];
+    for(let j=1;j<=n;j++){
+      curr[j] = a[i-1]===b[j-1]
+        ? prev[j-1]
+        : 1+Math.min(prev[j-1],prev[j],curr[j-1]);
+    }
+    prev=curr;
+  }
+  return prev[n];
+}
 function buscarConductorBD(nombre,dni){
   if(dni){
     // DNI: quitar decimales .0, espacios y ceros iniciales en comparación
@@ -3401,11 +3418,25 @@ function buscarConductorBD(nombre,dni){
     // 3. Búsqueda parcial: todos los tokens del Excel están en el nombre BD (sin importar orden)
     const tokens=nNorm.split(' ').filter(t=>t.length>2);
     if(tokens.length>=2){
-      return CONDUCTORES.find(c=>{
+      const parcial=CONDUCTORES.find(c=>{
         if(!c.conductor) return false;
         const cn=normText(c.conductor);
         return tokens.every(t=>cn.includes(t));
-      })||null;
+      });
+      if(parcial) return parcial;
+    }
+    // 4. Búsqueda difusa: tolera 1-2 letras de diferencia (errores de tipeo), sin importar orden.
+    // Solo devuelve match si es claro (mejor candidato inequívocamente más cercano que el segundo mejor).
+    let mejor=null, mejorDist=Infinity, segundoDist=Infinity;
+    CONDUCTORES.forEach(c=>{
+      if(!c.conductor) return;
+      const dist=levenshtein(nKey, nombreKey(c.conductor));
+      if(dist<mejorDist){ segundoDist=mejorDist; mejorDist=dist; mejor=c; }
+      else if(dist<segundoDist){ segundoDist=dist; }
+    });
+    const maxDist = nKey.length>15 ? 3 : 2;
+    if(mejor && mejorDist<=maxDist && mejorDist<segundoDist){
+      return mejor;
     }
   }
   return null;
