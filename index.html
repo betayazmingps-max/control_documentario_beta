@@ -640,6 +640,16 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       </div>
     </div>
 
+    <!-- Selector: qué % de cumplimiento mostrar en las tarjetas -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <span style="font-size:11px;color:var(--text2);font-weight:600">Ver cumplimiento de:</span>
+      <div id="pv-metrica-btns" style="display:flex;gap:4px">
+        <button class="rep-btn active" data-m="proveedor" onclick="setPvMetrica('proveedor',this)">📄 Proveedores</button>
+        <button class="rep-btn" data-m="unidad" onclick="setPvMetrica('unidad',this)">🚛 Unidades</button>
+        <button class="rep-btn" data-m="conductor" onclick="setPvMetrica('conductor',this)">👤 Conductores</button>
+      </div>
+    </div>
+
     <!-- Grid de tarjetas -->
     <div id="prov-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px"></div>
     <!-- IDs ocultos para compatibilidad -->
@@ -2775,6 +2785,45 @@ function provValidos(){
   });
 }
 
+// Qué % de cumplimiento se muestra en las tarjetas de Proveedores: 'proveedor' | 'unidad' | 'conductor'
+let PV_METRICA='proveedor';
+function setPvMetrica(m,btn){
+  PV_METRICA=m;
+  document.querySelectorAll('#pv-metrica-btns .rep-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderProveedores();
+}
+// Cumplimiento documentario agregado de las UNIDADES de un proveedor
+function cumplUnidProv(nUp){
+  const unids=UNIDADES.filter(u=>(u.proveedor||'').trim().toUpperCase()===nUp && (u.estado||'').toUpperCase()==='ACTIVO');
+  let ok=0,tot=0,completas=0;
+  unids.forEach(u=>{
+    const ap=docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u));
+    const okU=ap.filter(d=>u[d.campo]==='✓').length;
+    ok+=okU; tot+=ap.length;
+    if(ap.length && okU===ap.length) completas++;
+  });
+  return {ok,tot,pct:tot?Math.round(ok/tot*100):0,cant:unids.length,completas};
+}
+const DOCS_C_PROV=[{c:'docDni'},{c:'docLic'},{c:'docRecord'},{c:'docSctr'},{c:'docEmo'},{c:'docCul'}];
+// Cumplimiento documentario agregado de los CONDUCTORES de un proveedor
+function cumplCondProv(nUp){
+  const conds=CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp && (c.estado||'').toUpperCase()==='ACTIVO');
+  let ok=0,tot=0,completos=0;
+  conds.forEach(c=>{
+    const okC=DOCS_C_PROV.filter(d=>c[d.c]==='✓').length;
+    ok+=okC; tot+=DOCS_C_PROV.length;
+    if(okC===DOCS_C_PROV.length) completos++;
+  });
+  return {ok,tot,pct:tot?Math.round(ok/tot*100):0,cant:conds.length,completos};
+}
+// Devuelve el cumplimiento según la métrica seleccionada (proveedor/unidad/conductor)
+function metricaProv(p){
+  const nUp=(p.nombre||'').trim().toUpperCase();
+  if(PV_METRICA==='unidad')    return cumplUnidProv(nUp);
+  if(PV_METRICA==='conductor') return cumplCondProv(nUp);
+  return cumplProv(p);
+}
 function renderProveedores(){
   const cont = document.getElementById('prov-cards');
   if(!cont) return;
@@ -2816,7 +2865,7 @@ function renderProveedores(){
   // KPIs (sobre todos los activos, sin filtros de búsqueda)
   let kc=0,ki=0,kx=0;
   activos.forEach(p=>{
-    const pct=cumplProv(p).pct;
+    const pct=metricaProv(p).pct;
     if(pct>=80)kc++; else if(pct>=50)ki++; else kx++;
   });
   const sk=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -2828,7 +2877,7 @@ function renderProveedores(){
     if(zona && (p.zona||'').toUpperCase()!==zona) return false;
     if(tipoServ && clasifServicio(provTipoServicio(p))!==tipoServ) return false;
     if(cumplF){
-      const pct=cumplProv(p).pct;
+      const pct=metricaProv(p).pct;
       if(cumplF==='completo'  && pct<80) return false;
       if(cumplF==='proceso'   && (pct<50||pct>=80)) return false;
       if(cumplF==='incompleto'&& pct>=50) return false;
@@ -2874,13 +2923,20 @@ function renderProveedores(){
       </div>`;
     }
     const pd=getPD(p.nombre);
-    const cmp=cumplProv(p); const ok=cmp.ok, pct=cmp.pct;
+    const nUp=(p.nombre||'').trim().toUpperCase();
+    const cmp=metricaProv(p); const ok=cmp.ok, pct=cmp.pct;
     const col=pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
     const estadoTxt=pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO';
-    const aplicaIdx=docsAplicables(p);
-    const faltan=aplicaIdx.filter(di=>!pd.docs[di]).map(di=>DOCS_PROV[di]);
-    const faltanTxt = faltan.length ? faltan.slice(0,3).join(', ')+(faltan.length>3?` +${faltan.length-3} más`:'') : 'Todo completo ✓';
-    const nUp=(p.nombre||'').trim().toUpperCase();
+    let faltanTxt;
+    if(PV_METRICA==='unidad'){
+      faltanTxt = cmp.cant ? `${cmp.completas}/${cmp.cant} unidades con doc. completa` : 'Sin unidades activas';
+    } else if(PV_METRICA==='conductor'){
+      faltanTxt = cmp.cant ? `${cmp.completos}/${cmp.cant} conductores con doc. completa` : 'Sin conductores activos';
+    } else {
+      const aplicaIdx=docsAplicables(p);
+      const faltan=aplicaIdx.filter(di=>!pd.docs[di]).map(di=>DOCS_PROV[di]);
+      faltanTxt = faltan.length ? faltan.slice(0,3).join(', ')+(faltan.length>3?` +${faltan.length-3} más`:'') : 'Todo completo ✓';
+    }
     const serv=clasifServicio(provTipoServicio(p));
     return `<div onclick="abrirDetalleProv(${i})" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
       onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.10)';this.style.transform='translateY(-2px)'"
@@ -2895,14 +2951,15 @@ function renderProveedores(){
         ${serv?`<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:20px;font-weight:600">${serv}</span>`:''}
         ${(pd.resp||p.responsable)?`<span style="font-size:10px;background:#f9fafb;color:#6b7280;padding:2px 8px;border-radius:20px;font-weight:600">👤 ${pd.resp||p.responsable}</span>`:''}
       </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
         <div style="flex:1;height:8px;background:#f3f4f6;border-radius:6px;overflow:hidden">
           <div style="width:${pct}%;height:100%;background:${col}"></div>
         </div>
         <span style="font-size:12px;font-weight:700;color:${col};font-family:var(--mono)">${ok}/${cmp.tot}</span>
       </div>
+      <div style="font-size:9.5px;color:#9ca3af;margin-bottom:6px">${PV_METRICA==='unidad'?'📄 Docs. de unidades':PV_METRICA==='conductor'?'📄 Docs. de conductores':'📄 Docs. del proveedor'}</div>
       <div style="font-size:11px;color:${pct>=80?'#15803d':'#b45309'};display:flex;align-items:center;gap:4px">
-        ${pct>=80?'✓ '+estadoTxt:'⚠ Falta: '+faltanTxt}
+        ${pct>=80 ? '✓ '+estadoTxt : (PV_METRICA==='proveedor' ? '⚠ Falta: '+faltanTxt : '⚠ '+faltanTxt)}
       </div>
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af">
         <span>👤 ${provCond[nUp]||0} cond.</span>
