@@ -4401,39 +4401,60 @@ function renderReporteProveedores(){
   const tbody=document.getElementById('rep-prov-tbody');
   if(!rows.length){ tbody.innerHTML=`<tr><td colspan="${4+DOCS_PROV.length+1}" class="empty-state">Sin proveedores para los filtros</td></tr>`; return; }
 
-  tbody.innerHTML=rows.map((r,n)=>{
-    const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
-    const nomEsc=(r.p.nombre||'').replace(/'/g,"\\'");
-    const cells=DOCS_PROV.map((d,i)=>{
-      if(!r.aplica.has(i)) return '<td class="tc" style="background:#f8fafc;color:#cbd5e1;font-size:11px">–</td>';
-      const tiene=r.pd.docs[i];
-      return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleRepProvDoc('${nomEsc}',${i})" title="${d}: ${tiene?'TIENE':'FALTA'}">
-        <div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${tiene?'#dcfce7':'#fee2e2'};color:${tiene?'#16a34a':'#dc2626'}">${tiene?'✓':'✗'}</div></td>`;
-    }).join('');
-    return `<tr style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
-      <td class="mono" style="color:#94a3b8">${n+1}</td>
-      <td style="font-weight:700;font-size:12.5px;color:#0f172a;text-align:left">${r.p.nombre}</td>
-      <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:3px 9px;border-radius:12px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'<span style="color:#cbd5e1">—</span>'}</td>
-      <td class="mono" style="font-size:10px;color:#475569">${r.sedes||'—'}</td>
-      ${cells}
-      <td style="padding:4px 6px">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-          <span style="font-weight:800;color:${col};font-family:var(--mono);font-size:12px">${r.ok}/${r.tot}</span>
-          <div style="width:46px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div>
-        </div>
-      </td>
-    </tr>`;
+  tbody.innerHTML=rows.map((r,n)=>filaClProv(r,n)).join('');
+}
+function filaClProv(r,n){
+  const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
+  const nomEsc=(r.p.nombre||'').replace(/'/g,"\\'");
+  const cells=DOCS_PROV.map((d,i)=>{
+    if(!r.aplica.has(i)) return '<td class="tc" style="background:#f8fafc;color:#cbd5e1;font-size:11px">–</td>';
+    const tiene=r.pd.docs[i];
+    return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleRepProvDoc('${nomEsc}',${i})" title="${d}: ${tiene?'TIENE':'FALTA'}">
+      <div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${tiene?'#dcfce7':'#fee2e2'};color:${tiene?'#16a34a':'#dc2626'}">${tiene?'✓':'✗'}</div></td>`;
   }).join('');
+  return `<tr style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+    <td class="mono" style="color:#94a3b8">${n+1}</td>
+    <td style="font-weight:700;font-size:12.5px;color:#0f172a;text-align:left">${r.p.nombre}</td>
+    <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:3px 9px;border-radius:12px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'<span style="color:#cbd5e1">—</span>'}</td>
+    <td class="mono" style="font-size:10px;color:#475569">${r.sedes||'—'}</td>
+    ${cells}
+    <td style="padding:4px 6px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        <span style="font-weight:800;color:${col};font-family:var(--mono);font-size:12px">${r.ok}/${r.tot}</span>
+        <div style="width:46px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div>
+      </div>
+    </td>
+  </tr>`;
+}
+// Refresca SOLO la fila de un proveedor (sin reordenar la tabla). El reordenamiento
+// por % de cumplimiento solo ocurre al entrar a la página o cambiar filtros.
+function refrescarFilaClProv(nombre){
+  const rows=window._CL_PROV_ROWS;
+  if(!rows) return false;
+  const nUp=(nombre||'').trim().toUpperCase();
+  const idx=rows.findIndex(r=>(r.p.nombre||'').trim().toUpperCase()===nUp);
+  if(idx<0) return false;
+  const r=rows[idx];
+  const pd=getPD(r.p.nombre);
+  r.pd=pd;
+  r.ok=[...r.aplica].filter(i=>pd.docs[i]).length;
+  r.tot=r.aplica.size;
+  r.pct=r.tot?Math.round(r.ok/r.tot*100):0;
+  const tbody=document.getElementById('rep-prov-tbody');
+  const tr=tbody?.children[idx];
+  if(!tr) return false;
+  tr.outerHTML=filaClProv(r,idx);
+  return true;
 }
 // Marcar/desmarcar un doc desde el cuadro de reporte (guarda en Sheets)
 async function toggleRepProvDoc(nombre,di){
   const pd=getPD(nombre); const prev=pd.docs[di]; pd.docs[di]=!pd.docs[di]; PD[nombre]=pd; savePD();
-  renderReporteProveedores();
+  if(!refrescarFilaClProv(nombre)) renderReporteProveedores();
   const ok = await guardarProvEnSheets(nombre);
   if(!ok){
     showToast('⚠ No se pudo guardar en Sheets, reintenta','err');
     pd.docs[di]=prev; PD[nombre]=pd; savePD();
-    renderReporteProveedores();
+    if(!refrescarFilaClProv(nombre)) renderReporteProveedores();
   }
 }
 
@@ -4487,25 +4508,43 @@ function renderChecklistUnid(){
   document.getElementById('cl-unid-count').textContent=rows.length+' unidades';
   const tbody=document.getElementById('cl-unid-tbody');
   if(!rows.length){ tbody.innerHTML=`<tr><td colspan="${4+DOCS_UNID.length+1}" class="empty-state">Sin unidades para los filtros</td></tr>`; return; }
-  tbody.innerHTML=rows.map((r,n)=>{
-    const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
-    const pl=(r.u.placa||'').replace(/'/g,"\\'");
-    const cells=DOCS_UNID.map(d=>{
-      if(!r.aplica.has(d.campo)) return '<td class="tc" style="background:#f8fafc;color:#cbd5e1">–</td>';
-      const v=r.u[d.campo]==='✓';
-      return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleClUnidDoc('${pl}','${d.campo}')" title="${d.lbl}"><div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${v?'#dcfce7':'#fee2e2'};color:${v?'#16a34a':'#dc2626'}">${v?'✓':'✗'}</div></td>`;
-    }).join('');
-    return `<tr style="border-bottom:1px solid #f1f5f9">
-      <td class="mono" style="color:#94a3b8">${n+1}</td>
-      <td class="mono" style="font-weight:700;text-align:left;color:var(--accent2)">${r.u.placa||'—'}</td>
-      <td style="font-size:11px;text-align:left">${(r.u.proveedor||'—').slice(0,28)}</td>
-      <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'—'}</td>
-      ${cells}
-      <td><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-weight:800;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</span><div style="width:42px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div></div></td>
-    </tr>`;
-  }).join('');
+  tbody.innerHTML=rows.map((r,n)=>filaClUnid(r,n)).join('');
 }
-function toggleClUnidDoc(placa,campo){ toggleDocUnid(placa,campo).then(()=>renderChecklistUnid()); }
+function filaClUnid(r,n){
+  const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
+  const pl=(r.u.placa||'').replace(/'/g,"\\'");
+  const cells=DOCS_UNID.map(d=>{
+    if(!r.aplica.has(d.campo)) return '<td class="tc" style="background:#f8fafc;color:#cbd5e1">–</td>';
+    const v=r.u[d.campo]==='✓';
+    return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleClUnidDoc('${pl}','${d.campo}')" title="${d.lbl}"><div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${v?'#dcfce7':'#fee2e2'};color:${v?'#16a34a':'#dc2626'}">${v?'✓':'✗'}</div></td>`;
+  }).join('');
+  return `<tr style="border-bottom:1px solid #f1f5f9">
+    <td class="mono" style="color:#94a3b8">${n+1}</td>
+    <td class="mono" style="font-weight:700;text-align:left;color:var(--accent2)">${r.u.placa||'—'}</td>
+    <td style="font-size:11px;text-align:left">${(r.u.proveedor||'—').slice(0,28)}</td>
+    <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'—'}</td>
+    ${cells}
+    <td><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-weight:800;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</span><div style="width:42px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div></div></td>
+  </tr>`;
+}
+// Refresca SOLO la fila de una unidad (sin reordenar). Reordena solo al entrar/filtrar.
+function refrescarFilaClUnid(placa){
+  const rows=window._CL_UNID_ROWS;
+  if(!rows) return false;
+  const pn=normPlaca(placa);
+  const idx=rows.findIndex(r=>normPlaca(r.u.placa)===pn);
+  if(idx<0) return false;
+  const r=rows[idx];
+  r.ok=[...r.aplica].filter(campo=>r.u[campo]==='✓').length;
+  r.tot=r.aplica.size;
+  r.pct=r.tot?Math.round(r.ok/r.tot*100):0;
+  const tbody=document.getElementById('cl-unid-tbody');
+  const tr=tbody?.children[idx];
+  if(!tr) return false;
+  tr.outerHTML=filaClUnid(r,idx);
+  return true;
+}
+function toggleClUnidDoc(placa,campo){ toggleDocUnid(placa,campo).then(()=>{ if(!refrescarFilaClUnid(placa)) renderChecklistUnid(); }); }
 
 // ── CHECKLIST CONDUCTORES ──
 function renderChecklistCond(){
@@ -4544,24 +4583,42 @@ function renderChecklistCond(){
   document.getElementById('cl-cond-count').textContent=rows.length+' conductores';
   const tbody=document.getElementById('cl-cond-tbody');
   if(!rows.length){ tbody.innerHTML=`<tr><td colspan="${4+DOCS_C.length+1}" class="empty-state">Sin conductores para los filtros</td></tr>`; return; }
-  tbody.innerHTML=rows.map((r,n)=>{
-    const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
-    const dn=(r.c.dni||'').replace(/'/g,"\\'");
-    const cells=DOCS_C.map(d=>{
-      const v=r.c[d.c]==='✓';
-      return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleClCondDoc('${dn}','${d.c}')" title="${d.l}"><div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${v?'#dcfce7':'#fee2e2'};color:${v?'#16a34a':'#dc2626'}">${v?'✓':'✗'}</div></td>`;
-    }).join('');
-    return `<tr style="border-bottom:1px solid #f1f5f9">
-      <td class="mono" style="color:#94a3b8">${n+1}</td>
-      <td style="font-weight:700;text-align:left;font-size:11.5px">${r.c.conductor||'—'}</td>
-      <td class="mono" style="font-size:10px">${r.c.dni||'—'}</td>
-      <td style="font-size:11px;text-align:left">${(r.c.proveedor||'—').slice(0,24)}</td>
-      ${cells}
-      <td><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-weight:800;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</span><div style="width:42px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div></div></td>
-    </tr>`;
-  }).join('');
+  tbody.innerHTML=rows.map((r,n)=>filaClCond(r,n,DOCS_C)).join('');
 }
-function toggleClCondDoc(dni,campo){ toggleDocCond(dni,campo).then(()=>renderChecklistCond()); }
+function filaClCond(r,n,DOCS_C){
+  const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
+  const dn=(r.c.dni||'').replace(/'/g,"\\'");
+  const cells=DOCS_C.map(d=>{
+    const v=r.c[d.c]==='✓';
+    return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleClCondDoc('${dn}','${d.c}')" title="${d.l}"><div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${v?'#dcfce7':'#fee2e2'};color:${v?'#16a34a':'#dc2626'}">${v?'✓':'✗'}</div></td>`;
+  }).join('');
+  return `<tr style="border-bottom:1px solid #f1f5f9">
+    <td class="mono" style="color:#94a3b8">${n+1}</td>
+    <td style="font-weight:700;text-align:left;font-size:11.5px">${r.c.conductor||'—'}</td>
+    <td class="mono" style="font-size:10px">${r.c.dni||'—'}</td>
+    <td style="font-size:11px;text-align:left">${(r.c.proveedor||'—').slice(0,24)}</td>
+    ${cells}
+    <td><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-weight:800;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</span><div style="width:42px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div></div></td>
+  </tr>`;
+}
+// Refresca SOLO la fila de un conductor (sin reordenar). Reordena solo al entrar/filtrar.
+function refrescarFilaClCond(dni){
+  const rows=window._CL_COND_ROWS, DOCS_C=window._CL_COND_DOCS;
+  if(!rows||!DOCS_C) return false;
+  const dn=String(dni||'').trim();
+  const idx=rows.findIndex(r=>String(r.c.dni||'').trim()===dn);
+  if(idx<0) return false;
+  const r=rows[idx];
+  r.ok=DOCS_C.filter(d=>r.c[d.c]==='✓').length;
+  r.tot=DOCS_C.length;
+  r.pct=Math.round(r.ok/r.tot*100);
+  const tbody=document.getElementById('cl-cond-tbody');
+  const tr=tbody?.children[idx];
+  if(!tr) return false;
+  tr.outerHTML=filaClCond(r,idx,DOCS_C);
+  return true;
+}
+function toggleClCondDoc(dni,campo){ toggleDocCond(dni,campo).then(()=>{ if(!refrescarFilaClCond(dni)) renderChecklistCond(); }); }
 
 // ── Exportar cuadros del Checklist a Excel (CSV con BOM, lo abre Excel) ──
 function exportarChecklist(tipo){
