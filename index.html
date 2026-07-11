@@ -587,9 +587,9 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <th>RTV ✏️</th><th>Días RTV</th>
             <th>T.C. ✏️</th><th>Días T.C.</th>
             <th>T.Prop</th><th>SOAT</th><th>RTV</th><th>TUC</th><th>MNTO</th><th>Boletín</th><th>Póliza</th><th>Seg.RC</th><th>Seg.Carga</th><th>CheckList</th>
-            <th>Cumpl.</th><th>📁 Carpeta</th>
+            <th>Cumpl.</th><th>📁 Carpeta</th><th>🪪 Tarjeta</th>
           </tr></thead>
-          <tbody id="unid-tbody"><tr><td colspan="31" class="empty-state">Cargando...</td></tr></tbody>
+          <tbody id="unid-tbody"><tr><td colspan="32" class="empty-state">Cargando...</td></tr></tbody>
         </table>
       </div>
       <div class="tbl-footer">
@@ -1226,16 +1226,6 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Marca</label><input class="form-input" type="text" id="u-marca" placeholder="Toyota"></div>
           <div class="form-group"><label class="form-label">Detalle Centro</label><input class="form-input" type="text" id="u-detalle-centro" placeholder="Ej: PLANTA JAYANCA"></div>
           <div class="form-group"><label class="form-label">Modalidad</label><input class="form-input" type="text" id="u-modalidad" placeholder="Ej: todo costo"></div>
-          <div class="form-group"><label class="form-label">Categoría</label><input class="form-input" type="text" id="u-categoria" placeholder="Ej: N1, M3"></div>
-          <div class="form-group"><label class="form-label">Carrocería</label><input class="form-input" type="text" id="u-carroceria" placeholder="Ej: FURGÓN"></div>
-          <div class="form-group"><label class="form-label">N° Asientos</label><input class="form-input" type="number" id="u-asientos" placeholder="0"></div>
-          <div class="form-group"><label class="form-label">N° Pasajeros</label><input class="form-input" type="number" id="u-pasajeros" placeholder="0"></div>
-          <div class="form-group"><label class="form-label">Ejes</label><input class="form-input" type="number" id="u-ejes" placeholder="0"></div>
-          <div class="form-group"><label class="form-label">Ruedas</label><input class="form-input" type="number" id="u-ruedas" placeholder="0"></div>
-          <div class="form-group"><label class="form-label">Peso Bruto</label><input class="form-input" type="text" id="u-peso-bruto" placeholder="kg"></div>
-          <div class="form-group"><label class="form-label">Peso Neto</label><input class="form-input" type="text" id="u-peso-neto" placeholder="kg"></div>
-          <div class="form-group"><label class="form-label">Reacondicionado</label><select class="form-select" id="u-reacond"><option value="">—</option><option>SI</option><option>NO</option></select></div>
-          <div class="form-group"><label class="form-label">Tiene Tarj. Prop.</label><select class="form-select" id="u-tiene-tarj"><option value="">—</option><option>SI</option><option>NO</option></select></div>
           <div class="form-group"><label class="form-label">Propietario</label><input class="form-input" type="text" id="u-propietario" placeholder="Nombre propietario"></div>
           <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" type="text" id="u-responsable" placeholder="Responsable"></div>
           <div class="form-group"><label class="form-label">Categoría</label>
@@ -1244,6 +1234,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
               <option value="CARGA SECA">CARGA SECA</option><option value="REFRIGERADO">REFRIGERADO</option>
               <option value="FLOTA VEHICULAR">FLOTA VEHICULAR</option>
             </select></div>
+          <div class="form-group full"><label class="form-label">🪪 Link Tarjeta de Propiedad (foto)</label><input class="form-input" type="text" id="u-tarjeta-link" placeholder="https://... (foto/escaneo de la tarjeta)"></div>
           <div class="form-group full"><label class="form-label">📁 Link Carpeta SharePoint</label><input class="form-input" type="text" id="u-carpeta" placeholder="https://..."></div>
         </div>
       </div>
@@ -1567,7 +1558,7 @@ function parseCsv(text){
 }
 
 // Orden EXACTO de columnas del Sheet UNIDADES (47 columnas)
-const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','docCheckList','cumpl','carpeta'];
+const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','docCheckList','cumpl','carpeta','tarjetaLink'];
 
 // Documentos de UNIDAD (10) con su etiqueta y a qué categorías aplican
 const DOCS_UNID = [
@@ -2351,6 +2342,7 @@ function irRegistrarConductor(nombre, dni, proveedor, placa){
   if(typeof cerrarDetalleProv==='function') cerrarDetalleProv();
   goPage('reg-conductor', document.querySelector('.nav-item[onclick*="reg-conductor"]'));
   setTimeout(()=>{
+    if(typeof limpiarFormCond==='function') limpiarFormCond();
     const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v;};
     set('c-dni',dni); set('c-nombre',nombre.toUpperCase());
     set('c-proveedor',proveedor.toUpperCase()); set('c-placa',placa.toUpperCase());
@@ -2545,6 +2537,7 @@ function renderUnidRow(r, num){
     ${chk(r.docCheckList,'docCheckList')}
     <td>${barCumpl(r.cumpl||'—')}</td>
     <td style="text-align:center">${r.carpeta ? `<a href="${r.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(59,130,246,0.12);color:#2563eb;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">📁 Abrir</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
+    <td style="text-align:center">${r.tarjetaLink ? `<a href="${r.tarjetaLink}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(124,58,237,0.12);color:var(--accent2);padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">🪪 Ver</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
   </tr>`;
 }
 
@@ -2582,14 +2575,14 @@ function renderUnidades(){
     const sl=rows.slice((pg-1)*PS2,pg*PS2);
     document.getElementById('unid-tbody').innerHTML=sl.length
       ? sl.map((r,i)=>renderUnidRow(r,(pg-1)*PS2+i+1)).join('')
-      : '<tr><td colspan="31" class="empty-state">Sin unidades</td></tr>';
+      : '<tr><td colspan="32" class="empty-state">Sin unidades</td></tr>';
     renderPag('unid-pag','unid-info',pg,rows.length,v=>{ state.unidades.page=v; renderUnidades(); });
     return;
   }
   // Sin Excel cargado y modo día → mensaje
   if(!UNID_MODO_DIA && REP_ROWS.length===0){
     document.getElementById('unid-count').textContent='0 registros';
-    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="31" class="empty-state">📋 Conecta Google Sheets para cargar las unidades</td></tr>';
+    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="32" class="empty-state">📋 Conecta Google Sheets para cargar las unidades</td></tr>';
     document.getElementById('unid-info').textContent='—';
     document.getElementById('unid-pag').innerHTML='';
     return;
@@ -2632,7 +2625,7 @@ function renderUnidades(){
   const sl=rows.slice((pg-1)*PS2,pg*PS2);
   document.getElementById('unid-tbody').innerHTML=sl.length
     ? sl.map((r,i)=>renderUnidRow(r,(pg-1)*PS2+i+1)).join('')
-    : '<tr><td colspan="31" class="empty-state">Sin unidades</td></tr>';
+    : '<tr><td colspan="32" class="empty-state">Sin unidades</td></tr>';
   renderPag('unid-pag','unid-info',pg,rows.length,v=>{ if(UNID_MODO_DIA){if(!ST.unidades)ST.unidades={};ST.unidades.page=v;}else state.unidades.page=v; renderUnidades(); });
 }
 
@@ -4090,12 +4083,9 @@ function buscarUnidad(placa){
     document.getElementById('u-fecha-tc').value=u.fechaTc||'';
     const su=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
     su('u-centro',u.centro);su('u-detalle-centro',u.detalleCentro);su('u-modalidad',u.modalidad);
-    su('u-categoria',u.categoria);su('u-carroceria',u.carroceria);su('u-asientos',u.asientos);
-    su('u-pasajeros',u.pasajeros);su('u-ejes',u.ejes);su('u-ruedas',u.ruedas);
-    su('u-peso-bruto',u.pesoBruto);su('u-peso-neto',u.pesoNeto);su('u-reacond',u.reacondicionado);
-    su('u-tiene-tarj',u.tieneTarjProp);su('u-uso-soat',u.usoSoat);su('u-tipo-seguro',u.tipoSeguro);
+    su('u-uso-soat',u.usoSoat);su('u-tipo-seguro',u.tipoSeguro);
     su('u-tipo-soat',u.tipoSoat);su('u-propietario',u.propietario);su('u-responsable',u.responsable);
-    su('u-carpeta',u.carpeta);
+    su('u-carpeta',u.carpeta);su('u-tarjeta-link',u.tarjetaLink);
     if(u.anio)calcAntig();
     if(u.fechaSoat)calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat');
     if(u.fechaRtv)calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv');
@@ -4210,17 +4200,8 @@ async function guardarUnidad(){
     tipo:gv('u-tipo'),
     anio:gv('u-anio'),
     antiguedad:gv('u-antig'),
-    categoria:gv('u-categoria'),
     marca:gv('u-marca'),
-    carroceria:gv('u-carroceria'),
-    asientos:gv('u-asientos'),
-    pasajeros:gv('u-pasajeros'),
-    ejes:gv('u-ejes'),
-    ruedas:gv('u-ruedas'),
-    pesoBruto:gv('u-peso-bruto'),
-    pesoNeto:gv('u-peso-neto'),
-    reacondicionado:gv('u-reacond'),
-    tieneTarjProp:gv('u-tiene-tarj'),
+    tarjetaLink:gv('u-tarjeta-link'),
     aseguradora:gv('u-aseg-soat'),
     fechaSoat:gv('u-fecha-soat'),
     diasSoat:(gv('u-dias-soat')||'').replace('d',''),
@@ -4268,13 +4249,22 @@ async function guardarUnidad(){
   const um=document.getElementById('u-msg'); if(um) um.textContent=new Date().toLocaleTimeString('es-PE');
 }
 function limpiarFormCond(){
-  ['c-dni','c-nombre','c-proveedor','c-placa','c-fecha-lic','c-dias-lic','c-est-lic','c-fecha-sctr','c-dias-sctr','c-est-sctr','c-fecha-emo','c-dias-emo','c-est-emo','c-pap-cant','c-pap-firmes','c-pap-proceso','c-cumpl','c-msg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['ch-dni','ch-lic','ch-record','ch-sctr','ch-emo','ch-cul'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+  const cont = document.getElementById('page-reg-conductor');
+  if(cont){
+    cont.querySelectorAll('input[type="text"],input[type="date"],input[type="number"]').forEach(el=>el.value='');
+    cont.querySelectorAll('select').forEach(el=>el.selectedIndex=0);
+    cont.querySelectorAll('input[type="checkbox"]').forEach(el=>el.checked=false);
+  }
+  const cm=document.getElementById('c-msg'); if(cm) cm.textContent='';
 }
 function limpiarFormUnid(){
-  ['u-placa','u-proveedor','u-anio','u-antig','u-marca','u-fecha-soat','u-dias-soat','u-est-soat','u-fecha-rtv','u-dias-rtv','u-est-rtv','u-obs-rtv','u-fecha-tc','u-dias-tc','u-est-tc','u-cumpl','u-msg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  Object.keys(UCH_MAP).forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
-  const ts=document.getElementById('u-tiposervicio'); if(ts) ts.value='';
+  const cont = document.getElementById('page-reg-unidad');
+  if(cont){
+    cont.querySelectorAll('input[type="text"],input[type="date"],input[type="number"]').forEach(el=>el.value='');
+    cont.querySelectorAll('select').forEach(el=>el.selectedIndex=0);
+    cont.querySelectorAll('input[type="checkbox"]').forEach(el=>el.checked=false);
+  }
+  const um=document.getElementById('u-msg'); if(um) um.textContent='';
 }
 
 // ═══════════════════════════════════════════════
@@ -5278,6 +5268,7 @@ function abrirRegUnid2(placa){
   cerrarDetalleProv();
   goPage('reg-unidad', document.querySelector('.nav-item[onclick*="reg-unidad"]'));
   setTimeout(()=>{
+    if(typeof limpiarFormUnid==='function') limpiarFormUnid();
     const inp = document.getElementById('u-placa');
     if(inp) inp.value = placa;
     const est = document.getElementById('u-estado');
