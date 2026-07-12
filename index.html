@@ -544,9 +544,9 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <th>Est. Lic</th><th>Días Lic ✏️</th>
             <th>Est. SCTR</th><th>Días SCTR ✏️</th>
             <th>DNI</th><th>Lic</th><th>Récord</th><th>SCTR</th><th>EMO ✏️</th><th>CUL</th>
-            <th>Cumpl.</th><th>📁 Carpeta</th>
+            <th>Cumpl.</th><th>📁 Carpeta</th><th>🔗 Récord</th>
           </tr></thead>
-          <tbody id="cond-tbody"><tr><td colspan="19" class="empty-state">Cargando...</td></tr></tbody>
+          <tbody id="cond-tbody"><tr><td colspan="20" class="empty-state">Cargando...</td></tr></tbody>
         </table>
       </div>
       <div class="tbl-footer">
@@ -1140,10 +1140,10 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="c-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
           <div class="form-group"><label class="form-label">Proveedor</label><input class="form-input" type="text" id="c-proveedor" placeholder="Nombre del proveedor" list="prov-list-cond" style="text-transform:uppercase"><datalist id="prov-list-cond"></datalist></div>
           <div class="form-group"><label class="form-label">Placa</label><input class="form-input" type="text" id="c-placa" placeholder="A1B234" style="text-transform:uppercase"></div>
-          <div class="form-group"><label class="form-label">Tipo Unidad</label><input class="form-input" type="text" id="c-tipo-unidad" placeholder="Ej: camión"></div>
-          <div class="form-group"><label class="form-label">Centro</label><input class="form-input" type="text" id="c-centro" placeholder="Ej: 4104"></div>
+          <div class="form-group"><label class="form-label">Tipo Unidad</label><select class="form-select" id="c-tipo-unidad"><option value="">— Seleccionar —</option><option>BUS</option><option>MINIBUS</option><option>COUSTER</option><option>COMBI</option><option>CAMIONETA</option><option>CAMION</option></select></div>
+          <div class="form-group"><label class="form-label">Centro</label><select class="form-select" id="c-centro"><option value="">— Seleccionar —</option><option value="4101">4101 — PLANTA CHINCHA</option><option value="4202">4202 — FUNDO ICA</option><option value="4208">4208 — OLMOS I</option><option value="4210">4210 — OLMOS II</option><option value="4205">4205 — FUNDO JAYANCA</option><option value="4109">4109 — PLANTA OLMOS</option><option value="4104">4104 — PLANTA JAYANCA</option><option value="4206">4206 — FUNDO PIURA</option></select></div>
           <div class="form-group"><label class="form-label">Ruta</label><input class="form-input" type="text" id="c-ruta" placeholder="Ej: fundo Tomasita"></div>
-          <div class="form-group"><label class="form-label">Turno</label><input class="form-input" type="text" id="c-turno" placeholder="Ej: día"></div>
+          <div class="form-group"><label class="form-label">Turno</label><select class="form-select" id="c-turno"><option value="">— Seleccionar —</option><option>DÍA</option><option>NOCHE</option><option>MIXTO</option></select></div>
           <div class="form-group"><label class="form-label">Celular</label><input class="form-input" type="text" id="c-celular" placeholder="987654321" maxlength="9"></div>
           <div class="form-group"><label class="form-label">N° Licencia</label><input class="form-input" type="text" id="c-num-lic" placeholder="N° licencia"></div>
           <div class="form-group full"><label class="form-label">📁 Link Carpeta SharePoint</label><input class="form-input" type="text" id="c-carpeta" placeholder="https://..."></div>
@@ -1183,21 +1183,18 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div class="form-sec">
         <div class="form-sec-title">📋 Papeletas MTC</div>
         <div class="form-grid g4">
-          <div class="form-group"><label class="form-label">Cantidad Papeletas</label><input class="form-input" type="number" id="c-pap-cant" placeholder="0" min="0"></div>
-          <div class="form-group"><label class="form-label">Puntos Firmes</label><input class="form-input" type="number" id="c-pap-firmes" placeholder="0"></div>
-          <div class="form-group"><label class="form-label">Puntos en Proceso</label><input class="form-input" type="number" id="c-pap-proceso" placeholder="0"></div>
-          <div class="form-group"><label class="form-label">Alerta</label><select class="form-select" id="c-alerta-pap"><option>APTO</option><option>NO APTO</option></select></div>
+          <div class="form-group full"><label class="form-label">🔗 Link Récord de Papeletas (MTC)</label><input class="form-input" type="text" id="c-record-link" placeholder="https://... (constancia/reporte MTC)"></div>
         </div>
       </div>
       <div class="form-sec">
         <div class="form-sec-title">✅ Cumplimiento Documentario</div>
         <div class="check-group" style="margin-bottom:12px;">
-          <label class="check-item"><input type="checkbox" id="ch-dni"><label for="ch-dni">D.N.I.</label></label>
-          <label class="check-item"><input type="checkbox" id="ch-lic"><label for="ch-lic">Licencia</label></label>
-          <label class="check-item"><input type="checkbox" id="ch-record"><label for="ch-record">Récord de Conducir</label></label>
-          <label class="check-item"><input type="checkbox" id="ch-sctr"><label for="ch-sctr">SCTR</label></label>
-          <label class="check-item"><input type="checkbox" id="ch-emo"><label for="ch-emo">EMO</label></label>
-          <label class="check-item"><input type="checkbox" id="ch-cul"><label for="ch-cul">Certificado Único Laboral</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-dni" onchange="actualizarCumplCond()"><label for="ch-dni">D.N.I.</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-lic" onchange="actualizarCumplCond()"><label for="ch-lic">Licencia</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-record" onchange="actualizarCumplCond()"><label for="ch-record">Récord de Conducir</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-sctr" onchange="actualizarCumplCond()"><label for="ch-sctr">SCTR</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-emo" onchange="actualizarCumplCond()"><label for="ch-emo">EMO</label></label>
+          <label class="check-item"><input type="checkbox" id="ch-cul" onchange="actualizarCumplCond()"><label for="ch-cul">Certificado Único Laboral</label></label>
         </div>
         <div class="form-group" style="max-width:120px;"><label class="form-label">% Cumpl. <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="c-cumpl" readonly></div>
       </div>
@@ -1245,9 +1242,9 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Fecha Vcto. SOAT</label><input class="form-input" type="date" id="u-fecha-soat" onchange="calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat')"></div>
           <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-dias-soat" readonly></div>
           <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-est-soat" readonly></div>
-          <div class="form-group"><label class="form-label">Uso SOAT</label><input class="form-input" type="text" id="u-uso-soat" placeholder="Ej: PARTICULAR"></div>
-          <div class="form-group"><label class="form-label">Tipo de Seguro</label><input class="form-input" type="text" id="u-tipo-seguro" placeholder="Ej: VEHICULAR"></div>
-          <div class="form-group"><label class="form-label">Tipo SOAT</label><input class="form-input" type="text" id="u-tipo-soat" placeholder="Ej: ELECTRÓNICO"></div>
+          <div class="form-group"><label class="form-label">Uso SOAT</label><input class="form-input" type="text" id="u-uso-soat" placeholder="Ej: PARTICULAR" list="dl-uso-soat" style="text-transform:uppercase"><datalist id="dl-uso-soat"><option value="PARTICULAR"><option value="SERVICIO PÚBLICO"><option value="TRANSPORTE DE CARGA"><option value="TRANSPORTE MIXTO"></datalist></div>
+          <div class="form-group"><label class="form-label">Tipo de Seguro</label><input class="form-input" type="text" id="u-tipo-seguro" placeholder="Ej: VEHICULAR" list="dl-tipo-seguro" style="text-transform:uppercase"><datalist id="dl-tipo-seguro"><option value="VEHICULAR"><option value="TODO RIESGO"><option value="RESPONSABILIDAD CIVIL"></datalist></div>
+          <div class="form-group"><label class="form-label">Tipo SOAT</label><input class="form-input" type="text" id="u-tipo-soat" placeholder="Ej: ELECTRÓNICO" list="dl-tipo-soat" style="text-transform:uppercase"><datalist id="dl-tipo-soat"><option value="ELECTRÓNICO"><option value="FÍSICO"></datalist></div>
         </div>
       </div>
       <div class="form-sec">
@@ -1271,16 +1268,16 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div class="form-sec">
         <div class="form-sec-title">✅ Cumplimiento Documentario</div>
         <div class="check-group" style="margin-bottom:12px;">
-          <label class="check-item"><input type="checkbox" id="uch-tarj"><label for="uch-tarj">Tarj. Prop.</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-soat"><label for="uch-soat">SOAT</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-rtv"><label for="uch-rtv">Rev. Téc.</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-tc"><label for="uch-tc">TUC</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-mnto"><label for="uch-mnto">Program. MNTO</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-boletin"><label for="uch-boletin">Boletín SUNARP</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-poliza"><label for="uch-poliza">Póliza</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-seguro-rc"><label for="uch-seguro-rc">Seguro RC</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-seguro-carga"><label for="uch-seguro-carga">Seguro de Carga</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-checklist"><label for="uch-checklist">Check List Recep./Devol.</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-tarj" onchange="actualizarCumplUnid()"><label for="uch-tarj">Tarj. Prop.</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-soat" onchange="actualizarCumplUnid()"><label for="uch-soat">SOAT</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-rtv" onchange="actualizarCumplUnid()"><label for="uch-rtv">Rev. Téc.</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-tc" onchange="actualizarCumplUnid()"><label for="uch-tc">TUC</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-mnto" onchange="actualizarCumplUnid()"><label for="uch-mnto">Program. MNTO</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-boletin" onchange="actualizarCumplUnid()"><label for="uch-boletin">Boletín SUNARP</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-poliza" onchange="actualizarCumplUnid()"><label for="uch-poliza">Póliza</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-seguro-rc" onchange="actualizarCumplUnid()"><label for="uch-seguro-rc">Seguro RC</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-seguro-carga" onchange="actualizarCumplUnid()"><label for="uch-seguro-carga">Seguro de Carga</label></label>
+          <label class="check-item"><input type="checkbox" id="uch-checklist" onchange="actualizarCumplUnid()"><label for="uch-checklist">Check List Recep./Devol.</label></label>
         </div>
         <div class="form-group" style="max-width:120px;"><label class="form-label">% Cumpl. <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-cumpl" readonly></div>
       </div>
@@ -2308,7 +2305,7 @@ function renderCondRow(r, num){
       <td><span class="badge warn">SIN REG.</span></td>
       <td style="font-size:11px">${r.proveedor||'—'}</td>
       <td class="mono">${r.placa||'—'}</td>
-      <td colspan="13"></td>
+      <td colspan="14"></td>
     </tr>`;
   }
   const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocCond('${dni}','${campo}')" title="Clic para marcar/desmarcar">
@@ -2335,6 +2332,7 @@ function renderCondRow(r, num){
     ${chk(r.docCul,'docCul')}
     <td>${barCumpl(r.cumpl||'—')}</td>
     <td style="text-align:center">${r.carpeta ? `<a href="${r.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(59,130,246,0.12);color:#2563eb;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">📁 Abrir</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
+    <td style="text-align:center">${r.record ? `<a href="${r.record}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(124,58,237,0.12);color:var(--accent2);padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">🔗 Ver</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
   </tr>`;
 }
 
@@ -2375,14 +2373,14 @@ function renderConductores(){
     const sl=rows.slice((pg-1)*PS2,pg*PS2);
     document.getElementById('cond-tbody').innerHTML=sl.length
       ? sl.map((r,i)=>renderCondRow(r,(pg-1)*PS2+i+1)).join('')
-      : '<tr><td colspan="19" class="empty-state">Sin conductores</td></tr>';
+      : '<tr><td colspan="20" class="empty-state">Sin conductores</td></tr>';
     renderPag('cond-pag','cond-info',pg,rows.length,v=>{ state.conductores.page=v; renderConductores(); });
     return;
   }
   // Sin Excel cargado y modo día activo → tabla vacía con mensaje
   if(COND_MODO_DIA && REP_ROWS.length===0){
     document.getElementById('cond-count').textContent='0 registros';
-    document.getElementById('cond-tbody').innerHTML='<tr><td colspan="19" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver los conductores</td></tr>';
+    document.getElementById('cond-tbody').innerHTML='<tr><td colspan="20" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver los conductores</td></tr>';
     document.getElementById('cond-info').textContent='—';
     document.getElementById('cond-pag').innerHTML='';
     return;
@@ -2423,7 +2421,7 @@ function renderConductores(){
   const sl=rows.slice((pg-1)*PS2,pg*PS2);
   document.getElementById('cond-tbody').innerHTML=sl.length
     ? sl.map((r,i)=>renderCondRow(r,(pg-1)*PS2+i+1)).join('')
-    : '<tr><td colspan="19" class="empty-state">Sin conductores</td></tr>';
+    : '<tr><td colspan="20" class="empty-state">Sin conductores</td></tr>';
   renderPag('cond-pag','cond-info',pg,rows.length,v=>{ if(!ST.conductores)ST.conductores={};ST.conductores.page=v; renderConductores(); });
 }
 
@@ -3700,9 +3698,25 @@ async function leerReporte(){
       // Buscar en BD con normalización robusta
       const unidBD = buscarPorPlaca(placa);
       const condBD = buscarConductorBD(conductor, dni);
-      // ✅ ACTIVAR
-      if(unidBD) unidBD.estado = 'ACTIVO';
-      if(condBD) condBD.estado = 'ACTIVO';
+      // ✅ ACTIVAR y SINCRONIZAR datos del reporte hacia la BD (solo si el reporte trae dato)
+      if(unidBD){
+        unidBD.estado = 'ACTIVO';
+        if(centro) unidBD.centro = centro;
+        if(provExcel) unidBD.proveedor = provExcel.toUpperCase();
+        if(tipoServicio) unidBD.tipoServicio = tipoServicio.toUpperCase();
+        if(modalidad) unidBD.modalidad = modalidad;
+        const aplican = docsUnidAplicables(unidBD.tipoServicio||provServicioDeUnidad(unidBD));
+        const okDocs = aplican.filter(d=>unidBD[d.campo]==='✓').length;
+        unidBD.cumpl = `${okDocs}/${aplican.length} (${aplican.length?Math.round(okDocs/aplican.length*100):0}%)`;
+      }
+      if(condBD){
+        condBD.estado = 'ACTIVO';
+        if(centro) condBD.centro = centro;
+        if(provExcel) condBD.proveedor = provExcel.toUpperCase();
+        if(conductor) condBD.conductor = conductor.toUpperCase();
+        const docsC = [condBD.docDni,condBD.docLic,condBD.docRecord,condBD.docSctr,condBD.docEmo,condBD.docCul].filter(v=>v==='✓').length;
+        condBD.cumpl = `${docsC}/6 (${Math.round(docsC/6*100)}%)`;
+      }
 
       // Contar únicos reales
       if(placa) seenPlacas.add(placa);
@@ -3759,10 +3773,40 @@ async function leerReporte(){
 
     postCargarReporte();
     guardarRepActivo(); // persistir en localStorage + Sheets
+    sincronizarReporteADB(); // guardar Centro/Proveedor/Categoría/Modalidad/Conductor en Sheets automáticamente
   } catch(e){
     console.error(e);
     showToast('Error al leer: '+e.message,'err');
   }
+}
+
+// Guarda en Sheets, de forma automática, los cambios que trajo el reporte diario
+// (Centro, Proveedor, Categoría, Modalidad de Unidad; Centro, Proveedor, Nombre de Conductor)
+async function sincronizarReporteADB(){
+  if(!GS_URL) return; // sin Sheets conectado no hay nada que sincronizar
+  const placasSync = new Set();
+  const dnisSync = new Set();
+  REP_ROWS.forEach(r=>{
+    if(r.unidBD && r.unidBD.placa) placasSync.add(r.unidBD.placa);
+    if(r.condBD && r.condBD.dni) dnisSync.add(r.condBD.dni);
+  });
+  if(!placasSync.size && !dnisSync.size) return;
+  showToast(`⏳ Sincronizando ${placasSync.size} unidad(es) y ${dnisSync.size} conductor(es)...`,'ok');
+  let okU=0, okC=0;
+  for(const placa of placasSync){
+    const idx = UNIDADES.findIndex(u=>u.placa===placa);
+    if(idx<0) continue;
+    const ok = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
+    if(ok) okU++;
+  }
+  for(const dni of dnisSync){
+    const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
+    if(idx<0) continue;
+    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
+    if(ok) okC++;
+  }
+  renderUnidades(); renderConductores();
+  showToast(`✅ Sincronizado en Sheets: ${okU} unidad(es), ${okC} conductor(es)`,'ok');
 }
 function filtrarRep(f,btn){
   REP_FILTRO=f;
@@ -4062,7 +4106,7 @@ function buscarConductor(dni){
     const sc=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
     sc('c-tipo-unidad',c.tipoUnidad);sc('c-centro',c.centro);sc('c-ruta',c.ruta);
     sc('c-turno',c.turno);sc('c-celular',c.celular);sc('c-num-lic',c.numLic);
-    sc('c-tipo-sctr',c.tipoSctr);sc('c-carpeta',c.carpeta);
+    sc('c-tipo-sctr',c.tipoSctr);sc('c-carpeta',c.carpeta);sc('c-record-link',c.record);
     if(c.fechaLic)calcDocDias('c-fecha-lic','c-dias-lic','c-est-lic');
     if(c.fechaSctr)calcDocDias('c-fecha-sctr','c-dias-sctr','c-est-sctr');
     showToast('Conductor encontrado: '+c.conductor,'ok');
@@ -4137,6 +4181,7 @@ async function guardarConductor(){
   const dni=document.getElementById('c-dni').value.trim();
   const nombre=document.getElementById('c-nombre').value.trim();
   if(!dni||!nombre){showToast('DNI y Conductor son obligatorios','err');return;}
+  actualizarCumplCond();
   const gc = id => document.getElementById(id)?.value||'';
   const row={dni,conductor:nombre,estado:gc('c-estado')||'ACTIVO',
     proveedor:gc('c-proveedor'),placa:gc('c-placa'),
@@ -4145,11 +4190,7 @@ async function guardarConductor(){
     catLic:gc('c-cat-lic'),fechaLic:gc('c-fecha-lic'),
     diasLic:(gc('c-dias-lic')||'').replace('d',''),
     restriccion:gc('c-restriccion'),celular:gc('c-celular'),
-    cantPapeletas:gc('c-pap-cant')||'0',
-    puntosFirmes:gc('c-pap-firmes')||'0',
-    puntosProceso:gc('c-pap-proceso')||'0',
-    puntosTotal:gc('c-pap-firmes')||'0',
-    alertaPuntos:gc('c-alerta-pap'),
+    record:gc('c-record-link'),
     asegSctr:gc('c-aseg-sctr'),tipoSctr:gc('c-tipo-sctr'),fechaSctr:gc('c-fecha-sctr'),
     diasSctr:(gc('c-dias-sctr')||'').replace('d',''),
     tienEmo:gc('c-tiene-emo'),fechaEmo:gc('c-fecha-emo'),
@@ -4159,7 +4200,8 @@ async function guardarConductor(){
     docRecord:document.getElementById('ch-record').checked?'✓':'✗',
     docSctr:document.getElementById('ch-sctr').checked?'✓':'✗',
     docEmo:document.getElementById('ch-emo').checked?'✓':'✗',
-    docCul:document.getElementById('ch-cul')?.checked?'✓':'✗'};
+    docCul:document.getElementById('ch-cul')?.checked?'✓':'✗',
+    cumpl:document.getElementById('c-cumpl')?.value||''};
   recalcular();
   // Buscar por DNI normalizado (sin ceros a la izquierda / decimales de Excel)
   let idx=CONDUCTORES.findIndex(c=>normDni(c.dni)===normDni(dni));
@@ -4191,6 +4233,7 @@ async function guardarConductor(){
 async function guardarUnidad(){
   const placa=document.getElementById('u-placa').value.trim().toUpperCase();
   if(!placa){showToast('La placa es obligatoria','err');return;}
+  actualizarCumplUnid();
   const gv = id => document.getElementById(id)?.value||'';
   const row={placa,estado:gv('u-estado')||'ACTIVO',
     proveedor:gv('u-proveedor'),
@@ -4227,7 +4270,8 @@ async function guardarUnidad(){
     docSeguroRc:document.getElementById('uch-seguro-rc')?.checked?'✓':'✗',
     docSeguroCarga:document.getElementById('uch-seguro-carga')?.checked?'✓':'✗',
     docCheckList:document.getElementById('uch-checklist')?.checked?'✓':'✗',
-    tipoServicio:document.getElementById('u-tiposervicio')?.value||''};
+    tipoServicio:document.getElementById('u-tiposervicio')?.value||'',
+    cumpl:document.getElementById('u-cumpl')?.value||''};
   recalcular();
   let idx=UNIDADES.findIndex(u=>normPlaca(u.placa)===normPlaca(placa));
   if(idx>=0) UNIDADES[idx]={...UNIDADES[idx],...row};
