@@ -3590,7 +3590,7 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
     };
     UNIDADES.push(unidBD);
   }
-  if(!condBD && (conductor||dni)){
+  if(!condBD && (conductor||dni) && !(conductor||'').toUpperCase().includes('BETA')){
     condBD = {
       dni, conductor:(conductor||'').toUpperCase(), estado:'ACTIVO', proveedor:(provExcel||'').toUpperCase(), placa,
       tipoUnidad:tipoUnidExc||'', centro:centro||'', ruta:ruta||'', turno:turno||'',
@@ -4772,7 +4772,7 @@ function renderChecklistCond(){
     if(r.tipoServicio && nm){ if(!nomTiposServ[nm]) nomTiposServ[nm]=new Set(); nomTiposServ[nm].add(String(r.tipoServicio).trim()); }
   });
   const _m=new Map();
-  CONDUCTORES.filter(c=>(c.estado||'').toUpperCase()==='ACTIVO').forEach(c=>{const k=String(c.dni||'').trim()||(c.conductor||'').trim().toUpperCase();if(k&&!_m.has(k))_m.set(k,c);});
+  CONDUCTORES.filter(c=>(c.estado||'').toUpperCase()==='ACTIVO' && !esConductorBeta(c)).forEach(c=>{const k=String(c.dni||'').trim()||(c.conductor||'').trim().toUpperCase();if(k&&!_m.has(k))_m.set(k,c);});
   let rows=[];
   [..._m.values()].forEach(c=>{
     if(hayRep){
