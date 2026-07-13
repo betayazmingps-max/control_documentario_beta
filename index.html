@@ -2402,19 +2402,6 @@ function renderConductores(){
       // NO mostrar conductores BETA en consultas
       if(esConductorBeta(r.condBD)) return;
       if(!seen.has(r.condBD.dni)){ seen.add(r.condBD.dni); rows.push({...r.condBD, _enBD:true}); }
-    } else if(r.conductor||r.dni){
-      // Omitir si el nombre contiene BETA
-      if((r.conductor||'').toUpperCase().includes('BETA')) return;
-      const key=(r.dni||r.conductor||'').toUpperCase();
-      if(!seen.has(key)){
-        seen.add(key);
-        rows.push({
-          dni:r.dni||'',conductor:r.conductor||'',proveedor:r.proveedor||'',
-          placa:r.placa||'',estado:'—',centro:r.centro||'',catLic:'—',estadoLic:'—',diasLic:'',
-          estadoSctr:'—',diasSctr:'',docDni:'✗',docLic:'✗',docRecord:'✗',docSctr:'✗',docEmo:'✗',docCul:'✗',
-          cumpl:'0/5 (0%)', _enBD:false
-        });
-      }
     }
   });
   if(search) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
@@ -2599,21 +2586,7 @@ function renderUnidades(){
       if(destinoFiltroU && (r.destino||'').trim() !== destinoFiltroU) return false;
       return true;
     });
-    rows = repFiltrado.map(r=>{
-      if(r.unidBD) return r.unidBD;
-      // Unidad nueva: crear con todos los campos vacíos
-      return {
-        placa: r.placa||'', proveedor: r.proveedor||'', estado: 'ACTIVO',
-        centro: r.centro||'', modalidad: r.modalidad||'', tipo:'', anio:'', ejes:'', ruedas:'', pesoBruto:'', pesoNeto:'',
-        tipoSeguro:'', tipoSoat:'', diasSoat:'', estadoSoat:'',
-        diasRtv:'', estadoRtv:'', diasTc:'', estadoTc:'',
-        docTarjProp:'✗', docSoat:'✗', docRtv:'✗', docTc:'✗',
-        docMnto:'✗', docBoletin:'✗', docPoliza:'✗',
-        docSeguroRc:'✗', docSeguroCarga:'✗', docCheckList:'✗',
-        tipoServicio:r.tipoServicio||'',
-        cumpl:'0/7 (0%)', _nuevaUnidad: true
-      };
-    });
+    rows = repFiltrado.filter(r=>r.unidBD).map(r=>r.unidBD);
     const seen=new Set(); rows=rows.filter(u=>{if(seen.has(u.placa))return false;seen.add(u.placa);return true;});
   } else {
     const {estado}=state.unidades;
@@ -3596,6 +3569,60 @@ function estadoGlobal(u,c){
   if(warn.some(Boolean))return 'warn';
   return 'ok';
 }
+// Busca la Unidad y el Conductor en la base; si no existen, los AUTO-CREA con los datos
+// que trae el reporte (documentos quedan como faltantes). Se usa tanto al subir un reporte
+// nuevo como al restaurar uno guardado, para que el comportamiento sea siempre el mismo.
+function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, tipoServicio, tipoUnidExc, ruta, turno}){
+  let unidBD = buscarPorPlaca(placa);
+  let condBD = buscarConductorBD(conductor, dni);
+
+  if(!unidBD && placa){
+    unidBD = {
+      placa, estado:'ACTIVO', proveedor:(provExcel||'').toUpperCase(), centro:centro||'', modalidad:modalidad||'',
+      tipoServicio:(tipoServicio||'').toUpperCase(), tipo:tipoUnidExc||'', anio:'', antiguedad:'',
+      categoria:'',marca:'',carroceria:'',asientos:'',pasajeros:'',ejes:'',ruedas:'',pesoBruto:'',pesoNeto:'',reacondicionado:'',tieneTarjProp:'',
+      fechaSoat:'',diasSoat:'',estadoSoat:'',usoSoat:'',tipoSeguro:'',aseguradora:'',tipoSoat:'',
+      fechaRtv:'',diasRtv:'',estadoRtv:'',obsRtv:'',
+      tieneTc:'',fechaTc:'',diasTc:'',estadoTc:'',
+      propietario:'',responsable:'',
+      docTarjProp:'✗',docSoat:'✗',docRtv:'✗',docTc:'✗',docMnto:'✗',docBoletin:'✗',docPoliza:'✗',docSeguroRc:'✗',docSeguroCarga:'✗',docCheckList:'✗',
+      cumpl:'0/7 (0%)', carpeta:'', tarjetaLink:'', _autoCreado:true
+    };
+    UNIDADES.push(unidBD);
+  }
+  if(!condBD && (conductor||dni)){
+    condBD = {
+      dni, conductor:(conductor||'').toUpperCase(), estado:'ACTIVO', proveedor:(provExcel||'').toUpperCase(), placa,
+      tipoUnidad:tipoUnidExc||'', centro:centro||'', ruta:ruta||'', turno:turno||'',
+      numLic:'',catLic:'',fechaLic:'',diasLic:'',estadoLic:'',restriccion:'',celular:'',
+      record:'',cantPapeletas:'0',puntosFirmes:'0',puntosProceso:'0',puntosTotal:'0',alertaPuntos:'',
+      asegSctr:'',tipoSctr:'',fechaSctr:'',diasSctr:'',estadoSctr:'',
+      docDni:'✗',docLic:'✗',docRecord:'✗',docSctr:'✗',docEmo:'✗',docCul:'✗',
+      cumpl:'0/6 (0%)', carpeta:'', _autoCreado:true
+    };
+    CONDUCTORES.push(condBD);
+  }
+
+  if(unidBD){
+    unidBD.estado = 'ACTIVO';
+    if(centro) unidBD.centro = centro;
+    if(provExcel) unidBD.proveedor = provExcel.toUpperCase();
+    if(tipoServicio) unidBD.tipoServicio = tipoServicio.toUpperCase();
+    if(modalidad) unidBD.modalidad = modalidad;
+    const aplican = docsUnidAplicables(unidBD.tipoServicio||provServicioDeUnidad(unidBD));
+    const okDocs = aplican.filter(d=>unidBD[d.campo]==='✓').length;
+    unidBD.cumpl = `${okDocs}/${aplican.length} (${aplican.length?Math.round(okDocs/aplican.length*100):0}%)`;
+  }
+  if(condBD){
+    condBD.estado = 'ACTIVO';
+    if(centro) condBD.centro = centro;
+    if(provExcel) condBD.proveedor = provExcel.toUpperCase();
+    if(conductor) condBD.conductor = conductor.toUpperCase();
+    const docsC = [condBD.docDni,condBD.docLic,condBD.docRecord,condBD.docSctr,condBD.docEmo,condBD.docCul].filter(v=>v==='✓').length;
+    condBD.cumpl = `${docsC}/6 (${Math.round(docsC/6*100)}%)`;
+  }
+  return {unidBD, condBD};
+}
 async function leerReporte(){
   const file=document.getElementById('repFile').files[0];
   if(!file){showToast('Selecciona un archivo primero','err');return;}
@@ -3701,58 +3728,8 @@ async function leerReporte(){
       // Omitir filas que parecen ser subtítulos/totales
       if(!placa && !conductor && !dni) return null;
 
-      // Buscar en BD con normalización robusta
-      let unidBD = buscarPorPlaca(placa);
-      let condBD = buscarConductorBD(conductor, dni);
-
-      // 🆕 AUTO-CREAR si no existe todavía en la base, usando lo que trae el reporte.
-      // Así solo falta completar SOAT/Licencia/etc. — ya no hay que pasar por el formulario.
-      if(!unidBD && placa){
-        unidBD = {
-          placa, estado:'ACTIVO', proveedor:(provExcel||'').toUpperCase(), centro:centro||'', modalidad:modalidad||'',
-          tipoServicio:(tipoServicio||'').toUpperCase(), tipo:tipoUnidExc||'', anio:'', antiguedad:'',
-          categoria:'',marca:'',carroceria:'',asientos:'',pasajeros:'',ejes:'',ruedas:'',pesoBruto:'',pesoNeto:'',reacondicionado:'',tieneTarjProp:'',
-          fechaSoat:'',diasSoat:'',estadoSoat:'',usoSoat:'',tipoSeguro:'',aseguradora:'',tipoSoat:'',
-          fechaRtv:'',diasRtv:'',estadoRtv:'',obsRtv:'',
-          tieneTc:'',fechaTc:'',diasTc:'',estadoTc:'',
-          propietario:'',responsable:'',
-          docTarjProp:'✗',docSoat:'✗',docRtv:'✗',docTc:'✗',docMnto:'✗',docBoletin:'✗',docPoliza:'✗',docSeguroRc:'✗',docSeguroCarga:'✗',docCheckList:'✗',
-          cumpl:'0/7 (0%)', carpeta:'', tarjetaLink:'', _autoCreado:true
-        };
-        UNIDADES.push(unidBD);
-      }
-      if(!condBD && (conductor||dni)){
-        condBD = {
-          dni, conductor:(conductor||'').toUpperCase(), estado:'ACTIVO', proveedor:(provExcel||'').toUpperCase(), placa,
-          tipoUnidad:tipoUnidExc||'', centro:centro||'', ruta:ruta||'', turno:turno||'',
-          numLic:'',catLic:'',fechaLic:'',diasLic:'',estadoLic:'',restriccion:'',celular:'',
-          record:'',cantPapeletas:'0',puntosFirmes:'0',puntosProceso:'0',puntosTotal:'0',alertaPuntos:'',
-          asegSctr:'',tipoSctr:'',fechaSctr:'',diasSctr:'',estadoSctr:'',
-          docDni:'✗',docLic:'✗',docRecord:'✗',docSctr:'✗',docEmo:'✗',docCul:'✗',
-          cumpl:'0/6 (0%)', carpeta:'', _autoCreado:true
-        };
-        CONDUCTORES.push(condBD);
-      }
-
-      // ✅ ACTIVAR y SINCRONIZAR datos del reporte hacia la BD (solo si el reporte trae dato)
-      if(unidBD){
-        unidBD.estado = 'ACTIVO';
-        if(centro) unidBD.centro = centro;
-        if(provExcel) unidBD.proveedor = provExcel.toUpperCase();
-        if(tipoServicio) unidBD.tipoServicio = tipoServicio.toUpperCase();
-        if(modalidad) unidBD.modalidad = modalidad;
-        const aplican = docsUnidAplicables(unidBD.tipoServicio||provServicioDeUnidad(unidBD));
-        const okDocs = aplican.filter(d=>unidBD[d.campo]==='✓').length;
-        unidBD.cumpl = `${okDocs}/${aplican.length} (${aplican.length?Math.round(okDocs/aplican.length*100):0}%)`;
-      }
-      if(condBD){
-        condBD.estado = 'ACTIVO';
-        if(centro) condBD.centro = centro;
-        if(provExcel) condBD.proveedor = provExcel.toUpperCase();
-        if(conductor) condBD.conductor = conductor.toUpperCase();
-        const docsC = [condBD.docDni,condBD.docLic,condBD.docRecord,condBD.docSctr,condBD.docEmo,condBD.docCul].filter(v=>v==='✓').length;
-        condBD.cumpl = `${docsC}/6 (${Math.round(docsC/6*100)}%)`;
-      }
+      // Buscar en BD con normalización robusta (auto-crea si no existe, y sincroniza campos del reporte)
+      const {unidBD, condBD} = resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, tipoServicio, tipoUnidExc, ruta, turno});
 
       // Contar únicos reales
       if(placa) seenPlacas.add(placa);
@@ -4508,15 +4485,14 @@ function poblarFiltroTipoServicio(){
   fill('unid-fil-destino', destinos, 'Todos los destinos');
 }
 
-// Al cargar Excel → activar modo día automáticamente
+// Al cargar Excel → recalcular, pero SIN ocultar el resto de la base
+// (antes forzaba "Modo Día" y escondía las placas ya registradas que no
+// salían en el reporte de hoy — ahora se queda en la vista de base completa)
 function postCargarReporte(){
   recalcular();
   propagarCategoriasDelReporte(); // guarda la categoría del reporte en Proveedores/Unidades
-  COND_MODO_DIA = true;
-  UNID_MODO_DIA = true;
   ST.conductores.page=1;
   ST.unidades.page=1;
-  _setBadgesModo(true, true);
   renderDashboard();
   renderConductores();
   renderUnidades();
@@ -5613,12 +5589,23 @@ async function restaurarRepActivo(){
 
 function _reconstruirRepRows(minimal, fecha){
   REP_ROWS = minimal.map(r=>{
-    const unidBD = buscarPorPlaca(r.placa);
-    const condBD = buscarConductorBD(r.conductor, r.dni);
-    if(unidBD) unidBD.estado = 'ACTIVO';
-    if(condBD) condBD.estado = 'ACTIVO';
+    const {unidBD, condBD} = resolverUnidCond({
+      placa:r.placa, conductor:r.conductor, dni:r.dni,
+      provExcel:r.provExcel||r.proveedor, centro:r.centro, modalidad:r.modalidad,
+      tipoServicio:r.tipoServicio, tipoUnidExc:r.tipoUnidExc, ruta:r.ruta, turno:r.turno
+    });
     const condVista = condBD ? {...condBD, _enBD:true} : null;
     const unidVista = unidBD ? {...unidBD, _enBD:true} : null;
+    const provNom = (r.provExcel||r.proveedor||condBD?.proveedor||unidBD?.proveedor||'').trim().toUpperCase();
+    if(provNom && !PROVEEDORES.some(p=>(p.nombre||'').trim().toUpperCase()===provNom)){
+      PROVEEDORES.push({
+        nombre:provNom, estado:'ACTIVO', zona:'', tipo:'', ruc:'', codigo:'', contacto:'',
+        celular:'', correo:'', responsable:'', carpeta:'',
+        tipoServicio:(r.tipoServicio||'').toUpperCase(),
+        docs:new Array(N_DOCS_PROV).fill('✗'),
+        fechaReg:new Date().toLocaleDateString('es-PE'), _autoCreado:true
+      });
+    }
     return {
       ...r,
       provExcel: r.provExcel||r.proveedor||'',
@@ -5631,6 +5618,7 @@ function _reconstruirRepRows(minimal, fecha){
   });
   if(fecha){ const el=document.getElementById('rep-fecha'); if(el) el.value=fecha; }
   if(REP_ROWS.length > 0) postCargarReporte();
+  sincronizarReporteADB(); // por si se auto-crearon registros al restaurar, guardarlos en Sheets
 }
 
 if(!localStorage.getItem('gs_url') && GS_URL){
