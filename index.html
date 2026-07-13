@@ -3600,6 +3600,10 @@ async function leerReporte(){
   const file=document.getElementById('repFile').files[0];
   if(!file){showToast('Selecciona un archivo primero','err');return;}
   const ext=file.name.split('.').pop().toLowerCase();
+  // 🔄 Traer la base más reciente de Sheets antes de comparar, para no crear
+  // duplicados de unidades/conductores/proveedores que ya existen pero que
+  // aún no se habían refrescado en esta sesión del navegador.
+  if(GS_URL){ await syncFromSheets(); }
   try {
     let rows=[];
     if(ext==='csv'){
