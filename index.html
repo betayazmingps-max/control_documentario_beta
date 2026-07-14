@@ -2082,7 +2082,7 @@ function renderDashboard(){
 
   // ── Conjuntos únicos del reporte ──
   const provsHoy=[...new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()).filter(Boolean))];
-  const condsHoy=[...new Map(REP_ROWS.filter(r=>r.conductor||r.dni).map(r=>[(r.dni||r.conductor||'').toUpperCase(),r])).values()];
+  const condsHoy=[...new Map(REP_ROWS.filter(r=>(r.conductor||r.dni) && !(r.conductor||'').toUpperCase().includes('BETA')).map(r=>[(r.dni||r.conductor||'').toUpperCase(),r])).values()];
   const unidsHoy=[...new Map(REP_ROWS.filter(r=>r.placa).map(r=>[normPlaca(r.placa),r])).values()];
 
   s('kd-dia-prov').textContent=provsHoy.length;
@@ -2785,7 +2785,7 @@ function cumplUnidProv(nUp){
 const DOCS_C_PROV=[{c:'docDni'},{c:'docLic'},{c:'docRecord'},{c:'docSctr'},{c:'docEmo'},{c:'docCul'}];
 // Cumplimiento documentario agregado de los CONDUCTORES de un proveedor
 function cumplCondProv(nUp){
-  const conds=CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp && (c.estado||'').toUpperCase()==='ACTIVO');
+  const conds=CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp && (c.estado||'').toUpperCase()==='ACTIVO' && !esConductorBeta(c));
   let ok=0,tot=0,completos=0;
   conds.forEach(c=>{
     const okC=DOCS_C_PROV.filter(d=>c[d.c]==='✓').length;
@@ -2874,7 +2874,7 @@ function renderProveedores(){
   document.getElementById('prov-count').textContent=data.length+' proveedores'+(nuevosFiltrados.length?` · ${nuevosFiltrados.length} por registrar`:'');
 
   const provCond={},provUnid={};
-  CONDUCTORES.forEach(c=>{if(c.proveedor)provCond[(c.proveedor||'').trim().toUpperCase()]=(provCond[(c.proveedor||'').trim().toUpperCase()]||0)+1;});
+  CONDUCTORES.forEach(c=>{if(c.proveedor && !esConductorBeta(c))provCond[(c.proveedor||'').trim().toUpperCase()]=(provCond[(c.proveedor||'').trim().toUpperCase()]||0)+1;});
   UNIDADES.forEach(u=>{if(u.proveedor)provUnid[(u.proveedor||'').trim().toUpperCase()]=(provUnid[(u.proveedor||'').trim().toUpperCase()]||0)+1;});
 
   PV_MAP = data.map(p=>p.nombre);
@@ -3002,7 +3002,7 @@ function abrirDetalleProv(i){
   UNIDADES.filter(u=>(u.proveedor||'').trim().toUpperCase()===nUp).forEach(u=>{const k=normPlaca(u.placa);if(k&&!_uMap.has(k))_uMap.set(k,u);});
   const unids=[..._uMap.values()];
   const _cMap=new Map();
-  CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp).forEach(c=>{const k=String(c.dni||'').trim()||(c.conductor||'').trim().toUpperCase();if(k&&!_cMap.has(k))_cMap.set(k,c);});
+  CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp && !esConductorBeta(c)).forEach(c=>{const k=String(c.dni||'').trim()||(c.conductor||'').trim().toUpperCase();if(k&&!_cMap.has(k))_cMap.set(k,c);});
   const conds=[..._cMap.values()];
 
   // Placas y conductores NUEVOS del reporte (no registrados en BD) para este proveedor
@@ -3329,7 +3329,9 @@ function calcularAlertasDelDia(){
   const vistos=new Set();
   REP_ROWS.forEach(r=>{
     const c=r.condBD, u=r.unidBD;
+    const esBeta=(r.conductor||'').toUpperCase().includes('BETA');
     ALERTAS_DOCS.forEach(d=>{
+      if(d.tipo==='conductor' && esBeta) return;
       const rec = d.tipo==='conductor' ? c : u;
       if(!rec) return;
       const est = rec[d.estado];
