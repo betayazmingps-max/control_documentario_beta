@@ -1585,6 +1585,20 @@ const DOCS_UNID = [
 function esMotoTipo(tipo){
   return /MOTO/i.test(tipo||'');
 }
+// Cuenta datos BÁSICOS que aún faltan llenar en una unidad (para marcarla "⚠ Completar")
+function unidDatosFaltantes(u){
+  if(!u) return 0;
+  const esMoto=esMotoTipo(u.tipo);
+  const campos=[u.anio, u.marca, u.fechaSoat, u.aseguradora];
+  if(!esMoto){ campos.push(u.fechaRtv); campos.push(u.tieneTc); }
+  return campos.filter(v=>!v || !String(v).trim()).length;
+}
+// Cuenta datos BÁSICOS que aún faltan llenar en un conductor (para marcarlo "⚠ Completar")
+function condDatosFaltantes(c){
+  if(!c) return 0;
+  const campos=[c.fechaLic, c.catLic, c.celular, c.fechaSctr];
+  return campos.filter(v=>!v || !String(v).trim()).length;
+}
 // Documentos que aplican a una unidad según su categoría de servicio y tipo de vehículo
 function docsUnidAplicables(catServ, tipoVehic){
   const cat=clasifServicio(catServ||'');
@@ -2333,7 +2347,7 @@ function renderCondRow(r, num){
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="white-space:nowrap"><button onclick="editarConductor('${dni}')" title="Editar conductor" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>${r.dni||'—'}</td>
     <td style="max-width:160px;white-space:normal;font-size:12px;font-weight:500">${r.conductor||'—'}</td>
-    <td>${badge(r.estado||'ACTIVO')}</td>
+    <td>${badge(r.estado||'ACTIVO')}${condDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarConductor('${dni}')" title="Faltan ${condDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : ''}</td>
     ${editable('proveedor', r.proveedor)}
     ${editable('placa', r.placa)}
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
@@ -2530,7 +2544,7 @@ function renderUnidRow(r, num){
   return `<tr${r._nuevaUnidad ? ' style="background:rgba(16,185,129,0.05)"' : ''}>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2);white-space:nowrap">${r._nuevaUnidad?'':`<button onclick="editarUnidad('${placaEsc}')" title="Editar unidad" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>`}${r.placa||'—'}</td>
-    <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : ''}</td>
+    <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : (unidDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarUnidad('${placaEsc}')" title="Faltan ${unidDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : '')}</td>
     ${editable('proveedor', r.proveedor)}
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td style="font-size:11px">${r.tipo||'—'}</td>
@@ -3681,6 +3695,12 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
     if(provExcel) unidBD.proveedor = provExcel.toUpperCase();
     if(tipoServicio) unidBD.tipoServicio = tipoServicio.toUpperCase();
     if(modalidad) unidBD.modalidad = modalidad;
+    if(!unidBD.tipo && tipoUnidExc) unidBD.tipo = tipoUnidExc;
+    // Backfill: si la unidad (nueva o ya existente) es moto y le falta marcar T.C./RTV, se completa solo
+    if(esMotoTipo(unidBD.tipo)){
+      if(!unidBD.tieneTc || !unidBD.tieneTc.trim()) unidBD.tieneTc = 'NO APLICA';
+      if(!unidBD.obsRtv || !unidBD.obsRtv.trim()) unidBD.obsRtv = 'NO APLICA (moto)';
+    }
     const aplican = docsUnidAplicables(unidBD.tipoServicio||provServicioDeUnidad(unidBD), unidBD.tipo);
     const okDocs = aplican.filter(d=>unidBD[d.campo]==='✓').length;
     unidBD.cumpl = `${okDocs}/${aplican.length} (${aplican.length?Math.round(okDocs/aplican.length*100):0}%)`;
