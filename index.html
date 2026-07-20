@@ -3713,7 +3713,7 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
   }
   if(!condBD && (conductor||dni) && !(conductor||'').toUpperCase().includes('BETA')){
     condBD = {
-      dni, conductor:(conductor||'').toUpperCase(), estado:'ACTIVO', proveedor:(provExcel||'').toUpperCase(), placa,
+      dni: normDni(dni), conductor:(conductor||'').toUpperCase(), estado:'ACTIVO', proveedor:(provExcel||'').toUpperCase(), placa,
       tipoUnidad:tipoUnidExc||'', centro:centro||'', ruta:ruta||'', turno:turno||'',
       numLic:'',catLic:'',fechaLic:'',diasLic:'',estadoLic:'',restriccion:'',celular:'',
       record:'',cantPapeletas:'0',puntosFirmes:'0',puntosProceso:'0',puntosTotal:'0',alertaPuntos:'',
@@ -3839,7 +3839,7 @@ async function leerReporte(){
     REP_ROWS=rows.map(row=>{
       const placa     = COL.placa     ? (row[COL.placa]    ||'').toString().toUpperCase().trim().replace(/[\s\-]/g,'') : '';
       const conductor = COL.conductor ? (row[COL.conductor]||'').toString().trim() : '';
-      const dni       = COL.dni       ? String(row[COL.dni]||'').trim().replace(/\.0$/,'') : '';
+      const dni       = COL.dni       ? normDni(row[COL.dni]) : '';
       const provExcel = COL.proveedor ? (row[COL.proveedor]||'').toString().trim() : '';
       const ruta      = COL.ruta      ? (row[COL.ruta]     ||'').toString().trim() : '';
       const centro    = COL.centro    ? (row[COL.centro]   ||'').toString().trim() : '';
@@ -4378,7 +4378,7 @@ function editarConductor(dni){
   showToast('Editando conductor — modifica y guarda','ok');
 }
 async function guardarConductor(){
-  const dni=document.getElementById('c-dni').value.trim();
+  const dni=normDni(document.getElementById('c-dni').value.trim());
   const nombre=document.getElementById('c-nombre').value.trim();
   if(!dni||!nombre){showToast('DNI y Conductor son obligatorios','err');return;}
   actualizarCumplCond();
