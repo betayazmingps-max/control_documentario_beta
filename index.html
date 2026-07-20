@@ -283,6 +283,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 .toast.show{display:flex;animation:slideIn 0.22s ease;}
 .toast.ok{border-left:4px solid #10b981;color:#065f46;}
 .toast.err{border-left:4px solid #ef4444;color:#991b1b;}
+.toast.warn{border-left:4px solid #f59e0b;color:#92400e;}
 @keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── GS BANNER ── */
@@ -859,14 +860,35 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 
     <div id="rep-tabla-wrap" style="display:none;">
       <div class="tbl-wrap">
-        <div class="tbl-scroll"><table style="min-width:1100px;">
-          <thead><tr>
-            <th>#</th><th>Placa</th><th>Conductor</th><th>Proveedor</th><th>Ruta</th><th>Centro</th><th>Turno</th>
-            <th>Licencia</th><th>Días Lic</th><th>SCTR</th><th>Días SCTR</th>
-            <th>SOAT</th><th>Días SOAT</th><th>RTV</th><th>Días RTV</th>
-            <th>Estado</th>
-          </tr></thead>
-          <tbody id="rep-tbody"><tr><td colspan="16" class="empty-state">Carga el Excel para ver el reporte</td></tr></tbody>
+        <div class="tbl-scroll"><table style="min-width:1300px;">
+          <thead>
+          <tr style="font-size:9px;color:#9ca3af;background:#fafafa">
+            <th colspan="6" style="text-align:center;border-bottom:1px solid #ebebeb">🚚 DATOS DEL VIAJE</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #ebebeb;border-left:2px solid #e5e7eb">🪪 LICENCIA</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #ebebeb;border-left:2px solid #e5e7eb">🛡️ SCTR</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #ebebeb;border-left:2px solid #e5e7eb">📄 SOAT</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #ebebeb;border-left:2px solid #e5e7eb">🔧 RTV</th>
+            <th style="border-left:2px solid #e5e7eb;border-bottom:1px solid #ebebeb"></th>
+          </tr>
+          <tr>
+            <th style="position:sticky;left:0;background:#f3f4f6;z-index:11">#</th>
+            <th style="position:sticky;left:32px;background:#f3f4f6;z-index:11;box-shadow:2px 0 3px -2px rgba(0,0,0,.08)">Placa</th>
+            <th>Grupo</th>
+            <th>Conductor</th>
+            <th>Proveedor</th>
+            <th>Centro</th>
+            <th style="border-left:2px solid #e5e7eb">Estado</th>
+            <th>Días</th>
+            <th style="border-left:2px solid #e5e7eb">Estado</th>
+            <th>Días</th>
+            <th style="border-left:2px solid #e5e7eb">Estado</th>
+            <th>Días</th>
+            <th style="border-left:2px solid #e5e7eb">Estado</th>
+            <th>Días</th>
+            <th style="border-left:2px solid #e5e7eb;text-align:center">✅ Resultado</th>
+          </tr>
+          </thead>
+          <tbody id="rep-tbody"><tr><td colspan="15" class="empty-state">Carga el Excel para ver el reporte</td></tr></tbody>
         </table></div>
         <div style="padding:7px 13px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);background:var(--bg3);">
           Mostrando <span id="rep-count">0</span> unidades
@@ -1585,7 +1607,20 @@ const DOCS_UNID = [
 function esMotoTipo(tipo){
   return /MOTO/i.test(tipo||'');
 }
-// Cuenta datos BÁSICOS que aún faltan llenar en una unidad (para marcarla "⚠ Completar")
+// Devuelve el proveedor que trae HOY el reporte para esa placa, si es DISTINTO al ya guardado en la unidad (posible cruce/dato viejo incorrecto)
+function unidProveedorReporteDistinto(u){
+  if(!u || !u.placa || typeof REP_ROWS==='undefined' || !REP_ROWS.length) return null;
+  const pn = normPlaca(u.placa);
+  const guardado = (u.proveedor||'').trim().toUpperCase();
+  for(const r of REP_ROWS){
+    if(normPlaca(r.placa)===pn){
+      const delReporte=(r.proveedor||'').trim().toUpperCase();
+      if(delReporte && guardado && delReporte!==guardado) return r.proveedor;
+      return null;
+    }
+  }
+  return null;
+}
 function unidDatosFaltantes(u){
   if(!u) return 0;
   const esMoto=esMotoTipo(u.tipo);
@@ -2545,7 +2580,7 @@ function renderUnidRow(r, num){
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2);white-space:nowrap">${r._nuevaUnidad?'':`<button onclick="editarUnidad('${placaEsc}')" title="Editar unidad" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>`}${r.placa||'—'}</td>
     <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : (unidDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarUnidad('${placaEsc}')" title="Faltan ${unidDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : '')}</td>
-    ${editable('proveedor', r.proveedor)}
+    <td data-placa="${placaEsc}" data-campo="proveedor" onclick="editCeldaUnidClick(this)" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${(r.proveedor||'—')}</td>
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td style="font-size:11px">${r.tipo||'—'}</td>
     <td class="mono">${r.anio||'—'}</td>
@@ -3115,7 +3150,7 @@ function abrirDetalleProv(i){
       // no solo en comparación exacta de DNI o nombre.
       const yaExiste = !!r.condBD || (dn && dnisBD.has(dn)) || (nom && nombresBD.has(nom));
       const key = dn||nom;
-      if((r.conductor||dn) && !yaExiste && !vC.has(key)){ vC.add(key); condsNuevos.push({dni:dn,nombre:r.conductor||'',placa:r.placa||'',centro:r.centro||''}); }
+      if((r.conductor||dn) && !yaExiste && !vC.has(key) && !(r.conductor||'').toUpperCase().includes('BETA')){ vC.add(key); condsNuevos.push({dni:dn,nombre:r.conductor||'',placa:r.placa||'',centro:r.centro||''}); }
     });
   }
 
@@ -3691,11 +3726,12 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
 
   if(unidBD){
     unidBD.estado = 'ACTIVO';
+    // Siempre se actualiza con lo que trae el reporte del día (el reporte manda)
     if(centro) unidBD.centro = centro;
     if(provExcel) unidBD.proveedor = provExcel.toUpperCase();
     if(tipoServicio) unidBD.tipoServicio = tipoServicio.toUpperCase();
     if(modalidad) unidBD.modalidad = modalidad;
-    if(!unidBD.tipo && tipoUnidExc) unidBD.tipo = tipoUnidExc;
+    if(tipoUnidExc) unidBD.tipo = tipoUnidExc;
     // Backfill: si la unidad (nueva o ya existente) es moto y le falta marcar T.C./RTV, se completa solo
     if(esMotoTipo(unidBD.tipo)){
       if(!unidBD.tieneTc || !unidBD.tieneTc.trim()) unidBD.tieneTc = 'NO APLICA';
@@ -3707,6 +3743,7 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
   }
   if(condBD){
     condBD.estado = 'ACTIVO';
+    // Siempre se actualiza con lo que trae el reporte del día (el reporte manda)
     if(centro) condBD.centro = centro;
     if(provExcel) condBD.proveedor = provExcel.toUpperCase();
     if(conductor) condBD.conductor = conductor.toUpperCase();
@@ -3879,15 +3916,32 @@ async function leerReporte(){
     document.getElementById('btn-rep-export').style.display='';
     document.getElementById('btn-guardar-reporte').style.display='';
 
-    // Mostrar aviso de registros auto-creados (les falta completar SOAT/Licencia/etc.)
+    // Mostrar aviso de registros auto-creados y de los que les falta completar información
     const autoCond=REP_ROWS.filter(r=>r.condBD?._autoCreado).length;
     const autoUnid=REP_ROWS.filter(r=>r.unidBD?._autoCreado).length;
     const autoProv=PROVEEDORES.filter(p=>p._autoCreado).length;
+    // Cuenta, sin repetir placa/dni, cuántas unidades y conductores de HOY tienen datos básicos por llenar
+    const _placasVistas=new Set(), _dnisVistos=new Set();
+    let faltanUnid=0, faltanCond=0;
+    REP_ROWS.forEach(r=>{
+      const pn=normPlaca(r.placa);
+      if(r.unidBD && pn && !_placasVistas.has(pn)){ _placasVistas.add(pn); if(unidDatosFaltantes(r.unidBD)>0) faltanUnid++; }
+      const dn=String(r.dni||'').trim();
+      if(r.condBD && dn && !_dnisVistos.has(dn)){ _dnisVistos.add(dn); if(condDatosFaltantes(r.condBD)>0) faltanCond++; }
+    });
     let msg=`✓ ${REP_ROWS.length} filas cargadas`;
     if(autoCond>0) msg+=` · ${autoCond} conductor(es) creados automático`;
     if(autoUnid>0) msg+=` · ${autoUnid} unidad(es) creadas automático`;
     if(autoProv>0) msg+=` · ${autoProv} proveedor(es) creados automático`;
     showToast(msg,'ok');
+    if(faltanUnid>0 || faltanCond>0){
+      let msg2='⚠ Falta completar información: ';
+      const partes=[];
+      if(faltanUnid>0) partes.push(`${faltanUnid} unidad(es)`);
+      if(faltanCond>0) partes.push(`${faltanCond} conductor(es)`);
+      msg2+=partes.join(' y ')+' — busca el badge "⚠ Completar" en las tablas';
+      setTimeout(()=>showToast(msg2,'warn'),1600);
+    }
 
     postCargarReporte();
     guardarRepActivo(); // persistir en localStorage + Sheets
@@ -3967,7 +4021,9 @@ function renderReporte(){
   };
   document.getElementById('rep-tbody').innerHTML=rows.length?rows.map((r,i)=>{
     const u=r.unidBD,c=r.condBD;
-    const rowStyle=r.estado==='bad'?'style="background:rgba(239,68,68,0.05)"':r.estado==='warn'?'style="background:rgba(245,158,11,0.05)"':r.estado==='nf'?'style="background:rgba(107,114,128,0.05)"':'';
+    const rowBg=r.estado==='bad'?'rgba(239,68,68,0.05)':r.estado==='warn'?'rgba(245,158,11,0.05)':r.estado==='nf'?'rgba(107,114,128,0.05)':(i%2?'#fafafa':'#fff');
+    const rowStyle=`style="background:${rowBg}"`;
+    const stickyBg = r.estado==='bad'?'#fef2f2':r.estado==='warn'?'#fffbeb':r.estado==='nf'?'#f9fafb':(i%2?'#fafafa':'#fff');
     // Conductor: mostrar nombre + badge si no está en BD + botón registrar
     const condCell = c
       ? `<span style="font-size:12px;font-weight:500">${c.conductor||r.conductor||'—'}</span>`
@@ -3982,23 +4038,22 @@ function renderReporte(){
            : `<span class="mono" style="font-weight:700;color:var(--warn)">${r.placa}</span><br><span style="font-size:9px;color:var(--text3)">Nueva</span>`)
       : '—';
     return `<tr ${rowStyle}>
-      <td class="mono" style="color:var(--text3)">${i+1}</td>
-      <td>${unidCell}</td>
-      <td style="max-width:160px;white-space:normal">${condCell}</td>
+      <td class="mono" style="color:var(--text3);position:sticky;left:0;background:${stickyBg};z-index:2">${i+1}</td>
+      <td style="position:sticky;left:32px;background:${stickyBg};z-index:2;box-shadow:2px 0 3px -2px rgba(0,0,0,.08)">${unidCell}</td>
+      <td style="font-size:11px">${r.grupo?`<span style="background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">${r.grupo}</span>`:'<span style="color:var(--text3)">—</span>'}</td>
+      <td style="max-width:160px;white-space:normal;border-left:2px solid #f5f5f5">${condCell}</td>
       <td style="font-size:11px;max-width:120px;white-space:normal">${(u?u.proveedor:'')||r.proveedor||'—'}</td>
-      <td style="font-size:11px;max-width:110px;white-space:normal">${r.ruta||'—'}</td>
       <td class="mono" style="font-size:11px">${r.centro||(u?u.centro:'')||'—'}</td>
-      <td style="font-size:11px">${r.turno||'—'}</td>
-      <td>${c?badge(c.estadoLic||'—'):'<span style="color:var(--text3)">—</span>'}</td>
+      <td style="border-left:2px solid #f5f5f5">${c?badge(c.estadoLic||'—'):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${c?diasCell(c.diasLic):'<span style="color:var(--text3)">—</span>'}</td>
-      <td>${c?badge(c.estadoSctr||'—'):'<span style="color:var(--text3)">—</span>'}</td>
+      <td style="border-left:2px solid #f5f5f5">${c?badge(c.estadoSctr||'—'):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${c?diasCell(c.diasSctr):'<span style="color:var(--text3)">—</span>'}</td>
-      <td>${u?badge(u.estadoSoat||'—'):'<span style="color:var(--text3)">—</span>'}</td>
+      <td style="border-left:2px solid #f5f5f5">${u?badge(u.estadoSoat||'—'):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${u?diasCell(u.diasSoat):'<span style="color:var(--text3)">—</span>'}</td>
-      <td>${u?badge(u.estadoRtv||'—'):'<span style="color:var(--text3)">—</span>'}</td>
+      <td style="border-left:2px solid #f5f5f5">${u?badge(u.estadoRtv||'—'):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${u?diasCell(u.diasRtv):'<span style="color:var(--text3)">—</span>'}</td>
-      <td>${estBadge(r.estado)}</td>
-    </tr>`;}).join(''):'<tr><td colspan="16" class="empty-state">Sin resultados</td></tr>';
+      <td style="border-left:2px solid #f5f5f5;text-align:center">${estBadge(r.estado)}</td>
+    </tr>`;}).join(''):'<tr><td colspan="15" class="empty-state">Sin resultados</td></tr>';
 }
 function limpiarReporte(){
   REP_ROWS=[]; REP_FILTRO='todos';
@@ -5663,7 +5718,7 @@ function guardarRepActivo(){
       method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({ hoja:'REPORTE_ACTIVO', action:'overwrite', headers, rows })
-    }).catch(()=>{});
+    }).catch(e=>console.error('Error al guardar REPORTE_ACTIVO en Sheets:', e));
   }
 }
 
@@ -5697,8 +5752,13 @@ async function restaurarRepActivo(){
         const fecha = raw[0]?.fecha || '';
         _reconstruirRepRows(rows, fecha);
         showToast(`📋 Reporte cargado desde Sheets — ${REP_ROWS.length} registros`, 'ok');
+      } else {
+        showToast('ℹ️ No hay ningún reporte guardado en Sheets todavía','warn');
       }
-    } catch(e){}
+    } catch(e){
+      console.error('Error al leer REPORTE_ACTIVO de Sheets:', e);
+      showToast('⚠ No se pudo leer el reporte desde Sheets — revisa tu conexión','err');
+    }
   }
 }
 
