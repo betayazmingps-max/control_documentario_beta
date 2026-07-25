@@ -3718,10 +3718,18 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
   let unidBD = buscarPorPlaca(placa);
   let condBD = buscarConductorBD(conductor, dni);
 
+  // Si el proveedor del Excel es parecido (match exacto o difuso) a uno ya registrado,
+  // usamos SU nombre tal cual está en la base — así unidades/conductores quedan
+  // enlazados al proveedor correcto aunque el Excel traiga la razón social con
+  // pequeñas diferencias (puntos, letras faltantes, etc.)
+  const provRawUC = (provExcel||'').trim().toUpperCase();
+  const provMatchUC = provRawUC ? buscarProveedorPorNombre(provRawUC) : null;
+  const provCanon = provMatchUC ? (provMatchUC.nombre||'').trim().toUpperCase() : provRawUC;
+
   if(!unidBD && placa){
     const esMoto = esMotoTipo(tipoUnidExc);
     unidBD = {
-      placa, estado:'ACTIVO', proveedor:(provExcel||'').toUpperCase(), centro:centro||'', modalidad:modalidad||'',
+      placa, estado:'ACTIVO', proveedor:provCanon, centro:centro||'', modalidad:modalidad||'',
       tipoServicio:(tipoServicio||'').toUpperCase(), tipo:tipoUnidExc||'', anio:'', antiguedad:'',
       categoria:'',marca:'',carroceria:'',asientos:'',pasajeros:'',ejes:'',ruedas:'',pesoBruto:'',pesoNeto:'',reacondicionado:'',tieneTarjProp:'',
       fechaSoat:'',diasSoat:'',estadoSoat:'',usoSoat:'',tipoSeguro:'',aseguradora:'',tipoSoat:'',
@@ -3735,7 +3743,7 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
   }
   if(!condBD && (conductor||dni) && !(conductor||'').toUpperCase().includes('BETA')){
     condBD = {
-      dni: normDni(dni), conductor:(conductor||'').toUpperCase(), estado:'ACTIVO', proveedor:(provExcel||'').toUpperCase(), placa,
+      dni: normDni(dni), conductor:(conductor||'').toUpperCase(), estado:'ACTIVO', proveedor:provCanon, placa,
       tipoUnidad:tipoUnidExc||'', centro:centro||'', ruta:ruta||'', turno:turno||'',
       numLic:'',catLic:'',fechaLic:'',diasLic:'',estadoLic:'',restriccion:'',celular:'',
       record:'',cantPapeletas:'0',puntosFirmes:'0',puntosProceso:'0',puntosTotal:'0',alertaPuntos:'',
@@ -3750,7 +3758,7 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
     unidBD.estado = 'ACTIVO';
     // Siempre se actualiza con lo que trae el reporte del día (el reporte manda)
     if(centro) unidBD.centro = centro;
-    if(provExcel) unidBD.proveedor = provExcel.toUpperCase();
+    if(provCanon) unidBD.proveedor = provCanon;
     if(tipoServicio) unidBD.tipoServicio = tipoServicio.toUpperCase();
     if(modalidad) unidBD.modalidad = modalidad;
     if(tipoUnidExc) unidBD.tipo = tipoUnidExc;
@@ -3767,7 +3775,7 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
     condBD.estado = 'ACTIVO';
     // Siempre se actualiza con lo que trae el reporte del día (el reporte manda)
     if(centro) condBD.centro = centro;
-    if(provExcel) condBD.proveedor = provExcel.toUpperCase();
+    if(provCanon) condBD.proveedor = provCanon;
     if(conductor) condBD.conductor = conductor.toUpperCase();
     const docsC = [condBD.docDni,condBD.docLic,condBD.docRecord,condBD.docSctr,condBD.docEmo,condBD.docCul].filter(v=>v==='✓').length;
     condBD.cumpl = `${docsC}/6 (${Math.round(docsC/6*100)}%)`;
