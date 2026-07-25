@@ -3880,7 +3880,11 @@ async function leerReporte(){
       // Contar únicos reales
       if(placa) seenPlacas.add(placa);
       if(conductor||dni) seenConds.add(dni||normText(conductor));
-      const provNom=(provExcel||condBD?.proveedor||unidBD?.proveedor||'').trim().toUpperCase();
+      const provRaw=(provExcel||condBD?.proveedor||unidBD?.proveedor||'').trim().toUpperCase();
+      // Si ya existe un proveedor parecido en la base (match exacto o difuso), usamos SU nombre
+      // tal cual está registrado, para no generar "duplicados por typo" en el reporte.
+      const provMatch = provRaw ? buscarProveedorPorNombre(provRaw) : null;
+      const provNom = provMatch ? (provMatch.nombre||'').trim().toUpperCase() : provRaw;
       if(provNom) seenProvs.add(provNom);
 
       // 🆕 AUTO-CREAR Proveedor si no existe todavía (documentos quedan pendientes/faltantes)
@@ -3903,7 +3907,7 @@ async function leerReporte(){
       return {
         placa, conductor, dni,
         provExcel,
-        proveedor: provExcel || condBD?.proveedor || unidBD?.proveedor || '',
+        proveedor: provMatch ? provMatch.nombre : (provExcel || condBD?.proveedor || unidBD?.proveedor || ''),
         ruta, centro, turno, tipoServicio,
         sedeOrigen, destino, sede, modalidad, tipoUnidExc, grupo,
         unidBD: unidVista,
@@ -5790,7 +5794,9 @@ function _reconstruirRepRows(minimal, fecha){
     });
     const condVista = condBD ? {...condBD, _enBD:true} : null;
     const unidVista = unidBD ? {...unidBD, _enBD:true} : null;
-    const provNom = (r.provExcel||r.proveedor||condBD?.proveedor||unidBD?.proveedor||'').trim().toUpperCase();
+    const provRaw = (r.provExcel||r.proveedor||condBD?.proveedor||unidBD?.proveedor||'').trim().toUpperCase();
+    const provMatch = provRaw ? buscarProveedorPorNombre(provRaw) : null;
+    const provNom = provMatch ? (provMatch.nombre||'').trim().toUpperCase() : provRaw;
     if(provNom && !buscarProveedorPorNombre(provNom)){
       PROVEEDORES.push({
         nombre:provNom, estado:'ACTIVO', zona:'', tipo:'', ruc:'', codigo:'', contacto:'',
@@ -5803,6 +5809,7 @@ function _reconstruirRepRows(minimal, fecha){
     return {
       ...r,
       provExcel: r.provExcel||r.proveedor||'',
+      proveedor: provMatch ? provMatch.nombre : (r.provExcel||r.proveedor||''),
       unidBD: unidVista,
       condBD: condVista,
       estado: estadoGlobal(unidVista, condVista),
