@@ -3435,23 +3435,28 @@ function filtrarAlertas(f, btn){
   if(btn) btn.classList.add('active');
   renderAlertas();
 }
+// Normaliza nombres de empresa quitando puntos/comas de siglas legales
+// (S.A.C. = SAC, E.I.R.L. = EIRL) para que no cuenten como diferencia real.
+function normProvName(s){
+  return normText(s).replace(/[.,]/g,'').replace(/\s+/g,' ').trim();
+}
 function buscarProveedorPorNombre(nombre){
   const nUp=(nombre||'').trim().toUpperCase();
   if(!nUp) return null;
-  // 1. Búsqueda exacta
-  const exact=PROVEEDORES.find(p=>(p.nombre||'').trim().toUpperCase()===nUp);
+  const nClean=normProvName(nUp);
+  // 1. Búsqueda exacta (ignorando puntos/comas: "SAC" = "S.A.C.")
+  const exact=PROVEEDORES.find(p=>normProvName(p.nombre)===nClean);
   if(exact) return exact;
   // 2. Búsqueda difusa: tolera 2-3 letras de diferencia (typos, letras faltantes/de más).
   // Solo devuelve match si es claro (mejor candidato inequívocamente más cercano que el segundo mejor).
-  const nKey=normText(nUp);
   let mejor=null, mejorDist=Infinity, segundoDist=Infinity;
   PROVEEDORES.forEach(p=>{
     if(!p.nombre) return;
-    const dist=levenshtein(nKey, normText(p.nombre));
+    const dist=levenshtein(nClean, normProvName(p.nombre));
     if(dist<mejorDist){ segundoDist=mejorDist; mejorDist=dist; mejor=p; }
     else if(dist<segundoDist){ segundoDist=dist; }
   });
-  const maxDist = nKey.length>18 ? 3 : (nKey.length>8 ? 2 : 1);
+  const maxDist = nClean.length>18 ? 3 : (nClean.length>8 ? 2 : 1);
   if(mejor && mejorDist<=maxDist && mejorDist<segundoDist){
     return mejor;
   }
