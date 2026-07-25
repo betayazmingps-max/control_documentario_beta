@@ -3438,7 +3438,24 @@ function filtrarAlertas(f, btn){
 function buscarProveedorPorNombre(nombre){
   const nUp=(nombre||'').trim().toUpperCase();
   if(!nUp) return null;
-  return PROVEEDORES.find(p=>(p.nombre||'').trim().toUpperCase()===nUp)||null;
+  // 1. Búsqueda exacta
+  const exact=PROVEEDORES.find(p=>(p.nombre||'').trim().toUpperCase()===nUp);
+  if(exact) return exact;
+  // 2. Búsqueda difusa: tolera 2-3 letras de diferencia (typos, letras faltantes/de más).
+  // Solo devuelve match si es claro (mejor candidato inequívocamente más cercano que el segundo mejor).
+  const nKey=normText(nUp);
+  let mejor=null, mejorDist=Infinity, segundoDist=Infinity;
+  PROVEEDORES.forEach(p=>{
+    if(!p.nombre) return;
+    const dist=levenshtein(nKey, normText(p.nombre));
+    if(dist<mejorDist){ segundoDist=mejorDist; mejorDist=dist; mejor=p; }
+    else if(dist<segundoDist){ segundoDist=dist; }
+  });
+  const maxDist = nKey.length>18 ? 3 : (nKey.length>8 ? 2 : 1);
+  if(mejor && mejorDist<=maxDist && mejorDist<segundoDist){
+    return mejor;
+  }
+  return null;
 }
 // Construye la lista de alertas (documentos vencidos/por vencer) SOLO de las
 // unidades y conductores que aparecen en el Reporte Diario cargado (REP_ROWS).
@@ -3867,7 +3884,9 @@ async function leerReporte(){
       if(provNom) seenProvs.add(provNom);
 
       // 🆕 AUTO-CREAR Proveedor si no existe todavía (documentos quedan pendientes/faltantes)
-      if(provNom && !PROVEEDORES.some(p=>(p.nombre||'').trim().toUpperCase()===provNom)){
+      // Usa búsqueda difusa: si el nombre solo difiere en 1-3 letras de uno ya registrado
+      // (typo, letras faltantes), lo toma como el MISMO proveedor y no crea uno nuevo.
+      if(provNom && !buscarProveedorPorNombre(provNom)){
         PROVEEDORES.push({
           nombre:provNom, estado:'ACTIVO', zona:'', tipo:'', ruc:'', codigo:'', contacto:'',
           celular:'', correo:'', responsable:'', carpeta:'',
@@ -5772,7 +5791,7 @@ function _reconstruirRepRows(minimal, fecha){
     const condVista = condBD ? {...condBD, _enBD:true} : null;
     const unidVista = unidBD ? {...unidBD, _enBD:true} : null;
     const provNom = (r.provExcel||r.proveedor||condBD?.proveedor||unidBD?.proveedor||'').trim().toUpperCase();
-    if(provNom && !PROVEEDORES.some(p=>(p.nombre||'').trim().toUpperCase()===provNom)){
+    if(provNom && !buscarProveedorPorNombre(provNom)){
       PROVEEDORES.push({
         nombre:provNom, estado:'ACTIVO', zona:'', tipo:'', ruc:'', codigo:'', contacto:'',
         celular:'', correo:'', responsable:'', carpeta:'',
