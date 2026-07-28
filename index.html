@@ -645,9 +645,6 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <select class="filter-sel" id="pv-grupo" onchange="renderProveedores()">
           <option value="">🚛 Todos los grupos</option>
         </select>
-        <select class="filter-sel" id="pv-resp" onchange="renderProveedores()">
-          <option value="">👤 Todos los responsables</option>
-        </select>
         <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="goPage('reg-proveedor',document.querySelector('.nav-item[onclick*=reg-proveedor]'))">+ Nuevo</button>
         <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="expCSVProv()">⬇ CSV</button>
       </div>
@@ -2297,18 +2294,18 @@ function toggleDashDoc(id){
 // ═══════════════════════════════════════════════
 
 // Toggle check de documento desde la tabla y guardar en Sheets
-async function toggleDocCond(dni, campo){
-  const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
-  if(idx<0) return;
+async function toggleDocCond(id, campo){
+  const idx = resolveCondIndex(id);
+  if(idx<0){ showToast('Conductor no encontrado en BD','err'); return; }
   const nuevoValor = (CONDUCTORES[idx][campo]==='✓') ? '✗' : '✓';
   CONDUCTORES[idx][campo] = nuevoValor;
   const c = CONDUCTORES[idx];
   const docs = [c.docDni,c.docLic,c.docRecord,c.docSctr,c.docEmo,c.docCul].filter(v=>v==='✓').length;
   CONDUCTORES[idx].cumpl = `${docs}/6 (${Math.round(docs/6*100)}%)`;
-  // Sincronizar con REP_ROWS si hay reporte cargado
+  // Sincronizar con REP_ROWS si hay reporte cargado (por nombre, no por dni)
   if(REP_ROWS.length > 0){
     REP_ROWS.forEach(r=>{
-      if(r.condBD && String(r.condBD.dni||'').trim() === String(dni||'').trim()){
+      if(r.condBD && mismoNombreCond(r.condBD.conductor, c.conductor)){
         r.condBD = {...CONDUCTORES[idx], _enBD:true};
         r.estado = estadoGlobal(r.unidBD, r.condBD);
       }
@@ -2325,25 +2322,26 @@ async function toggleDocCond(dni, campo){
 }
 
 // Edición inline de celda en conductor
-function editCeldaCond(dni, campo, valorActual){
-  const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
-  if(idx<0) return;
+function editCeldaCond(id, campo, valorActual){
+  const idx = resolveCondIndex(id);
+  if(idx<0){ showToast('Conductor no encontrado en BD','err'); return; }
   if(campo==='proveedor'){
-    abrirModalProv(valorActual||'', (v)=>guardarCeldaCond(dni,campo,v));
+    abrirModalProv(valorActual||'', (v)=>guardarCeldaCond(id,campo,v));
     return;
   }
-  const td = document.querySelector(`[data-dni="${dni}"][data-campo="${campo}"]`);
+  const td = document.querySelector(`[data-condkey="${CSS.escape(id)}"][data-campo="${campo}"]`);
   if(!td) return;
-  td.innerHTML=`<input value="${(valorActual||'').replace(/"/g,'&quot;')}" onblur="guardarCeldaCond('${dni}','${campo}',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" style="width:100%;min-width:80px;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px 6px;font-size:11px;text-transform:uppercase;outline:none" />`;
+  td.innerHTML=`<input value="${(valorActual||'').replace(/"/g,'&quot;')}" onblur="guardarCeldaCond('${id.replace(/'/g,"\\'")}','${campo}',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" style="width:100%;min-width:80px;background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:3px 6px;font-size:11px;text-transform:uppercase;outline:none" />`;
   td.querySelector('input')?.focus();
 }
-async function guardarCeldaCond(dni, campo, valor){
-  const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
+async function guardarCeldaCond(id, campo, valor){
+  const idx = resolveCondIndex(id);
   if(idx<0) return;
   CONDUCTORES[idx][campo] = valor.trim().toUpperCase();
+  const c = CONDUCTORES[idx];
   if(REP_ROWS.length > 0){
     REP_ROWS.forEach(r=>{
-      if(r.condBD && String(r.condBD.dni||'').trim() === String(dni||'').trim()){
+      if(r.condBD && mismoNombreCond(r.condBD.conductor, c.conductor)){
         r.condBD = {...CONDUCTORES[idx], _enBD:true};
         r.estado = estadoGlobal(r.unidBD, r.condBD);
       }
@@ -2363,6 +2361,9 @@ function renderCondRow(r, num){
   // ensure _enBD is set for rows coming from CONDUCTORES array directly
   if(r._enBD === undefined) r = {...r, _enBD: true};
   const dni = (r.dni||'').replace(/'/g,"\'");
+  // nombre = CLAVE que usan los checks/celdas editables (el DNI suele venir vacío o repetido)
+  const nomJs = (r.conductor||'').replace(/'/g,"\\'");
+  const nomAttr = (r.conductor||'').replace(/"/g,'&quot;');
   if(!r._enBD){
     const nom = (r.conductor||'').replace(/'/g,"\'");
     const prov= (r.proveedor||'').replace(/'/g,"\'");
@@ -2378,9 +2379,9 @@ function renderCondRow(r, num){
       <td colspan="14"></td>
     </tr>`;
   }
-  const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocCond('${dni}','${campo}')" title="Clic para marcar/desmarcar">
+  const chk = (v,campo) => `<td style="text-align:center;cursor:pointer" onclick="toggleDocCond('${nomJs}','${campo}')" title="Clic para marcar/desmarcar">
     <span style="font-size:13px;font-weight:700;color:${v==='✓'?'var(--green)':'var(--text3)'}; user-select:none">${v==='✓'?'✓':'✗'}</span></td>`;
-  const editable = (campo, valor) => `<td data-dni="${dni}" data-campo="${campo}" onclick="editCeldaCond('${dni}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
+  const editable = (campo, valor) => `<td data-condkey="${nomAttr}" data-campo="${campo}" onclick="editCeldaCond('${nomJs}','${campo}','${(valor||'').replace(/'/g,"\\'")}')" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${valor||'—'}</td>`;
   return `<tr>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="white-space:nowrap"><button onclick="editarConductor('${dni}')" title="Editar conductor" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>${r.dni||'—'}</td>
@@ -2391,9 +2392,9 @@ function renderCondRow(r, num){
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td><span class="badge blue">${r.catLic||'—'}</span></td>
     <td>${badge(r.estadoLic||'—')}</td>
-    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasLic','fechaLic','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasLic)}</td>
+    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasLic','fechaLic','${nomJs}')" title="Clic para editar">${diasCell(r.diasLic)}</td>
     <td>${badge(r.estadoSctr||'—')}</td>
-    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasSctr','fechaSctr','${(r.conductor||'').replace(/'/g,"\\'")}')" title="Clic para editar">${diasCell(r.diasSctr)}</td>
+    <td class="editable-cell" onclick="abrirEditDni('${dni}','diasSctr','fechaSctr','${nomJs}')" title="Clic para editar">${diasCell(r.diasSctr)}</td>
     ${chk(r.docDni,'docDni')}
     ${chk(r.docLic,'docLic')}
     ${chk(r.docRecord,'docRecord')}
@@ -2759,7 +2760,7 @@ const PV_PS=25; let PV_PAGE=1;
 // getPD: si hay datos locales los usa; si no, usa los docs que vienen del Sheets (p.docs)
 function getPD(n){
   if(!PD[n]){
-    const prov = PROVEEDORES.find(p=>p.nombre===n);
+    const prov = PROVEEDORES.find(p=>normProvName(p.nombre)===normProvName(n));
     const docsBase = prov?.docs
       ? prov.docs.map(v => v==='✓')
       : new Array(N_DOCS_PROV).fill(false);
@@ -2799,7 +2800,7 @@ const PROV_COLS = [
 // Guarda el proveedor en Sheets con docs como VERDADERO/FALSO
 async function guardarProvEnSheets(nombreProv){
   if(!GS_URL) return false;
-  const prov = PROVEEDORES.find(p=>p.nombre===nombreProv);
+  const prov = PROVEEDORES.find(p=>normProvName(p.nombre)===normProvName(nombreProv));
   if(!prov) return false;
   const pd  = getPD(nombreProv);
   const {ok,tot,pct} = cumplProv(prov);
@@ -2913,14 +2914,12 @@ function renderProveedores(){
     return;
   }
   poblarSelectGrupo('pv-grupo','🚛 Todos los grupos');
-  poblarSelectResponsable('pv-resp','👤 Todos los responsables');
   const search  = (document.getElementById('pv-srch')||{value:''}).value.toLowerCase();
   const zona    = (document.getElementById('pv-zona')||{value:''}).value;
   const cumplF  = (document.getElementById('pv-cumpl')||{value:''}).value;
   const tipoServ= (document.getElementById('pv-tiposerv')||{value:''}).value;
   const origen  = (document.getElementById('pv-origen')||{value:'todos'}).value;
   const grupoF  = (document.getElementById('pv-grupo')||{value:''}).value;
-  const respF   = (document.getElementById('pv-resp')||{value:''}).value;
   // Grupo de vehículo por proveedor, según el reporte del día
   const provGruposPv={};
   (typeof REP_ROWS!=='undefined'?REP_ROWS:[]).forEach(r=>{
@@ -2972,10 +2971,6 @@ function renderProveedores(){
       const nUp=(p.nombre||'').trim().toUpperCase();
       if(!(provGruposPv[nUp]&&provGruposPv[nUp].has(grupoF))) return false;
     }
-    if(respF){
-      const pd=getPD(p.nombre);
-      if((pd.resp||p.responsable||'').trim()!==respF) return false;
-    }
     if(cumplF){
       const pct=metricaProv(p).pct;
       if(cumplF==='completo'  && pct<80) return false;
@@ -2996,7 +2991,6 @@ function renderProveedores(){
     const nUp=(p.nombre||'').trim().toUpperCase();
     return provGruposPv[nUp]&&provGruposPv[nUp].has(grupoF);
   });
-  if(respF) nuevosFiltrados = [];
   data = [...nuevosFiltrados, ...data];
 
   document.getElementById('prov-count').textContent=data.length+' proveedores'+(nuevosFiltrados.length?` · ${nuevosFiltrados.length} por registrar`:'');
@@ -3123,7 +3117,7 @@ function tarjetaConductorHTML(c, i, enRuta){
 function abrirDetalleProv(i){
   const nombre = PV_MAP[i]; if(!nombre) return;
   PV_DETALLE_I = i;
-  const p = PROVEEDORES.find(x=>x.nombre===nombre); if(!p) return;
+  const p = PROVEEDORES.find(x=>normProvName(x.nombre)===normProvName(nombre)); if(!p) return;
   const pd = getPD(nombre);
   const cmp = cumplProv(p); const ok = cmp.ok; const pct = cmp.pct;
   const aplicaSet = new Set(docsAplicables(p));
@@ -3273,7 +3267,7 @@ function abrirEditDniModal(dni, diasCampo, fechaCampo, nombre, i){
 // Abre el formulario de registro con TODOS los datos del proveedor cargados (editar)
 function editarProveedor(nombre){
   cerrarDetalleProv();
-  const p = PROVEEDORES.find(x=>x.nombre===nombre); if(!p) return;
+  const p = PROVEEDORES.find(x=>normProvName(x.nombre)===normProvName(nombre)); if(!p) return;
   goPage('reg-proveedor', document.querySelector('.nav-item[onclick*="reg-proveedor"]'));
   setTimeout(()=>{
     const sv=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
@@ -3639,6 +3633,56 @@ function normPlaca(p){
 // Clave de DNI insensible a ceros a la izquierda y decimales tipo Excel (12345.0)
 function normDni(d){
   return String(d||'').trim().replace(/\.0+$/,'').replace(/^0+(?=\d)/,'');
+}
+// ═══════════════════════════════════════════════
+// NOMBRE DE CONDUCTOR — clave de respaldo (el reporte diario casi nunca trae DNI,
+// y muchos conductores en el Sheet tienen el DNI vacío o repetido).
+// ═══════════════════════════════════════════════
+function normNombreCond(s){
+  return String(s||'')
+    .toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^A-Z\s]/g,' ')
+    .trim().replace(/\s+/g,' ')
+    .split(' ').filter(Boolean).sort().join(' ');
+}
+function levenshteinCond(a, b){
+  const m=a.length, n=b.length;
+  if(m===0) return n;
+  if(n===0) return m;
+  const dp=[];
+  for(let i=0;i<=m;i++) dp.push(new Array(n+1).fill(0));
+  for(let i=0;i<=m;i++) dp[i][0]=i;
+  for(let j=0;j<=n;j++) dp[0][j]=j;
+  for(let i=1;i<=m;i++){
+    for(let j=1;j<=n;j++){
+      const costo = a[i-1]===b[j-1] ? 0 : 1;
+      dp[i][j]=Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+costo);
+    }
+  }
+  return dp[m][n];
+}
+// ¿"a" y "b" son el mismo nombre? (case/tildes/orden no importan, tolera 1-3 letras de typo)
+function mismoNombreCond(a, b){
+  const na=normNombreCond(a), nb=normNombreCond(b);
+  if(!na || !nb) return false;
+  if(na===nb) return true;
+  const maxDist = na.length>18 ? 3 : (na.length>8 ? 2 : 1);
+  return levenshteinCond(na, nb) <= maxDist;
+}
+function findCondPorNombre(nombre){
+  return CONDUCTORES.findIndex(c=>mismoNombreCond(c.conductor, nombre));
+}
+// Resuelve un conductor por el identificador que venga: si trae dígitos intenta
+// DNI exacto primero; si no encuentra (o el id no es DNI), busca por NOMBRE.
+function resolveCondIndex(id){
+  if(!id) return -1;
+  if(/\d/.test(id)){
+    const dniNorm = normDni(id);
+    const idx = CONDUCTORES.findIndex(c=> c.dni && normDni(c.dni)===dniNorm);
+    if(idx>=0) return idx;
+  }
+  return findCondPorNombre(id);
 }
 function buscarPorPlaca(p){
   const pn=normPlaca(p);
@@ -4147,7 +4191,7 @@ function abrirEditPlaca(placa, diasCampo, fechaCampo){
   document.getElementById('edit-modal').classList.add('open');
 }
 function abrirEditDni(dni, diasCampo, fechaCampo, nombre){
-  const idx = CONDUCTORES.findIndex(c=>normDni(c.dni)===normDni(dni));
+  const idx = nombre ? findCondPorNombre(nombre) : resolveCondIndex(dni);
   if(idx<0){ showToast('Conductor no encontrado en BD','err'); return; }
   const label = {fechaLic:'Licencia',fechaSctr:'SCTR',fechaEmo:'EMO'}[fechaCampo]||fechaCampo;
   editTarget={tipo:'conductor',idx,diasCampo,fechaCampo};
@@ -4856,16 +4900,6 @@ function clTab(tab){
   if(tab==='cond') renderChecklistCond();
 }
 // Puebla CUALQUIER <select> de Grupo de Vehículo con los valores únicos que trae el reporte diario
-function poblarSelectResponsable(selId, etiquetaVacia){
-  const sel=document.getElementById(selId); if(!sel) return;
-  const resps=[...new Set((PROVEEDORES||[]).map(p=>{
-    const pd=getPD(p.nombre);
-    return (pd.resp||p.responsable||'').trim();
-  }).filter(Boolean))].sort();
-  const actual=sel.value;
-  sel.innerHTML=`<option value="">${etiquetaVacia||'👤 Todos los responsables'}</option>`+resps.map(r=>`<option value="${r}">${r}</option>`).join('');
-  if(resps.includes(actual)) sel.value=actual;
-}
 function poblarSelectGrupo(selId, etiquetaVacia){
   const sel=document.getElementById(selId); if(!sel) return;
   const grupos=[...new Set((REP_ROWS||[]).map(r=>(r.grupo||'').trim()).filter(Boolean))].sort();
