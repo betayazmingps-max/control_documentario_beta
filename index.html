@@ -534,6 +534,21 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <select id="cond-fil-grupo" class="filter-sel" onchange="state.conductores.page=1;renderConductores()" style="min-width:160px">
           <option value="">🚛 Todos los grupos</option>
         </select>
+        <input class="search-box" id="cond-srch" placeholder="🔍 Buscar..." oninput="state.conductores.page=1;renderConductores()" style="width:150px">
+        <select id="cond-fil-zona" class="filter-sel" onchange="state.conductores.page=1;renderConductores()">
+          <option value="">Todas las zonas</option>
+          <option value="NORTE">Norte</option>
+          <option value="SUR">Sur</option>
+        </select>
+        <select id="cond-fil-cumpl" class="filter-sel" onchange="state.conductores.page=1;renderConductores()">
+          <option value="">Todo cumplimiento</option>
+          <option value="completo">✅ Completo (≥80%)</option>
+          <option value="proceso">⏳ En proceso (50-79%)</option>
+          <option value="incompleto">❌ Incompleto (&lt;50%)</option>
+        </select>
+        <select id="cond-fil-resp" class="filter-sel" onchange="state.conductores.page=1;renderConductores()">
+          <option value="">👤 Todos los responsables</option>
+        </select>
         <div id="cond-modo-badge" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;display:none">📋 Reporte del día</div>
         <div id="cond-modo-badge-base" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--bg3);color:var(--text3);font-weight:600">📦 Base completa</div>
         <button class="tb-btn" id="btn-cond-modo" onclick="toggleCondModo()" style="font-size:11px">Ver reporte del día</button>
@@ -576,6 +591,21 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         </select>
         <select id="unid-fil-grupo" class="filter-sel" onchange="state.unidades.page=1;renderUnidades()" style="min-width:160px">
           <option value="">🚛 Todos los grupos</option>
+        </select>
+        <input class="search-box" id="unid-srch" placeholder="🔍 Buscar..." oninput="state.unidades.page=1;renderUnidades()" style="width:150px">
+        <select id="unid-fil-zona" class="filter-sel" onchange="state.unidades.page=1;renderUnidades()">
+          <option value="">Todas las zonas</option>
+          <option value="NORTE">Norte</option>
+          <option value="SUR">Sur</option>
+        </select>
+        <select id="unid-fil-cumpl" class="filter-sel" onchange="state.unidades.page=1;renderUnidades()">
+          <option value="">Todo cumplimiento</option>
+          <option value="completo">✅ Completo (≥80%)</option>
+          <option value="proceso">⏳ En proceso (50-79%)</option>
+          <option value="incompleto">❌ Incompleto (&lt;50%)</option>
+        </select>
+        <select id="unid-fil-resp" class="filter-sel" onchange="state.unidades.page=1;renderUnidades()">
+          <option value="">👤 Todos los responsables</option>
         </select>
         <div id="unid-modo-badge" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;display:none">📋 Reporte del día</div>
         <div id="unid-modo-badge-base" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--bg3);color:var(--text3);font-weight:600">📦 Base completa</div>
@@ -644,6 +674,9 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         </select>
         <select class="filter-sel" id="pv-grupo" onchange="renderProveedores()">
           <option value="">🚛 Todos los grupos</option>
+        </select>
+        <select class="filter-sel" id="pv-resp" onchange="renderProveedores()">
+          <option value="">👤 Todos los responsables</option>
         </select>
         <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="goPage('reg-proveedor',document.querySelector('.nav-item[onclick*=reg-proveedor]'))">+ Nuevo</button>
         <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="expCSVProv()">⬇ CSV</button>
@@ -766,6 +799,20 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <button class="rep-btn active" data-f="todos" onclick="filtrarAlertas('todos',this)">Todos</button>
         <button class="rep-btn" data-f="vencido" onclick="filtrarAlertas('vencido',this)">🔴 Vencidos</button>
         <button class="rep-btn" data-f="porvencer" onclick="filtrarAlertas('porvencer',this)">🟡 Por Vencer</button>
+        <select id="al-fil-zona" class="filter-sel" onchange="renderAlertas()">
+          <option value="">Todas las zonas</option>
+          <option value="NORTE">Norte</option>
+          <option value="SUR">Sur</option>
+        </select>
+        <select id="al-fil-cumpl" class="filter-sel" onchange="renderAlertas()">
+          <option value="">Todo cumplimiento</option>
+          <option value="completo">✅ Completo (≥80%)</option>
+          <option value="proceso">⏳ En proceso (50-79%)</option>
+          <option value="incompleto">❌ Incompleto (&lt;50%)</option>
+        </select>
+        <select id="al-fil-resp" class="filter-sel" onchange="renderAlertas()">
+          <option value="">👤 Todos los responsables</option>
+        </select>
         <input type="text" class="search-box" style="width:220px;margin-left:auto" id="alertas-search" placeholder="🔍 Buscar placa, nombre, proveedor..." oninput="renderAlertas()">
       </div>
 
@@ -825,6 +872,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <div>
           <div class="form-label" style="margin-bottom:4px;">Fecha del reporte</div>
           <input class="form-input" type="date" id="rep-fecha" style="width:150px;">
+          <div id="rep-fecha-aviso" style="display:none;font-size:11px;color:var(--danger);font-weight:700;margin-top:4px;max-width:220px">⚠ Este reporte no es de hoy</div>
         </div>
         <div style="margin-top:16px;display:flex;gap:8px;">
           <button class="btn btn-primary" onclick="leerReporte()">🔍 Analizar</button>
@@ -855,6 +903,20 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <button class="rep-btn" data-f="warn" onclick="filtrarRep('warn',this)">⚠ Alertas</button>
       <button class="rep-btn" data-f="bad" onclick="filtrarRep('bad',this)">🔴 No Aptas</button>
       <button class="rep-btn" data-f="nf" onclick="filtrarRep('nf',this)">❓ Sin Registro</button>
+      <select id="rep-fil-zona" class="filter-sel" onchange="renderReporte()">
+        <option value="">Todas las zonas</option>
+        <option value="NORTE">Norte</option>
+        <option value="SUR">Sur</option>
+      </select>
+      <select id="rep-fil-cumpl" class="filter-sel" onchange="renderReporte()">
+        <option value="">Todo cumplimiento</option>
+        <option value="completo">✅ Completo (≥80%)</option>
+        <option value="proceso">⏳ En proceso (50-79%)</option>
+        <option value="incompleto">❌ Incompleto (&lt;50%)</option>
+      </select>
+      <select id="rep-fil-resp" class="filter-sel" onchange="renderReporte()">
+        <option value="">👤 Todos los responsables</option>
+      </select>
       <input type="text" class="search-box" style="width:200px;margin-left:auto" id="rep-search" placeholder="🔍 Buscar..." oninput="renderReporte()">
     </div>
 
@@ -944,6 +1006,14 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <option value="incompleto">⚠ Con faltantes</option>
             <option value="vacio">⬜ Sin ningún doc</option>
           </select>
+          <select class="filter-sel" id="rep-prov-zona" onchange="renderReporteProveedores()">
+            <option value="">Todas las zonas</option>
+            <option value="NORTE">Norte</option>
+            <option value="SUR">Sur</option>
+          </select>
+          <select class="filter-sel" id="rep-prov-resp" onchange="renderReporteProveedores()">
+            <option value="">👤 Todos los responsables</option>
+          </select>
           <button class="btn-secondary" style="padding:6px 12px;font-size:11.5px" onclick="exportarChecklist('prov')">⬇ Excel</button>
         </div>
       </div>
@@ -969,6 +1039,14 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <option value="completo">✅ Completos</option>
             <option value="incompleto">⚠ Con faltantes</option>
           </select>
+          <select class="filter-sel" id="cl-unid-zona" onchange="renderChecklistUnid()">
+            <option value="">Todas las zonas</option>
+            <option value="NORTE">Norte</option>
+            <option value="SUR">Sur</option>
+          </select>
+          <select class="filter-sel" id="cl-unid-resp" onchange="renderChecklistUnid()">
+            <option value="">👤 Todos los responsables</option>
+          </select>
           <button class="btn-secondary" style="padding:6px 12px;font-size:11.5px" onclick="exportarChecklist('unid')">⬇ Excel</button>
         </div>
       </div>
@@ -986,6 +1064,14 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <option value="">Todos</option>
             <option value="completo">✅ Completos</option>
             <option value="incompleto">⚠ Con faltantes</option>
+          </select>
+          <select class="filter-sel" id="cl-cond-zona" onchange="renderChecklistCond()">
+            <option value="">Todas las zonas</option>
+            <option value="NORTE">Norte</option>
+            <option value="SUR">Sur</option>
+          </select>
+          <select class="filter-sel" id="cl-cond-resp" onchange="renderChecklistCond()">
+            <option value="">👤 Todos los responsables</option>
           </select>
           <button class="btn-secondary" style="padding:6px 12px;font-size:11.5px" onclick="exportarChecklist('cond')">⬇ Excel</button>
         </div>
@@ -1283,16 +1369,19 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div class="form-sec">
         <div class="form-sec-title">🔧 Revisión Técnica (RTV)</div>
         <div class="form-grid g4">
+          <div class="form-group"><label class="form-label">¿Le toca RTV?</label><select class="form-select" id="u-tiene-rtv" onchange="aplicarReglaRtv()"><option>SI</option><option>AÚN NO LE TOCA</option><option>NO APLICA</option></select></div>
           <div class="form-group"><label class="form-label">Fecha Vcto. RTV</label><input class="form-input" type="date" id="u-fecha-rtv" onchange="calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv')"></div>
           <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-dias-rtv" readonly></div>
           <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-est-rtv" readonly></div>
+        </div>
+        <div class="form-grid g4">
           <div class="form-group"><label class="form-label">Observaciones RTV</label><input class="form-input" type="text" id="u-obs-rtv" placeholder="Sin observaciones"></div>
         </div>
       </div>
       <div class="form-sec">
         <div class="form-sec-title">📇 Tarjeta de Circulación</div>
         <div class="form-grid g4">
-          <div class="form-group"><label class="form-label">¿Tiene T.C.?</label><select class="form-select" id="u-tiene-tc"><option>SI</option><option>NO</option><option>EN TRAMITE</option><option>NO APLICA</option></select></div>
+          <div class="form-group"><label class="form-label">¿Tiene T.C.?</label><select class="form-select" id="u-tiene-tc" onchange="actualizarCumplUnid()"><option>SI</option><option>NO</option><option>EN TRAMITE</option><option>NO APLICA</option></select></div>
           <div class="form-group"><label class="form-label">Fecha Vcto. T.C.</label><input class="form-input" type="date" id="u-fecha-tc" onchange="calcDocDias('u-fecha-tc','u-dias-tc','u-est-tc')"></div>
           <div class="form-group"><label class="form-label">Días <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-dias-tc" readonly></div>
           <div class="form-group"><label class="form-label">Estado <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-est-tc" readonly></div>
@@ -1588,7 +1677,7 @@ function parseCsv(text){
 }
 
 // Orden EXACTO de columnas del Sheet UNIDADES (47 columnas)
-const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','docCheckList','cumpl','carpeta','tarjetaLink'];
+const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','tieneRtv','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','docCheckList','cumpl','carpeta','tarjetaLink'];
 
 // Documentos de UNIDAD (10) con su etiqueta y a qué categorías aplican
 const DOCS_UNID = [
@@ -1634,11 +1723,19 @@ function condDatosFaltantes(c){
   const campos=[c.fechaLic, c.catLic, c.celular, c.fechaSctr];
   return campos.filter(v=>!v || !String(v).trim()).length;
 }
-// Documentos que aplican a una unidad según su categoría de servicio y tipo de vehículo
-function docsUnidAplicables(catServ, tipoVehic){
+// Documentos que aplican a una unidad según su categoría de servicio y tipo de vehículo.
+// El 3er parámetro (u) es opcional: si la unidad tiene marcado "NO APLICA"/"AÚN NO LE TOCA"
+// para RTV o TUC, esos documentos se excluyen del checklist (no cuentan como pendientes).
+function docsUnidAplicables(catServ, tipoVehic, u){
   const cat=clasifServicio(catServ||'');
   let docs = DOCS_UNID.filter(d=> d.cat==='todos' || (cat && d.cat.includes(cat)));
   if(esMotoTipo(tipoVehic)) docs = docs.filter(d=> d.campo!=='docRtv' && d.campo!=='docTc');
+  if(u){
+    const rtvNA = u.tieneRtv==='NO APLICA' || u.tieneRtv==='AÚN NO LE TOCA';
+    const tcNA  = u.tieneTc==='NO APLICA';
+    if(rtvNA) docs = docs.filter(d=> d.campo!=='docRtv');
+    if(tcNA)  docs = docs.filter(d=> d.campo!=='docTc');
+  }
   return docs;
 }
 // Deriva el tipo de servicio de una unidad: campo propio → reporte → proveedor
@@ -2199,7 +2296,7 @@ function renderDashboard(){
     : '<div class="empty-state">Todos completos ✓</div>';
 
   // Unidades con docs faltantes
-  const unidFalta=unidObjs.map(u=>{const ap=docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo);const falta=ap.filter(d=>u[d.campo]!=='✓');return {u,falta};}).filter(x=>x.falta.length>0).sort((a,b)=>b.falta.length-a.falta.length);
+  const unidFalta=unidObjs.map(u=>{const ap=docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u);const falta=ap.filter(d=>u[d.campo]!=='✓');return {u,falta};}).filter(x=>x.falta.length>0).sort((a,b)=>b.falta.length-a.falta.length);
   s('cnt-unid-falta').textContent=unidFalta.length;
   s('kd-unid-falta').innerHTML = unidFalta.length
     ? unidFalta.slice(0,15).map(x=>`<div class="alert-item"><div class="alert-name" style="font-family:var(--mono)">${x.u.placa||'—'}</div><div class="alert-meta"><span style="color:var(--text3)">${(x.u.proveedor||'').slice(0,22)}</span><span class="d-warn">Falta: ${x.falta.map(d=>d.lbl).slice(0,3).join(', ')}</span></div></div>`).join('')
@@ -2256,7 +2353,7 @@ function renderDashboard(){
   const porDocU = s('kd-por-doc-unid');
   if(porDocU){
     porDocU.innerHTML = DOCS_UNID.map((d,di)=>{
-      const aplicaU = u=>docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo).some(x=>x.campo===d.campo);
+      const aplicaU = u=>docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u).some(x=>x.campo===d.campo);
       const faltan = unidObjs.filter(u=>aplicaU(u) && u[d.campo]!=='✓').map(u=>`${u.placa||'—'} · ${(u.proveedor||'').slice(0,18)}`);
       const total = unidObjs.filter(aplicaU).length;
       return cardPorDoc(d.lbl,di,faltan,total||1);
@@ -2274,7 +2371,7 @@ function renderDashboard(){
 
   // Contadores en los encabezados colapsables (total de docs con algún faltante)
   const nProvDocFalta = DOCS_PROV.filter((d,di)=>provObjs.some(p=>docsAplicables(p).includes(di)&&!getPD(p.nombre).docs[di])).length;
-  const nUnidDocFalta = DOCS_UNID.filter(d=>unidObjs.some(u=>docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo).some(x=>x.campo===d.campo)&&u[d.campo]!=='✓')).length;
+  const nUnidDocFalta = DOCS_UNID.filter(d=>unidObjs.some(u=>docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u).some(x=>x.campo===d.campo)&&u[d.campo]!=='✓')).length;
   const nCondDocFalta = docsCondGlobal.filter(d=>condObjs.some(c=>c[d.c]!=='✓')).length;
   const setTxt=(id,t)=>{const e=s(id);if(e)e.textContent=t;};
   setTxt('kd-cnt-doc-prov', `· ${nProvDocFalta} con pendientes`);
@@ -2449,6 +2546,11 @@ function renderConductores(){
         tiposBase.map(t=>`<option value="${t}">${t}</option>`).join('');
       selC.style.display='';
     }
+    poblarSelectResponsable('cond-fil-resp');
+    const srchProp   = (document.getElementById('cond-srch')||{value:''}).value.toLowerCase();
+    const zonaFiltroC = (document.getElementById('cond-fil-zona')||{value:''}).value;
+    const cumplFiltroC= (document.getElementById('cond-fil-cumpl')||{value:''}).value;
+    const respFiltroC = (document.getElementById('cond-fil-resp')||{value:''}).value;
     let rows = filterData(CONDUCTORES.filter(c=>!esConductorBeta(c)), search, estado);
     if(tipoFiltroBase) rows = rows.filter(r=>(r.proveedor||'').trim()===tipoFiltroBase);
     if(grupoFiltroBase) rows = rows.filter(c=>{
@@ -2456,6 +2558,10 @@ function renderConductores(){
       const grps=(dn&&dniGruposC[dn]) || nomGruposC[nm];
       return grps && grps.has(grupoFiltroBase);
     });
+    if(zonaFiltroC)  rows = rows.filter(c=>zonaDeProveedor(c.proveedor)===zonaFiltroC);
+    if(cumplFiltroC) rows = rows.filter(c=>cumplBucketProveedor(c.proveedor)===cumplFiltroC);
+    if(respFiltroC)  rows = rows.filter(c=>matchResponsable(responsableDeProveedor(c.proveedor), respFiltroC));
+    if(srchProp)     rows = rows.filter(c=>JSON.stringify(c).toLowerCase().includes(srchProp));
     document.getElementById('cond-count').textContent=rows.length+' registros';
     const PS2=25; const pg=state.conductores.page;
     const sl=rows.slice((pg-1)*PS2,pg*PS2);
@@ -2463,6 +2569,15 @@ function renderConductores(){
       ? sl.map((r,i)=>renderCondRow(r,(pg-1)*PS2+i+1)).join('')
       : '<tr><td colspan="20" class="empty-state">Sin conductores</td></tr>';
     renderPag('cond-pag','cond-info',pg,rows.length,v=>{ state.conductores.page=v; renderConductores(); });
+    return;
+  }
+  // Modo "toda la base" pero la BD de conductores aún no sincronizó desde Sheets:
+  // NO mostrar el reporte del día disfrazado de "base completa" — avisar claramente.
+  if(!COND_MODO_DIA && CONDUCTORES.length===0){
+    document.getElementById('cond-count').textContent='0 registros';
+    document.getElementById('cond-tbody').innerHTML='<tr><td colspan="20" class="empty-state">📋 Aún no se sincronizó la base completa de Conductores desde Google Sheets. Si quieres ver los conductores del reporte del día cargado, usa el botón "Ver reporte del día".</td></tr>';
+    document.getElementById('cond-info').textContent='—';
+    document.getElementById('cond-pag').innerHTML='';
     return;
   }
   // Sin Excel cargado y modo día activo → tabla vacía con mensaje
@@ -2478,6 +2593,11 @@ function renderConductores(){
   const sedeFiltroC    = (document.getElementById('cond-fil-sede')||{value:''}).value;
   const destinoFiltroC = (document.getElementById('cond-fil-destino')||{value:''}).value;
   const grupoFiltroC   = (document.getElementById('cond-fil-grupo')||{value:''}).value;
+  poblarSelectResponsable('cond-fil-resp');
+  const srchProp    = (document.getElementById('cond-srch')||{value:''}).value.toLowerCase();
+  const zonaFiltroC = (document.getElementById('cond-fil-zona')||{value:''}).value;
+  const cumplFiltroC= (document.getElementById('cond-fil-cumpl')||{value:''}).value;
+  const respFiltroC = (document.getElementById('cond-fil-resp')||{value:''}).value;
   // Construir filas: conductores encontrados en BD + los NO encontrados del Excel
   const seen=new Set();
   let rows=[];
@@ -2486,13 +2606,17 @@ function renderConductores(){
     if(sedeFiltroC    && (r.sede||r.sedeOrigen||'').trim() !== sedeFiltroC) return;
     if(destinoFiltroC && (r.destino||'').trim() !== destinoFiltroC) return;
     if(grupoFiltroC   && (r.grupo||'').trim() !== grupoFiltroC) return;
+    if(zonaFiltroC    && zonaDeProveedor(r.proveedor) !== zonaFiltroC) return;
+    if(cumplFiltroC   && cumplBucketProveedor(r.proveedor) !== cumplFiltroC) return;
+    if(respFiltroC    && !matchResponsable(responsableDeProveedor(r.proveedor), respFiltroC)) return;
     if(r.condBD){
       // NO mostrar conductores BETA en consultas
       if(esConductorBeta(r.condBD)) return;
       if(!seen.has(r.condBD.dni)){ seen.add(r.condBD.dni); rows.push({...r.condBD, _enBD:true}); }
     }
   });
-  if(search) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
+  if(search)   rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
+  if(srchProp) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(srchProp));
   document.getElementById('cond-count').textContent=rows.length+' del día';
   const PS2=25; const pg=ST.conductores?.page||1;
   const sl=rows.slice((pg-1)*PS2,pg*PS2);
@@ -2513,7 +2637,7 @@ async function toggleDocUnid(placa, campo){
   const nuevoValor = (actual==='✓') ? '✗' : '✓';
   UNIDADES[idx][campo] = nuevoValor;
   const u = UNIDADES[idx];
-  const aplican = docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo);
+  const aplican = docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u);
   const ok = aplican.filter(d=>u[d.campo]==='✓').length;
   const tot = aplican.length;
   UNIDADES[idx].cumpl = `${ok}/${tot} (${tot?Math.round(ok/tot*100):0}%)`;
@@ -2584,7 +2708,7 @@ function renderUnidRow(r, num){
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2);white-space:nowrap">${r._nuevaUnidad?'':`<button onclick="editarUnidad('${placaEsc}')" title="Editar unidad" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>`}${r.placa||'—'}</td>
     <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : (unidDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarUnidad('${placaEsc}')" title="Faltan ${unidDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : '')}</td>
-    <td data-placa="${placaEsc}" data-campo="proveedor" onclick="editCeldaUnidClick(this)" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${(r.proveedor||'—')}</td>
+    <td data-placa="${placaEsc}" data-campo="proveedor" onclick="editCeldaUnidClick(this)" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${(r.proveedor||'—')}${verFichaProvBtn(r.proveedor)}</td>
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td style="font-size:11px">${r.tipo||'—'}</td>
     <td class="mono">${r.anio||'—'}</td>
@@ -2653,12 +2777,21 @@ function renderUnidades(){
         tiposBase.map(t=>`<option value="${t}">${t}</option>`).join('');
       selU.style.display='';
     }
+    poblarSelectResponsable('unid-fil-resp');
+    const srchProp    = (document.getElementById('unid-srch')||{value:''}).value.toLowerCase();
+    const zonaFiltroU = (document.getElementById('unid-fil-zona')||{value:''}).value;
+    const cumplFiltroU= (document.getElementById('unid-fil-cumpl')||{value:''}).value;
+    const respFiltroU = (document.getElementById('unid-fil-resp')||{value:''}).value;
     let rows = filterData(UNIDADES, search, estado);
     if(tipoFiltroBase) rows = rows.filter(r=>(r.tipo||'').trim()===tipoFiltroBase);
     if(grupoFiltroBase) rows = rows.filter(u=>{
       const pn=normPlaca(u.placa);
       return placaGruposU[pn] && placaGruposU[pn].has(grupoFiltroBase);
     });
+    if(zonaFiltroU)  rows = rows.filter(u=>zonaDeProveedor(u.proveedor)===zonaFiltroU);
+    if(cumplFiltroU) rows = rows.filter(u=>cumplBucketProveedor(u.proveedor)===cumplFiltroU);
+    if(respFiltroU)  rows = rows.filter(u=>matchResponsable(responsableDeUnidad(u), respFiltroU));
+    if(srchProp)     rows = rows.filter(u=>JSON.stringify(u).toLowerCase().includes(srchProp));
     document.getElementById('unid-count').textContent=rows.length+' registros';
     const PS2=25; const pg=state.unidades.page;
     const sl=rows.slice((pg-1)*PS2,pg*PS2);
@@ -2668,10 +2801,19 @@ function renderUnidades(){
     renderPag('unid-pag','unid-info',pg,rows.length,v=>{ state.unidades.page=v; renderUnidades(); });
     return;
   }
-  // Sin Excel cargado y modo día → mensaje
-  if(!UNID_MODO_DIA && REP_ROWS.length===0){
+  // Modo "toda la base" pero la BD de unidades aún no sincronizó desde Sheets:
+  // NO mostrar el reporte del día disfrazado de "base completa" — avisar claramente.
+  if(!UNID_MODO_DIA && UNIDADES.length===0){
     document.getElementById('unid-count').textContent='0 registros';
-    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="32" class="empty-state">📋 Conecta Google Sheets para cargar las unidades</td></tr>';
+    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="32" class="empty-state">📋 Aún no se sincronizó la base completa de Unidades desde Google Sheets. Si quieres ver las unidades del reporte del día cargado, usa el botón "Ver reporte del día".</td></tr>';
+    document.getElementById('unid-info').textContent='—';
+    document.getElementById('unid-pag').innerHTML='';
+    return;
+  }
+  // Sin Excel cargado y modo día → mensaje
+  if(UNID_MODO_DIA && REP_ROWS.length===0){
+    document.getElementById('unid-count').textContent='0 registros';
+    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="32" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver las unidades</td></tr>';
     document.getElementById('unid-info').textContent='—';
     document.getElementById('unid-pag').innerHTML='';
     return;
@@ -2681,6 +2823,11 @@ function renderUnidades(){
   const sedeFiltroU    = (document.getElementById('unid-fil-sede')||{value:''}).value;
   const destinoFiltroU = (document.getElementById('unid-fil-destino')||{value:''}).value;
   const grupoFiltroU   = (document.getElementById('unid-fil-grupo')||{value:''}).value;
+  poblarSelectResponsable('unid-fil-resp');
+  const srchProp    = (document.getElementById('unid-srch')||{value:''}).value.toLowerCase();
+  const zonaFiltroU = (document.getElementById('unid-fil-zona')||{value:''}).value;
+  const cumplFiltroU= (document.getElementById('unid-fil-cumpl')||{value:''}).value;
+  const respFiltroU = (document.getElementById('unid-fil-resp')||{value:''}).value;
   let rows;
   if(UNID_MODO_DIA && REP_ROWS.length>0){
     const repFiltrado = REP_ROWS.filter(r=>{
@@ -2688,6 +2835,9 @@ function renderUnidades(){
       if(sedeFiltroU    && (r.sede||r.sedeOrigen||'').trim() !== sedeFiltroU) return false;
       if(destinoFiltroU && (r.destino||'').trim() !== destinoFiltroU) return false;
       if(grupoFiltroU   && (r.grupo||'').trim() !== grupoFiltroU) return false;
+      if(zonaFiltroU    && zonaDeProveedor(r.proveedor) !== zonaFiltroU) return false;
+      if(cumplFiltroU   && cumplBucketProveedor(r.proveedor) !== cumplFiltroU) return false;
+      if(respFiltroU    && !matchResponsable(responsableDeProveedor(r.proveedor), respFiltroU)) return false;
       return true;
     });
     rows = repFiltrado.filter(r=>r.unidBD).map(r=>r.unidBD);
@@ -2695,8 +2845,12 @@ function renderUnidades(){
   } else {
     const {estado}=state.unidades;
     rows = filterData(UNIDADES, search, estado);
+    if(zonaFiltroU)  rows = rows.filter(u=>zonaDeProveedor(u.proveedor)===zonaFiltroU);
+    if(cumplFiltroU) rows = rows.filter(u=>cumplBucketProveedor(u.proveedor)===cumplFiltroU);
+    if(respFiltroU)  rows = rows.filter(u=>matchResponsable(responsableDeUnidad(u), respFiltroU));
   }
-  if(search) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
+  if(search)   rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(search));
+  if(srchProp) rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(srchProp));
   document.getElementById('unid-count').textContent=rows.length+(UNID_MODO_DIA?' del día':' registros');
   const PS2=25; const pg=UNID_MODO_DIA?(ST.unidades?.page||1):state.unidades.page;
   const sl=rows.slice((pg-1)*PS2,pg*PS2);
@@ -2769,7 +2923,82 @@ function getPD(n){
   }
   return PD[n];
 }
+// Botón "ojito" que abre la ficha del proveedor (donde se ven sus documentos ✅/❌), desde cualquier tabla
+function verFichaProvBtn(nombreProveedor){
+  if(!nombreProveedor || nombreProveedor==='—') return '';
+  const esc=(nombreProveedor||'').replace(/'/g,"\\'");
+  return ` <button onclick="event.stopPropagation();abrirDetalleProvPorNombre('${esc}')" title="Ver ficha de documentos del proveedor" style="display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;border:none;background:rgba(124,58,237,0.14);color:var(--accent2);cursor:pointer;font-size:11px;vertical-align:middle;margin-left:5px">👁</button>`;
+}
+// Abre la ficha del proveedor (mismo modal que se usa en la página Proveedores) buscándolo por nombre,
+// sin importar en qué página / filtro estemos parados
+function abrirDetalleProvPorNombre(nombre){
+  if(!nombre || typeof PROVEEDORES==='undefined') return;
+  const idx = PROVEEDORES.findIndex(p=>normProvName(p.nombre)===normProvName(nombre));
+  if(idx<0){ if(typeof showToast==='function') showToast('Proveedor no encontrado','err'); return; }
+  PV_MAP = PROVEEDORES.map(p=>p.nombre); // asegura índice válido para el modal, sin importar el filtro actual
+  abrirDetalleProv(idx);
+}
+// Botón "ojito" para ver la tarjeta de circulación (tarjetaLink) de una unidad, en cualquier tabla
+function tarjetaBtn(link){
+  if(!link) return '';
+  return ` <a href="${link}" target="_blank" onclick="event.stopPropagation()" title="Ver tarjeta de circulación" style="display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:rgba(124,58,237,0.14);color:var(--accent2);text-decoration:none;font-size:11px;vertical-align:middle;margin-left:5px">👁</a>`;
+}
 function savePD(){localStorage.setItem(PD_KEY,JSON.stringify(PD));}
+
+// ═══════════════════════════════════════════════
+// FILTROS COMPARTIDOS: Zona / Cumplimiento / Responsable
+// Se usan en Conductores, Unidades, Alertas, Reporte y Checklist
+// ═══════════════════════════════════════════════
+function _provPorNombreFlex(nombre){
+  const nUp=(nombre||'').trim().toUpperCase();
+  if(!nUp) return null;
+  const exact=PROVEEDORES.find(p=>(p.nombre||'').trim().toUpperCase()===nUp);
+  if(exact) return exact;
+  return (typeof buscarProveedorPorNombre==='function') ? buscarProveedorPorNombre(nombre) : null;
+}
+function zonaDeProveedor(nombre){
+  const p=_provPorNombreFlex(nombre); return p ? (p.zona||'') : '';
+}
+function cumplBucketProveedor(nombre){
+  const p=_provPorNombreFlex(nombre); if(!p) return '';
+  const pct=cumplProv(p).pct;
+  return pct>=80 ? 'completo' : (pct>=50 ? 'proceso' : 'incompleto');
+}
+function responsableDeProveedor(nombre){
+  const p=_provPorNombreFlex(nombre); if(!p) return '';
+  const pd=getPD(p.nombre);
+  return pd.resp || p.responsable || '';
+}
+// Responsable de una unidad: usa su propio campo si lo tiene, si no el de su proveedor
+function responsableDeUnidad(u){
+  if(u && u.responsable) return u.responsable;
+  return responsableDeProveedor(u ? u.proveedor : '');
+}
+// Coincide si el filtro (p.ej. "WMUÑOZ") está contenido dentro del valor real,
+// así encuentra también los valores combinados: "WMUÑOZ/EODAR", "WMUÑOZ - EODAR", etc.
+function matchResponsable(actual, filtro){
+  if(!filtro) return true;
+  const norm=s=>(s||'').toString().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9]/g,'');
+  return norm(actual).includes(norm(filtro));
+}
+// Puebla un <select> con los responsables únicos (separando "WMUÑOZ/EODAR" en WMUÑOZ, EODAR)
+// tomados de Proveedores y de Unidades
+function poblarSelectResponsable(selId, etiquetaVacia){
+  const sel=document.getElementById(selId); if(!sel) return;
+  const actual=sel.value;
+  const set=new Set();
+  (PROVEEDORES||[]).forEach(p=>{
+    const r=(getPD(p.nombre).resp || p.responsable || '');
+    r.split(/[\/,\-]/).map(x=>x.trim().toUpperCase()).filter(Boolean).forEach(x=>set.add(x));
+  });
+  (typeof UNIDADES!=='undefined'?UNIDADES:[]).forEach(u=>{
+    const r=(u.responsable||'');
+    r.split(/[\/,\-]/).map(x=>x.trim().toUpperCase()).filter(Boolean).forEach(x=>set.add(x));
+  });
+  const vals=[...set].sort();
+  sel.innerHTML=`<option value="">${etiquetaVacia||'👤 Todos los responsables'}</option>`+vals.map(v=>`<option value="${v}">${v}</option>`).join('');
+  if(vals.includes(actual)) sel.value=actual;
+}
 // El Sheet es la fuente de verdad: sobrescribe el localStorage con los docs del Sheet
 // (así lo que marca un usuario lo ven todos los demás al sincronizar)
 function sincPDdesdeSheet(){
@@ -2879,7 +3108,7 @@ function cumplUnidProv(nUp){
   const unids=UNIDADES.filter(u=>(u.proveedor||'').trim().toUpperCase()===nUp && (u.estado||'').toUpperCase()==='ACTIVO');
   let ok=0,tot=0,completas=0;
   unids.forEach(u=>{
-    const ap=docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo);
+    const ap=docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u);
     const okU=ap.filter(d=>u[d.campo]==='✓').length;
     ok+=okU; tot+=ap.length;
     if(ap.length && okU===ap.length) completas++;
@@ -2914,12 +3143,14 @@ function renderProveedores(){
     return;
   }
   poblarSelectGrupo('pv-grupo','🚛 Todos los grupos');
+  poblarSelectResponsable('pv-resp');
   const search  = (document.getElementById('pv-srch')||{value:''}).value.toLowerCase();
   const zona    = (document.getElementById('pv-zona')||{value:''}).value;
   const cumplF  = (document.getElementById('pv-cumpl')||{value:''}).value;
   const tipoServ= (document.getElementById('pv-tiposerv')||{value:''}).value;
   const origen  = (document.getElementById('pv-origen')||{value:'todos'}).value;
   const grupoF  = (document.getElementById('pv-grupo')||{value:''}).value;
+  const respF   = (document.getElementById('pv-resp')||{value:''}).value;
   // Grupo de vehículo por proveedor, según el reporte del día
   const provGruposPv={};
   (typeof REP_ROWS!=='undefined'?REP_ROWS:[]).forEach(r=>{
@@ -2977,6 +3208,7 @@ function renderProveedores(){
       if(cumplF==='proceso'   && (pct<50||pct>=80)) return false;
       if(cumplF==='incompleto'&& pct>=50) return false;
     }
+    if(respF && !matchResponsable(getPD(p.nombre).resp||p.responsable, respF)) return false;
     return true;
   });
 
@@ -3089,7 +3321,7 @@ function tarjetaUnidadHTML(u, i, enRuta){
     ${faltanU>0?`<div onclick="event.stopPropagation();editarUnidad('${pl}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Completar — faltan ${faltanU} dato(s) básicos</div>`:''}
     <div style="display:flex;flex-wrap:wrap;gap:4px">
       ${estPill(u.estadoSoat,'SOAT','diasSoat','fechaSoat',u.diasSoat)}${estPill(u.estadoRtv,'RTV','diasRtv','fechaRtv',u.diasRtv)}${estPill(u.estadoTc,'TUC','diasTc','fechaTc',u.diasTc)}
-      ${docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo).map(d=>pill(u[d.campo],d.lbl,d.campo)).join('')}
+      ${docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u).map(d=>pill(u[d.campo],d.lbl,d.campo)).join('')}
     </div>
     ${u.carpeta?`<a href="${u.carpeta}" target="_blank" style="font-size:10px;color:var(--accent);margin-top:5px;display:inline-block">📁 Abrir carpeta</a>`:''}
   </div>`;
@@ -3499,7 +3731,8 @@ function calcularAlertasDelDia(){
         celular: prov?.celular||'',
         correo: prov?.correo||'',
         dias: isNaN(dias)?null:dias,
-        estado: est
+        estado: est,
+        tarjetaLink: d.tipo==='unidad' ? (u?.tarjetaLink||'') : ''
       });
     });
   });
@@ -3551,27 +3784,44 @@ function renderAlertas(){
 
   // KPIs
   const fecha=document.getElementById('rep-fecha')?.value||'—';
-  document.getElementById('al-fecha').textContent=fecha;
-  document.getElementById('al-registros').textContent=REP_ROWS.length+' registros del día';
+  const hoyStr=new Date().toISOString().slice(0,10);
+  const noEsHoy = fecha!=='—' && fecha!==hoyStr;
+  const alFechaEl=document.getElementById('al-fecha');
+  alFechaEl.textContent=fecha+(noEsHoy?' ⚠':'');
+  alFechaEl.style.color = noEsHoy ? 'var(--danger)' : '';
+  document.getElementById('al-registros').innerHTML = noEsHoy
+    ? `<span style="color:var(--danger);font-weight:700">⚠ No es el reporte de hoy — carga el Excel del día en "Reporte Diario"</span>`
+    : REP_ROWS.length+' registros del día';
   document.getElementById('al-vencidos').textContent=alertas.filter(a=>a.estado==='VENCIDO').length;
   document.getElementById('al-porvencer').textContent=alertas.filter(a=>a.estado==='POR VENCER').length;
   document.getElementById('al-proveedores').textContent=alertasProv.length;
 
+  poblarSelectResponsable('al-fil-resp');
   // Filtro + búsqueda (aplica estado VENCIDO/POR VENCER a conductores y unidades)
   const busc=(document.getElementById('alertas-search')?.value||'').toLowerCase();
+  const zonaFiltroAl = (document.getElementById('al-fil-zona')||{value:''}).value;
+  const cumplFiltroAl= (document.getElementById('al-fil-cumpl')||{value:''}).value;
+  const respFiltroAl = (document.getElementById('al-fil-resp')||{value:''}).value;
   const pasaEstado = a => {
     if(ALERTAS_FILTRO==='vencido'   && a.estado!=='VENCIDO') return false;
     if(ALERTAS_FILTRO==='porvencer' && a.estado!=='POR VENCER') return false;
     return true;
   };
-  const filtCond = alertas.filter(a=>a.tipo==='conductor' && pasaEstado(a)
+  const pasaZonaCumplResp = a => {
+    const nomProv = a.proveedor || a.nombre;
+    if(zonaFiltroAl  && zonaDeProveedor(nomProv) !== zonaFiltroAl) return false;
+    if(cumplFiltroAl && cumplBucketProveedor(nomProv) !== cumplFiltroAl) return false;
+    if(respFiltroAl  && !matchResponsable(responsableDeProveedor(nomProv), respFiltroAl)) return false;
+    return true;
+  };
+  const filtCond = alertas.filter(a=>a.tipo==='conductor' && pasaEstado(a) && pasaZonaCumplResp(a)
     && (!busc || `${a.documento} ${a.idText} ${a.proveedor} ${a.contacto}`.toLowerCase().includes(busc)));
-  const filtUnid = alertas.filter(a=>a.tipo==='unidad' && pasaEstado(a)
+  const filtUnid = alertas.filter(a=>a.tipo==='unidad' && pasaEstado(a) && pasaZonaCumplResp(a)
     && (!busc || `${a.documento} ${a.idText} ${a.proveedor} ${a.contacto}`.toLowerCase().includes(busc)));
   // El filtro Vencido/Por Vencer no aplica a proveedores (es de % de documentos, no de fechas);
-  // solo se filtran por búsqueda de texto.
+  // solo se filtran por búsqueda de texto, zona, cumplimiento y responsable.
   const filtProv = alertasProv.filter(a =>
-    !busc || `${a.nombre} ${a.categoria} ${a.contacto}`.toLowerCase().includes(busc));
+    pasaZonaCumplResp(a) && (!busc || `${a.nombre} ${a.categoria} ${a.contacto}`.toLowerCase().includes(busc)));
 
   document.getElementById('alertas-count-cond').textContent=filtCond.length;
   document.getElementById('alertas-count-unid').textContent=filtUnid.length;
@@ -3585,7 +3835,7 @@ function renderAlertas(){
     <td class="mono" style="color:var(--text3)">${i+1}</td>
     <td style="font-size:12px;font-weight:600">${a.documento}</td>
     <td class="mono" style="font-weight:700;color:#111">${a.idText}</td>
-    <td style="font-size:11.5px;white-space:normal;max-width:160px">${a.proveedor}</td>
+    <td style="font-size:11.5px;white-space:normal;max-width:160px">${a.proveedor}${verFichaProvBtn(a.proveedor)}</td>
     <td style="font-size:11.5px;white-space:normal;max-width:150px">${a.contacto||'—'}</td>
     <td class="mono" style="font-size:11.5px">${a.celular||'—'}</td>
     <td style="font-size:11px;white-space:normal;max-width:150px">${a.correo||'—'}</td>
@@ -3598,7 +3848,7 @@ function renderAlertas(){
     <td class="mono" style="color:var(--text3)">${i+1}</td>
     <td style="font-size:12px;font-weight:600">${a.documento}</td>
     <td class="mono" style="font-weight:700;color:#1e40af">${a.idText}</td>
-    <td style="font-size:11.5px;white-space:normal;max-width:160px">${a.proveedor}</td>
+    <td style="font-size:11.5px;white-space:normal;max-width:160px">${a.proveedor}${verFichaProvBtn(a.proveedor)}</td>
     <td style="font-size:11.5px;white-space:normal;max-width:150px">${a.contacto||'—'}</td>
     <td class="mono" style="font-size:11.5px">${a.celular||'—'}</td>
     <td style="font-size:11px;white-space:normal;max-width:150px">${a.correo||'—'}</td>
@@ -3611,7 +3861,7 @@ function renderAlertas(){
     const col = a.pct>=80?'#f59e0b':'#ef4444';
     return `<tr>
     <td class="mono" style="color:var(--text3)">${i+1}</td>
-    <td style="font-size:12px;font-weight:700;color:#111;white-space:normal;max-width:180px">${a.nombre}</td>
+    <td style="font-size:12px;font-weight:700;color:#111;white-space:normal;max-width:180px">${a.nombre}${verFichaProvBtn(a.nombre)}</td>
     <td style="font-size:11px">${a.categoria}</td>
     <td class="mono" style="font-size:11.5px">${a.ok}/${a.tot}</td>
     <td><span style="font-weight:700;font-size:12px;color:${col}">${a.pct}%</span></td>
@@ -3825,7 +4075,7 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
       if(!unidBD.tieneTc || !unidBD.tieneTc.trim()) unidBD.tieneTc = 'NO APLICA';
       if(!unidBD.obsRtv || !unidBD.obsRtv.trim()) unidBD.obsRtv = 'NO APLICA (moto)';
     }
-    const aplican = docsUnidAplicables(unidBD.tipoServicio||provServicioDeUnidad(unidBD), unidBD.tipo);
+    const aplican = docsUnidAplicables(unidBD.tipoServicio||provServicioDeUnidad(unidBD), unidBD.tipo, unidBD);
     const okDocs = aplican.filter(d=>unidBD[d.campo]==='✓').length;
     unidBD.cumpl = `${okDocs}/${aplican.length} (${aplican.length?Math.round(okDocs/aplican.length*100):0}%)`;
   }
@@ -4091,9 +4341,23 @@ function filtrarRep(f,btn){
   renderReporte();
 }
 function renderReporte(){
+  poblarSelectResponsable('rep-fil-resp');
+  const fechaRep=document.getElementById('rep-fecha')?.value||'';
+  const hoyStr=new Date().toISOString().slice(0,10);
+  const avisoEl=document.getElementById('rep-fecha-aviso');
+  const fechaInputEl=document.getElementById('rep-fecha');
+  const noEsHoy = fechaRep && fechaRep!==hoyStr;
+  if(avisoEl) avisoEl.style.display = noEsHoy ? 'block' : 'none';
+  if(fechaInputEl) fechaInputEl.style.borderColor = noEsHoy ? 'var(--danger)' : '';
   const busq=(document.getElementById('rep-search').value||'').toLowerCase();
+  const zonaFiltroRep = (document.getElementById('rep-fil-zona')||{value:''}).value;
+  const cumplFiltroRep= (document.getElementById('rep-fil-cumpl')||{value:''}).value;
+  const respFiltroRep = (document.getElementById('rep-fil-resp')||{value:''}).value;
   const rows=REP_ROWS.filter(r=>{
     if(REP_FILTRO!=='todos'&&r.estado!==REP_FILTRO)return false;
+    if(zonaFiltroRep  && zonaDeProveedor(r.proveedor) !== zonaFiltroRep) return false;
+    if(cumplFiltroRep && cumplBucketProveedor(r.proveedor) !== cumplFiltroRep) return false;
+    if(respFiltroRep  && !matchResponsable(responsableDeProveedor(r.proveedor), respFiltroRep)) return false;
     if(busq&&!`${r.placa} ${r.conductor} ${r.proveedor} ${r.ruta}`.toLowerCase().includes(busq))return false;
     return true;
   });
@@ -4136,7 +4400,7 @@ function renderReporte(){
       <td style="position:sticky;left:32px;background:${stickyBg};z-index:2;box-shadow:2px 0 3px -2px rgba(0,0,0,.08)">${unidCell}</td>
       <td style="font-size:11px">${r.grupo?`<span style="background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">${r.grupo}</span>`:'<span style="color:var(--text3)">—</span>'}</td>
       <td style="max-width:160px;white-space:normal;border-left:2px solid #f5f5f5">${condCell}</td>
-      <td style="font-size:11px;max-width:120px;white-space:normal">${(u?u.proveedor:'')||r.proveedor||'—'}</td>
+      <td style="font-size:11px;max-width:120px;white-space:normal">${(u?u.proveedor:'')||r.proveedor||'—'}${verFichaProvBtn((u?u.proveedor:'')||r.proveedor)}</td>
       <td class="mono" style="font-size:11px">${r.centro||(u?u.centro:'')||'—'}</td>
       <td style="border-left:2px solid #f5f5f5">${c?badge(c.estadoLic||'—'):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${c?diasCell(c.diasLic):'<span style="color:var(--text3)">—</span>'}</td>
@@ -4294,6 +4558,14 @@ function aplicarReglasTipoUnidad(){
   }
   actualizarCumplUnid();
 }
+// Cuando se marca "AÚN NO LE TOCA" o "NO APLICA" en RTV: autocompleta observación y refresca checklist
+function aplicarReglaRtv(){
+  const tieneRtv=(document.getElementById('u-tiene-rtv')||{value:''}).value;
+  const obsRtv=document.getElementById('u-obs-rtv');
+  if(tieneRtv==='AÚN NO LE TOCA' && obsRtv && !obsRtv.value.trim()) obsRtv.value='AÚN NO LE TOCA';
+  if(tieneRtv==='NO APLICA' && obsRtv && !obsRtv.value.trim()) obsRtv.value='NO APLICA';
+  actualizarCumplUnid();
+}
 function calcAntig(){
   const a=parseInt(document.getElementById('u-anio').value);
   document.getElementById('u-antig').value=a>0?String(new Date().getFullYear()-a)+' años':'';
@@ -4308,8 +4580,10 @@ const UCH_MAP={'uch-tarj':'docTarjProp','uch-soat':'docSoat','uch-rtv':'docRtv',
 function actualizarCumplUnid(){
   const cat=document.getElementById('u-tiposervicio')?.value||'';
   const tipoV=document.getElementById('u-tipo')?.value||'';
-  const aplican=docsUnidAplicables(cat, tipoV);
-  // mostrar/ocultar checkboxes según categoría
+  const tieneTc=document.getElementById('u-tiene-tc')?.value||'';
+  const tieneRtv=document.getElementById('u-tiene-rtv')?.value||'';
+  const aplican=docsUnidAplicables(cat, tipoV, {tieneTc, tieneRtv});
+  // mostrar/ocultar checkboxes según categoría (y según NO APLICA / AÚN NO LE TOCA)
   for(const [id,campo] of Object.entries(UCH_MAP)){
     const el=document.getElementById(id);
     if(el&&el.closest('.check-item')){
@@ -4422,7 +4696,7 @@ function buscarUnidad(placa){
     su('u-uso-soat',u.usoSoat);su('u-tipo-seguro',u.tipoSeguro);
     su('u-tipo-soat',u.tipoSoat);su('u-propietario',u.propietario);su('u-responsable',u.responsable);
     su('u-carpeta',u.carpeta);su('u-tarjeta-link',u.tarjetaLink);
-    su('u-tiene-tc',u.tieneTc);su('u-obs-rtv',u.obsRtv);
+    su('u-tiene-tc',u.tieneTc);su('u-tiene-rtv',u.tieneRtv||'SI');su('u-obs-rtv',u.obsRtv);
     if(u.anio)calcAntig();
     if(u.fechaSoat)calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat');
     if(u.fechaRtv)calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv');
@@ -4545,6 +4819,7 @@ async function guardarUnidad(){
     usoSoat:gv('u-uso-soat'),
     tipoSeguro:gv('u-tipo-seguro'),
     tipoSoat:gv('u-tipo-soat'),
+    tieneRtv:gv('u-tiene-rtv'),
     fechaRtv:gv('u-fecha-rtv'),
     diasRtv:(gv('u-dias-rtv')||'').replace('d',''),
     obsRtv:gv('u-obs-rtv'),
@@ -4786,12 +5061,15 @@ function renderReporteProveedores(){
     selSede.value=actual;
   }
 
+  poblarSelectResponsable('rep-prov-resp');
   const fSearch=(document.getElementById('rep-prov-srch')||{value:''}).value.toLowerCase();
   const fSede=(document.getElementById('rep-prov-sede')||{value:''}).value;
   const fCat =(document.getElementById('rep-prov-cat')||{value:''}).value;
   const fDoc =(document.getElementById('rep-prov-doc')||{value:''}).value;
   const fGrupo=(document.getElementById('cl-grupo-filtro')||{value:''}).value;
   const fTipoServ=(document.getElementById('cl-tiposerv-filtro')||{value:''}).value;
+  const fZona=(document.getElementById('rep-prov-zona')||{value:''}).value;
+  const fResp=(document.getElementById('rep-prov-resp')||{value:''}).value;
 
   thead.innerHTML='<tr>'+
     '<th>#</th><th style="min-width:190px;text-align:left">Proveedor</th><th>Categoría</th><th>Zona/Sede</th>'+
@@ -4811,6 +5089,8 @@ function renderReporteProveedores(){
     if(fSede && !(provSedes[nUp]&&provSedes[nUp].has(fSede))) return;
     if(fGrupo && !(provGrupos[nUp]&&provGrupos[nUp].has(fGrupo))) return;
     if(fTipoServ && !(provTiposServ[nUp]&&provTiposServ[nUp].has(fTipoServ))) return;
+    if(fZona && (p.zona||'')!==fZona) return;
+    if(fResp && !matchResponsable(getPD(p.nombre).resp||p.responsable, fResp)) return;
     const pd=getPD(p.nombre);
     const aplica=docsAplicables(p);
     const ok=aplica.filter(i=>pd.docs[i]).length;
@@ -4842,7 +5122,7 @@ function filaClProv(r,n){
   }).join('');
   return `<tr style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
     <td class="mono" style="color:#94a3b8">${n+1}</td>
-    <td style="font-weight:700;font-size:12.5px;color:#0f172a;text-align:left">${r.p.nombre}</td>
+    <td style="font-weight:700;font-size:12.5px;color:#0f172a;text-align:left">${r.p.nombre}${verFichaProvBtn(r.p.nombre)}</td>
     <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:3px 9px;border-radius:12px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'<span style="color:#cbd5e1">—</span>'}</td>
     <td class="mono" style="font-size:10px;color:#475569">${r.sedes||'—'}</td>
     ${cells}
@@ -4922,11 +5202,14 @@ function renderChecklist(){ poblarFiltroGrupoCl(); poblarFiltroTipoServCl(); ren
 // ── CHECKLIST UNIDADES ──
 function renderChecklistUnid(){
   const thead=document.getElementById('cl-unid-thead'); if(!thead) return;
+  poblarSelectResponsable('cl-unid-resp');
   const fSearch=(document.getElementById('cl-unid-srch')||{value:''}).value.toLowerCase();
   const fCat=(document.getElementById('cl-unid-cat')||{value:''}).value;
   const fDoc=(document.getElementById('cl-unid-doc')||{value:''}).value;
   const fGrupo=(document.getElementById('cl-grupo-filtro')||{value:''}).value;
   const fTipoServ=(document.getElementById('cl-tiposerv-filtro')||{value:''}).value;
+  const fZona=(document.getElementById('cl-unid-zona')||{value:''}).value;
+  const fResp=(document.getElementById('cl-unid-resp')||{value:''}).value;
 
   thead.innerHTML='<tr><th>#</th><th style="min-width:90px;text-align:left">Placa</th><th style="min-width:150px;text-align:left">Proveedor</th><th>Categoría</th>'+
     DOCS_UNID.map(d=>`<th class="tc" title="${d.lbl}" style="font-size:9.5px;font-weight:700">${d.lbl}</th>`).join('')+'<th>Cumpl.</th></tr>';
@@ -4953,9 +5236,11 @@ function renderChecklistUnid(){
     if(fGrupo && !(placaGrupos[pn]&&placaGrupos[pn].has(fGrupo))) return;
     if(fTipoServ && !(placaTiposServ[pn]&&placaTiposServ[pn].has(fTipoServ))) return;
     if(fSearch && !((u.placa||'')+' '+(u.proveedor||'')).toLowerCase().includes(fSearch)) return;
+    if(fZona && zonaDeProveedor(u.proveedor)!==fZona) return;
+    if(fResp && !matchResponsable(responsableDeUnidad(u), fResp)) return;
     const cat=clasifServicio(u.tipoServicio||provServicioDeUnidad(u));
     if(fCat && cat!==fCat) return;
-    const aplica=docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo);
+    const aplica=docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u);
     const ok=aplica.filter(d=>u[d.campo]==='✓').length;
     const tot=aplica.length;
     const pct=tot?Math.round(ok/tot*100):0;
@@ -4981,7 +5266,7 @@ function filaClUnid(r,n){
   return `<tr style="border-bottom:1px solid #f1f5f9">
     <td class="mono" style="color:#94a3b8">${n+1}</td>
     <td class="mono" style="font-weight:700;text-align:left;color:var(--accent2)">${r.u.placa||'—'}</td>
-    <td style="font-size:11px;text-align:left">${(r.u.proveedor||'—').slice(0,28)}</td>
+    <td style="font-size:11px;text-align:left">${(r.u.proveedor||'—').slice(0,28)}${verFichaProvBtn(r.u.proveedor)}</td>
     <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'—'}</td>
     ${cells}
     <td><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-weight:800;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</span><div style="width:42px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div></div></td>
@@ -5009,10 +5294,13 @@ function toggleClUnidDoc(placa,campo){ toggleDocUnid(placa,campo).then(()=>{ if(
 // ── CHECKLIST CONDUCTORES ──
 function renderChecklistCond(){
   const thead=document.getElementById('cl-cond-thead'); if(!thead) return;
+  poblarSelectResponsable('cl-cond-resp');
   const fSearch=(document.getElementById('cl-cond-srch')||{value:''}).value.toLowerCase();
   const fDoc=(document.getElementById('cl-cond-doc')||{value:''}).value;
   const fGrupo=(document.getElementById('cl-grupo-filtro')||{value:''}).value;
   const fTipoServ=(document.getElementById('cl-tiposerv-filtro')||{value:''}).value;
+  const fZona=(document.getElementById('cl-cond-zona')||{value:''}).value;
+  const fResp=(document.getElementById('cl-cond-resp')||{value:''}).value;
   const DOCS_C=[{c:'docDni',l:'DNI'},{c:'docLic',l:'Licencia'},{c:'docRecord',l:'Récord'},{c:'docSctr',l:'SCTR'},{c:'docEmo',l:'EMO'},{c:'docCul',l:'CUL'}];
 
   thead.innerHTML='<tr><th>#</th><th style="min-width:170px;text-align:left">Conductor</th><th>DNI</th><th style="min-width:140px;text-align:left">Proveedor</th>'+
@@ -5052,6 +5340,8 @@ function renderChecklistCond(){
       if(!tsC || !tsC.has(fTipoServ)) return;
     }
     if(fSearch && !((c.conductor||'')+' '+(c.dni||'')+' '+(c.proveedor||'')).toLowerCase().includes(fSearch)) return;
+    if(fZona && zonaDeProveedor(c.proveedor)!==fZona) return;
+    if(fResp && !matchResponsable(responsableDeProveedor(c.proveedor), fResp)) return;
     const ok=DOCS_C.filter(d=>c[d.c]==='✓').length;
     const tot=DOCS_C.length;
     const pct=Math.round(ok/tot*100);
@@ -5077,7 +5367,7 @@ function filaClCond(r,n,DOCS_C){
     <td class="mono" style="color:#94a3b8">${n+1}</td>
     <td style="font-weight:700;text-align:left;font-size:11.5px">${r.c.conductor||'—'}</td>
     <td class="mono" style="font-size:10px">${r.c.dni||'—'}</td>
-    <td style="font-size:11px;text-align:left">${(r.c.proveedor||'—').slice(0,24)}</td>
+    <td style="font-size:11px;text-align:left">${(r.c.proveedor||'—').slice(0,24)}${verFichaProvBtn(r.c.proveedor)}</td>
     ${cells}
     <td><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-weight:800;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</span><div style="width:42px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div></div></td>
   </tr>`;
