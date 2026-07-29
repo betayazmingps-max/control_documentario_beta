@@ -2943,6 +2943,7 @@ function abrirDetalleProvPorNombre(nombre){
   const idx = PROVEEDORES.findIndex(p=>normProvName(p.nombre)===normProvName(nombre));
   if(idx<0){ if(typeof showToast==='function') showToast('Proveedor no encontrado','err'); return; }
   PV_MAP = PROVEEDORES.map(p=>p.nombre); // asegura índice válido para el modal, sin importar el filtro actual
+  PV_DETALLE_TAB='prov';
   abrirDetalleProv(idx);
 }
 // Botón "ojito" para ver la tarjeta de circulación (tarjetaLink) de una unidad, en cualquier tabla
@@ -3276,7 +3277,7 @@ function renderProveedores(){
       faltanTxt = faltan.length ? faltan.slice(0,3).join(', ')+(faltan.length>3?` +${faltan.length-3} más`:'') : 'Todo completo ✓';
     }
     const serv=clasifServicio(provTipoServicio(p));
-    return `<div onclick="abrirDetalleProv(${i})" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
+    return `<div onclick="PV_DETALLE_TAB='prov';abrirDetalleProv(${i})" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
       onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.10)';this.style.transform='translateY(-2px)'"
       onmouseout="this.style.boxShadow='';this.style.transform=''">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px">
@@ -3310,6 +3311,7 @@ function renderProveedores(){
 
 // MODAL DETALLE
 let PV_DETALLE_I = null; // índice del proveedor abierto en el modal (para refrescar)
+let PV_DETALLE_TAB = 'prov'; // pestaña activa del modal: 'prov' | 'unid' | 'cond' | 'todo'
 let PV_VER_BASE_UNID = false, PV_VER_BASE_COND = false; // mostrar también los de base (no solo activos hoy)
 function toggleVerBaseUnid(){ PV_VER_BASE_UNID=!PV_VER_BASE_UNID; abrirDetalleProv(PV_DETALLE_I); }
 function toggleVerBaseCond(){ PV_VER_BASE_COND=!PV_VER_BASE_COND; abrirDetalleProv(PV_DETALLE_I); }
@@ -3411,6 +3413,77 @@ function abrirDetalleProv(i){
   }).join('');
 
   const box=document.getElementById('pv-detalle-box');
+
+  // ── Bloque: checklist documentario del PROVEEDOR ──
+  const bloqueProv = `
+    <div style="background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="flex:1;height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${col}"></div>
+        </div>
+        <span style="font-size:15px;font-weight:800;color:${col};font-family:var(--mono)">${pct}%</span>
+      </div>
+      <div style="font-size:12px;color:#6b7280">${ok} de ${cmp.tot} documentos · <b style="color:${col}">${pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO'}</b></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:10px">📋 Checklist Documentario del Proveedor (clic para marcar)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">${docsHtml}</div>`;
+
+  // ── Bloque: UNIDADES con su propia documentación (solo activas hoy + botón para ver base) ──
+  const bloqueUnid = (()=>{
+      const uHoy = unids.filter(u=>placasHoy.has(normPlaca(u.placa)));
+      const uBase = unids.filter(u=>!placasHoy.has(normPlaca(u.placa)));
+      const hayRep = placasHoy.size>0;
+      const listaPrincipal = hayRep ? uHoy : unids;       // si no hay reporte, muestra todas
+      const ocultas = hayRep ? uBase : [];
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades ${hayRep?`activas hoy (${uHoy.length})`:`(${unids.length})`}</div><div style="margin-bottom:8px">`;
+      html += listaPrincipal.length ? listaPrincipal.map(u=>tarjetaUnidadHTML(u,i,placasHoy.has(normPlaca(u.placa)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin unidades activas hoy</div>';
+      html += unidsNuevas.map(un=>{const e=(un.placa||'').replace(/"/g,'&quot;');const ce=(un.centro||'').replace(/'/g,"\\'"),mo=(un.modalidad||'').replace(/'/g,"\\'"),ca=(un.tipoServicio||'').replace(/'/g,"\\'"),pv=(nombre||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:var(--mono);font-weight:700;color:#92400e;font-size:12px">${un.placa} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVA</span></span>
+        <button onclick="abrirRegUnid2('${e}',{proveedor:'${pv}',centro:'${ce}',modalidad:'${mo}',categoria:'${ca}'})" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
+      </div>`;}).join('');
+      if(ocultas.length){
+        html += `<button onclick="event.stopPropagation();toggleVerBaseUnid()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_UNID?'▲ Ocultar':'▼ Ver '+ocultas.length+' unidad(es) más en base'}</button>`;
+        if(PV_VER_BASE_UNID) html += '<div style="margin-top:8px">'+ocultas.map(u=>tarjetaUnidadHTML(u,i,false)).join('')+'</div>';
+      }
+      html+='</div>';
+      return html;
+    })();
+
+  // ── Bloque: CONDUCTORES con su propia documentación ──
+  const bloqueCond = (()=>{
+      const cActivo=c=>(String(c.dni||'').trim()&&dnisHoy.has(String(c.dni||'').trim()))||condsNomHoy.has(normNombre(c.conductor));
+      const cHoy = conds.filter(cActivo);
+      const cBase = conds.filter(c=>!cActivo(c));
+      const hayRep = (dnisHoy.size>0||condsNomHoy.size>0);
+      const listaPrincipal = hayRep ? cHoy : conds;
+      const ocultas = hayRep ? cBase : [];
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores ${hayRep?`activos hoy (${cHoy.length})`:`(${conds.length})`}</div><div>`;
+      html += listaPrincipal.length ? listaPrincipal.map(c=>tarjetaConductorHTML(c,i,cActivo(c))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin conductores activos hoy</div>';
+      html += condsNuevos.map(c=>{const nm=(c.nombre||'').replace(/'/g,"\\'"),dn=(c.dni||'').replace(/'/g,"\\'"),pl=(c.placa||'').replace(/'/g,"\\'"),ce=(c.centro||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:600;color:#92400e;font-size:12px">${c.nombre||'—'} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVO</span><br><span style="font-size:10px;color:#b45309;font-family:var(--mono)">DNI ${c.dni||'—'}</span></span>
+        <button onclick="irRegistrarConductor('${nm}','${dn}','${(nombre||'').replace(/'/g,"\\'")}','${pl}','${ce}')" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
+      </div>`;}).join('');
+      if(ocultas.length){
+        html += `<button onclick="event.stopPropagation();toggleVerBaseCond()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_COND?'▲ Ocultar':'▼ Ver '+ocultas.length+' conductor(es) más en base'}</button>`;
+        if(PV_VER_BASE_COND) html += '<div style="margin-top:8px">'+ocultas.map(c=>tarjetaConductorHTML(c,i,false)).join('')+'</div>';
+      }
+      html+='</div>';
+      return html;
+    })();
+
+  // ── Pestañas ──
+  const tabBtn = (tab,label)=>`<button onclick="cambiarTabDetalleProv('${tab}')" style="flex:1;padding:8px 4px;font-size:11.5px;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:${PV_DETALLE_TAB===tab?'var(--accent)':'#f3f4f6'};color:${PV_DETALLE_TAB===tab?'#fff':'#4b5563'}">${label}</button>`;
+  const tabsHtml = `<div style="display:flex;gap:6px;margin-bottom:16px">
+    ${tabBtn('prov','🏢 Proveedor')}
+    ${tabBtn('unid','🚛 Unidades')}
+    ${tabBtn('cond','👤 Conductores')}
+    ${tabBtn('todo','📄 Completo')}
+  </div>`;
+  let contenidoTab = bloqueProv;
+  if(PV_DETALLE_TAB==='unid') contenidoTab = bloqueUnid;
+  else if(PV_DETALLE_TAB==='cond') contenidoTab = bloqueCond;
+  else if(PV_DETALLE_TAB==='todo') contenidoTab = bloqueProv + bloqueUnid + bloqueCond;
+
   box.innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:4px">
       <div style="font-size:18px;font-weight:800;color:#111;line-height:1.3">${p.nombre}</div>
@@ -3434,65 +3507,15 @@ function abrirDetalleProv(i){
       <div style="grid-column:1/-1">${p.carpeta?`<a href="${p.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,0.12);color:#2563eb;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none">📁 Abrir carpeta SharePoint</a>`:'<span style="color:#9ca3af;font-size:11px">Sin carpeta SharePoint</span>'}</div>
     </div>
 
-    <div style="background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="flex:1;height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden">
-          <div style="width:${pct}%;height:100%;background:${col}"></div>
-        </div>
-        <span style="font-size:15px;font-weight:800;color:${col};font-family:var(--mono)">${pct}%</span>
-      </div>
-      <div style="font-size:12px;color:#6b7280">${ok} de ${cmp.tot} documentos · <b style="color:${col}">${pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO'}</b></div>
-    </div>
-
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:10px">📋 Checklist Documentario (clic para marcar)</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">${docsHtml}</div>
-
-    <!-- UNIDADES: solo activas hoy + botón para ver base -->
-    ${(()=>{
-      const uHoy = unids.filter(u=>placasHoy.has(normPlaca(u.placa)));
-      const uBase = unids.filter(u=>!placasHoy.has(normPlaca(u.placa)));
-      const hayRep = placasHoy.size>0;
-      const listaPrincipal = hayRep ? uHoy : unids;       // si no hay reporte, muestra todas
-      const ocultas = hayRep ? uBase : [];
-      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades ${hayRep?`activas hoy (${uHoy.length})`:`(${unids.length})`}</div><div style="margin-bottom:8px">`;
-      html += listaPrincipal.length ? listaPrincipal.map(u=>tarjetaUnidadHTML(u,i,placasHoy.has(normPlaca(u.placa)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin unidades activas hoy</div>';
-      html += unidsNuevas.map(un=>{const e=(un.placa||'').replace(/"/g,'&quot;');const ce=(un.centro||'').replace(/'/g,"\\'"),mo=(un.modalidad||'').replace(/'/g,"\\'"),ca=(un.tipoServicio||'').replace(/'/g,"\\'"),pv=(nombre||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-family:var(--mono);font-weight:700;color:#92400e;font-size:12px">${un.placa} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVA</span></span>
-        <button onclick="abrirRegUnid2('${e}',{proveedor:'${pv}',centro:'${ce}',modalidad:'${mo}',categoria:'${ca}'})" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
-      </div>`;}).join('');
-      // Botón ver más / ocultar
-      if(ocultas.length){
-        html += `<button onclick="event.stopPropagation();toggleVerBaseUnid()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_UNID?'▲ Ocultar':'▼ Ver '+ocultas.length+' unidad(es) más en base'}</button>`;
-        if(PV_VER_BASE_UNID) html += '<div style="margin-top:8px">'+ocultas.map(u=>tarjetaUnidadHTML(u,i,false)).join('')+'</div>';
-      }
-      html+='</div>';
-      return html;
-    })()}
-
-    <!-- CONDUCTORES con su documentación -->
-    ${(()=>{
-      const cActivo=c=>(String(c.dni||'').trim()&&dnisHoy.has(String(c.dni||'').trim()))||condsNomHoy.has(normNombre(c.conductor));
-      const cHoy = conds.filter(cActivo);
-      const cBase = conds.filter(c=>!cActivo(c));
-      const hayRep = (dnisHoy.size>0||condsNomHoy.size>0);
-      const listaPrincipal = hayRep ? cHoy : conds;
-      const ocultas = hayRep ? cBase : [];
-      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores ${hayRep?`activos hoy (${cHoy.length})`:`(${conds.length})`}</div><div>`;
-      html += listaPrincipal.length ? listaPrincipal.map(c=>tarjetaConductorHTML(c,i,cActivo(c))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin conductores activos hoy</div>';
-      html += condsNuevos.map(c=>{const nm=(c.nombre||'').replace(/'/g,"\\'"),dn=(c.dni||'').replace(/'/g,"\\'"),pl=(c.placa||'').replace(/'/g,"\\'"),ce=(c.centro||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-weight:600;color:#92400e;font-size:12px">${c.nombre||'—'} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVO</span><br><span style="font-size:10px;color:#b45309;font-family:var(--mono)">DNI ${c.dni||'—'}</span></span>
-        <button onclick="irRegistrarConductor('${nm}','${dn}','${(nombre||'').replace(/'/g,"\\'")}','${pl}','${ce}')" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
-      </div>`;}).join('');
-      if(ocultas.length){
-        html += `<button onclick="event.stopPropagation();toggleVerBaseCond()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_COND?'▲ Ocultar':'▼ Ver '+ocultas.length+' conductor(es) más en base'}</button>`;
-        if(PV_VER_BASE_COND) html += '<div style="margin-top:8px">'+ocultas.map(c=>tarjetaConductorHTML(c,i,false)).join('')+'</div>';
-      }
-      html+='</div>';
-      return html;
-    })()}`;
+    ${tabsHtml}
+    ${contenidoTab}`;
   document.getElementById('pv-detalle-modal').classList.add('open');
 }
-function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); PV_DETALLE_I=null; }
+function cambiarTabDetalleProv(tab){
+  PV_DETALLE_TAB = tab;
+  if(PV_DETALLE_I!==null) abrirDetalleProv(PV_DETALLE_I);
+}
+function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); PV_DETALLE_I=null; PV_DETALLE_TAB='prov'; }
 // Editar fecha de vencimiento de UNIDAD desde el modal del proveedor
 function abrirEditPlacaModal(placa, diasCampo, fechaCampo, i){
   PV_DETALLE_I = i;
