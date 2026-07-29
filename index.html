@@ -2708,7 +2708,7 @@ function renderUnidRow(r, num){
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2);white-space:nowrap">${r._nuevaUnidad?'':`<button onclick="editarUnidad('${placaEsc}')" title="Editar unidad" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>`}${r.placa||'—'}</td>
     <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : (unidDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarUnidad('${placaEsc}')" title="Faltan ${unidDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : '')}</td>
-    <td data-placa="${placaEsc}" data-campo="proveedor" onclick="editCeldaUnidClick(this)" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer">${(r.proveedor||'—')}${verFichaProvBtn(r.proveedor)}</td>
+    <td data-placa="${placaEsc}" data-campo="proveedor" onclick="editCeldaUnidClick(this)" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer;max-width:150px">${provCellHtml(r.proveedor)}</td>
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td style="font-size:11px">${r.tipo||'—'}</td>
     <td class="mono">${r.anio||'—'}</td>
@@ -2923,11 +2923,18 @@ function getPD(n){
   }
   return PD[n];
 }
+// Celda de proveedor a prueba de nombres largos: el texto se trunca visualmente (…) pero el
+// ojito 👁 SIEMPRE queda visible al final, nunca se corta ni se empuja fuera de la celda.
+function provCellHtml(nombre){
+  if(!nombre) return '<span style="color:var(--danger);font-weight:600;cursor:help" title="Sin proveedor asignado">⚠ Sin proveedor</span>';
+  const esc=(nombre+'').replace(/"/g,'&quot;');
+  return `<div style="display:flex;align-items:center;gap:0;min-width:0"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0" title="${esc}">${nombre}</span>${verFichaProvBtn(nombre)}</div>`;
+}
 // Botón "ojito" que abre la ficha del proveedor (donde se ven sus documentos ✅/❌), desde cualquier tabla
 function verFichaProvBtn(nombreProveedor){
   if(!nombreProveedor || nombreProveedor==='—') return '';
   const esc=(nombreProveedor||'').replace(/'/g,"\\'");
-  return ` <button onclick="event.stopPropagation();abrirDetalleProvPorNombre('${esc}')" title="Ver ficha de documentos del proveedor" style="display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;border:none;background:rgba(124,58,237,0.14);color:var(--accent2);cursor:pointer;font-size:11px;vertical-align:middle;margin-left:5px">👁</button>`;
+  return ` <button onclick="event.stopPropagation();abrirDetalleProvPorNombre('${esc}')" title="Ver ficha de documentos del proveedor" style="flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;border:none;background:rgba(124,58,237,0.14);color:var(--accent2);cursor:pointer;font-size:11px;vertical-align:middle;margin-left:5px">👁</button>`;
 }
 // Abre la ficha del proveedor (mismo modal que se usa en la página Proveedores) buscándolo por nombre,
 // sin importar en qué página / filtro estemos parados
@@ -3835,7 +3842,7 @@ function renderAlertas(){
     <td class="mono" style="color:var(--text3)">${i+1}</td>
     <td style="font-size:12px;font-weight:600">${a.documento}</td>
     <td class="mono" style="font-weight:700;color:#111">${a.idText}</td>
-    <td style="font-size:11.5px;white-space:normal;max-width:160px">${a.proveedor}${verFichaProvBtn(a.proveedor)}</td>
+    <td style="font-size:11.5px;white-space:normal;max-width:160px">${provCellHtml(a.proveedor)}</td>
     <td style="font-size:11.5px;white-space:normal;max-width:150px">${a.contacto||'—'}</td>
     <td class="mono" style="font-size:11.5px">${a.celular||'—'}</td>
     <td style="font-size:11px;white-space:normal;max-width:150px">${a.correo||'—'}</td>
@@ -3848,7 +3855,7 @@ function renderAlertas(){
     <td class="mono" style="color:var(--text3)">${i+1}</td>
     <td style="font-size:12px;font-weight:600">${a.documento}</td>
     <td class="mono" style="font-weight:700;color:#1e40af">${a.idText}</td>
-    <td style="font-size:11.5px;white-space:normal;max-width:160px">${a.proveedor}${verFichaProvBtn(a.proveedor)}</td>
+    <td style="font-size:11.5px;white-space:normal;max-width:160px">${provCellHtml(a.proveedor)}</td>
     <td style="font-size:11.5px;white-space:normal;max-width:150px">${a.contacto||'—'}</td>
     <td class="mono" style="font-size:11.5px">${a.celular||'—'}</td>
     <td style="font-size:11px;white-space:normal;max-width:150px">${a.correo||'—'}</td>
@@ -3861,7 +3868,7 @@ function renderAlertas(){
     const col = a.pct>=80?'#f59e0b':'#ef4444';
     return `<tr>
     <td class="mono" style="color:var(--text3)">${i+1}</td>
-    <td style="font-size:12px;font-weight:700;color:#111;white-space:normal;max-width:180px">${a.nombre}${verFichaProvBtn(a.nombre)}</td>
+    <td style="font-size:12px;font-weight:700;color:#111;white-space:normal;max-width:180px">${provCellHtml(a.nombre)}</td>
     <td style="font-size:11px">${a.categoria}</td>
     <td class="mono" style="font-size:11.5px">${a.ok}/${a.tot}</td>
     <td><span style="font-weight:700;font-size:12px;color:${col}">${a.pct}%</span></td>
@@ -4400,7 +4407,7 @@ function renderReporte(){
       <td style="position:sticky;left:32px;background:${stickyBg};z-index:2;box-shadow:2px 0 3px -2px rgba(0,0,0,.08)">${unidCell}</td>
       <td style="font-size:11px">${r.grupo?`<span style="background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">${r.grupo}</span>`:'<span style="color:var(--text3)">—</span>'}</td>
       <td style="max-width:160px;white-space:normal;border-left:2px solid #f5f5f5">${condCell}</td>
-      <td style="font-size:11px;max-width:120px;white-space:normal">${(u?u.proveedor:'')||r.proveedor||'—'}${verFichaProvBtn((u?u.proveedor:'')||r.proveedor)}</td>
+      <td style="font-size:11px;max-width:120px;white-space:normal">${provCellHtml((u?u.proveedor:'')||r.proveedor)}</td>
       <td class="mono" style="font-size:11px">${r.centro||(u?u.centro:'')||'—'}</td>
       <td style="border-left:2px solid #f5f5f5">${c?badge(c.estadoLic||'—'):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${c?diasCell(c.diasLic):'<span style="color:var(--text3)">—</span>'}</td>
@@ -5122,7 +5129,7 @@ function filaClProv(r,n){
   }).join('');
   return `<tr style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
     <td class="mono" style="color:#94a3b8">${n+1}</td>
-    <td style="font-weight:700;font-size:12.5px;color:#0f172a;text-align:left">${r.p.nombre}${verFichaProvBtn(r.p.nombre)}</td>
+    <td style="font-weight:700;font-size:12.5px;color:#0f172a;text-align:left;max-width:190px">${provCellHtml(r.p.nombre)}</td>
     <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:3px 9px;border-radius:12px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'<span style="color:#cbd5e1">—</span>'}</td>
     <td class="mono" style="font-size:10px;color:#475569">${r.sedes||'—'}</td>
     ${cells}
@@ -5266,7 +5273,7 @@ function filaClUnid(r,n){
   return `<tr style="border-bottom:1px solid #f1f5f9">
     <td class="mono" style="color:#94a3b8">${n+1}</td>
     <td class="mono" style="font-weight:700;text-align:left;color:var(--accent2)">${r.u.placa||'—'}</td>
-    <td style="font-size:11px;text-align:left">${(r.u.proveedor||'—').slice(0,28)}${verFichaProvBtn(r.u.proveedor)}</td>
+    <td style="font-size:11px;text-align:left;max-width:150px">${provCellHtml(r.u.proveedor)}</td>
     <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'—'}</td>
     ${cells}
     <td><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-weight:800;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</span><div style="width:42px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div></div></td>
@@ -5367,7 +5374,7 @@ function filaClCond(r,n,DOCS_C){
     <td class="mono" style="color:#94a3b8">${n+1}</td>
     <td style="font-weight:700;text-align:left;font-size:11.5px">${r.c.conductor||'—'}</td>
     <td class="mono" style="font-size:10px">${r.c.dni||'—'}</td>
-    <td style="font-size:11px;text-align:left">${(r.c.proveedor||'—').slice(0,24)}${verFichaProvBtn(r.c.proveedor)}</td>
+    <td style="font-size:11px;text-align:left;max-width:140px">${provCellHtml(r.c.proveedor)}</td>
     ${cells}
     <td><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-weight:800;color:${col};font-family:var(--mono);font-size:11px">${r.ok}/${r.tot}</span><div style="width:42px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="width:${r.pct}%;height:100%;background:${col}"></div></div></div></td>
   </tr>`;
