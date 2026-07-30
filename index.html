@@ -1919,6 +1919,7 @@ async function syncFromSheets(){
         tipoSeguro:    o['tipo de seguro']||'',
         aseguradora:   o.aseguradora||'',
         tipoSoat:      o['tipo soat']||'',
+        tieneRtv:      o['le toca rvt']||o['le toca rtv']||'',
         fechaRtv:      o['fecha vencimiento rtv']||'',
         diasRtv:       o['dias vencimiento rtv']||'',
         estadoRtv:     (o['alerta rtv']||'').toString().toUpperCase(),
@@ -1942,6 +1943,7 @@ async function syncFromSheets(){
         docCheckList:  boolDoc(o['check list recepcion devolucion']||o['check list recepcion y devolucion']||o['sheck list de recepcion y devolucion de unidad']),
         cumpl:         o.cumplimiento||'—',
         carpeta:       o['carpeta unidad']||o.carpeta||'',
+        tarjetaLink:   o['tarjetalink']||o['tarjeta link']||'',
       }));
     }
 
