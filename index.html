@@ -1715,7 +1715,11 @@ function unidDatosFaltantesList(u){
   if(!u) return [];
   const esMoto=esMotoTipo(u.tipo);
   const campos=[['Año Fab.',u.anio],['Marca',u.marca],['Fecha Vencimiento SOAT',u.fechaSoat],['Aseguradora',u.aseguradora]];
-  if(!esMoto){ campos.push(['Fecha Vencimiento RTV',u.fechaRtv]); campos.push(['¿Tiene T.C.?',u.tieneTc]); }
+  if(!esMoto){
+    const rtvNA = u.tieneRtv==='NO APLICA' || u.tieneRtv==='AÚN NO LE TOCA';
+    if(!rtvNA) campos.push(['Fecha Vencimiento RTV',u.fechaRtv]);
+    campos.push(['¿Tiene T.C.?',u.tieneTc]);
+  }
   return campos.filter(([lbl,v])=>!v || !String(v).trim()).map(([lbl])=>lbl);
 }
 function unidDatosFaltantes(u){ return unidDatosFaltantesList(u).length; }
