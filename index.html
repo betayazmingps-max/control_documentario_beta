@@ -3511,6 +3511,29 @@ function renderProveedores(){
 // MODAL DETALLE
 let PV_DETALLE_I = null; // índice del proveedor abierto en el modal (para refrescar)
 let PV_DETALLE_TAB = 'prov'; // pestaña activa del modal: 'prov' | 'unid' | 'cond' | 'todo'
+let PV_SOLO_PLACA = null; // si está seteada, el modal muestra SOLO esa unidad (no la ficha completa del proveedor)
+
+// Muestra solo los datos de UNA unidad (sin la ficha completa del proveedor)
+function abrirDetalleUnidadSola(placa){
+  const u = UNIDADES.find(x=>normPlaca(x.placa)===normPlaca(placa));
+  if(!u){ showToast('Unidad no encontrada','err'); return; }
+  PV_SOLO_PLACA = u.placa;
+  PV_DETALLE_I = null;
+  const idxProv = PROVEEDORES.findIndex(p=>normProvName(p.nombre)===normProvName(u.proveedor));
+  const box = document.getElementById('pv-detalle-box');
+  const provEsc = (u.proveedor||'').replace(/'/g,"\\'");
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:6px">
+      <div style="font-size:20px;font-weight:800;color:#111;font-family:var(--mono)">🚛 ${u.placa||'—'}</div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button onclick="editarUnidad('${(u.placa||'').replace(/'/g,"\\'")}')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 14px;height:30px;cursor:pointer;font-size:12px;font-weight:700">✏️ Editar</button>
+        <button onclick="cerrarDetalleProv()" style="background:#f3f4f6;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#6b7280">✕</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#9ca3af;margin-bottom:16px">🏢 ${u.proveedor||'—'}${idxProv>=0?` · <a href="#" onclick="event.preventDefault();PV_SOLO_PLACA=null;abrirDetalleProv(${idxProv})" style="color:var(--accent)">Ver ficha del proveedor →</a>`:''}</div>
+    ${tarjetaUnidadHTML(u, idxProv, false)}`;
+  document.getElementById('pv-detalle-modal').classList.add('open');
+}
 let PV_VER_BASE_UNID = false, PV_VER_BASE_COND = false; // mostrar también los de base (no solo activos hoy)
 function toggleVerBaseUnid(){ PV_VER_BASE_UNID=!PV_VER_BASE_UNID; abrirDetalleProv(PV_DETALLE_I); }
 function toggleVerBaseCond(){ PV_VER_BASE_COND=!PV_VER_BASE_COND; abrirDetalleProv(PV_DETALLE_I); }
@@ -3774,7 +3797,8 @@ async function toggleProvDocModal(i,di){
 // Editar documento de UNIDAD desde el modal del proveedor
 async function toggleDocUnidModal(placa, campo, i){
   await toggleDocUnid(placa, campo);   // actualiza UNIDADES + REP_ROWS + guarda en Sheets
-  abrirDetalleProv(i);                 // refresca el modal
+  if(PV_SOLO_PLACA) abrirDetalleUnidadSola(PV_SOLO_PLACA);
+  else abrirDetalleProv(i);                 // refresca el modal
 }
 // Editar documento de CONDUCTOR desde el modal del proveedor
 async function toggleDocCondModal(dni, campo, i){
