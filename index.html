@@ -1711,19 +1711,21 @@ function unidProveedorReporteDistinto(u){
   }
   return null;
 }
-function unidDatosFaltantes(u){
-  if(!u) return 0;
+function unidDatosFaltantesList(u){
+  if(!u) return [];
   const esMoto=esMotoTipo(u.tipo);
-  const campos=[u.anio, u.marca, u.fechaSoat, u.aseguradora];
-  if(!esMoto){ campos.push(u.fechaRtv); campos.push(u.tieneTc); }
-  return campos.filter(v=>!v || !String(v).trim()).length;
+  const campos=[['Año Fab.',u.anio],['Marca',u.marca],['Fecha Vencimiento SOAT',u.fechaSoat],['Aseguradora',u.aseguradora]];
+  if(!esMoto){ campos.push(['Fecha Vencimiento RTV',u.fechaRtv]); campos.push(['¿Tiene T.C.?',u.tieneTc]); }
+  return campos.filter(([lbl,v])=>!v || !String(v).trim()).map(([lbl])=>lbl);
 }
+function unidDatosFaltantes(u){ return unidDatosFaltantesList(u).length; }
 // Cuenta datos BÁSICOS que aún faltan llenar en un conductor (para marcarlo "⚠ Completar")
-function condDatosFaltantes(c){
-  if(!c) return 0;
-  const campos=[c.fechaLic, c.catLic, c.celular, c.fechaSctr];
-  return campos.filter(v=>!v || !String(v).trim()).length;
+function condDatosFaltantesList(c){
+  if(!c) return [];
+  const campos=[['Fecha de Revalidación (Lic.)',c.fechaLic],['Categoría Licencia',c.catLic],['Celular',c.celular],['Fecha Vencimiento SCTR',c.fechaSctr]];
+  return campos.filter(([lbl,v])=>!v || !String(v).trim()).map(([lbl])=>lbl);
 }
+function condDatosFaltantes(c){ return condDatosFaltantesList(c).length; }
 // Documentos que aplican a una unidad según su categoría de servicio y tipo de vehículo.
 // El 3er parámetro (u) es opcional: si la unidad tiene marcado "NO APLICA"/"AÚN NO LE TOCA"
 // para RTV o TUC, esos documentos se excluyen del checklist (no cuentan como pendientes).
@@ -1758,20 +1760,24 @@ const HEADERS_COND = ['DNI.','Conductor','Estado','Proveedor','Placa','Tipo Unid
 function recordToRow(rec, order){ return order.map(k => String(rec[k] ?? '')); }
 
 // Guarda/actualiza una fila respetando el orden EXACTO de columnas
-async function guardarFilaOrdenada(hoja, rec, order, keyColIndex, headersReal){
+async function guardarFilaOrdenada(hoja, rec, order, keyColIndex, headersReal, keyColIndexRespaldo){
   if(!GS_URL) return false;
   const row = recordToRow(rec, order);
-  return await guardarFilaOrdenadaDirecta(hoja, row, headersReal, keyColIndex);
+  return await guardarFilaOrdenadaDirecta(hoja, row, headersReal, keyColIndex, keyColIndexRespaldo);
 }
 
 // Guarda un array de valores YA ARMADO (row), buscando cada columna por su nombre real
 // (headersReal) en la hoja, en vez de asumir una posición fija. Usado por UNIDADES,
 // CONDUCTORES y PROVEEDORES.
-async function guardarFilaOrdenadaDirecta(hoja, row, headersReal, keyColIndex){
+// keyColIndexRespaldo: índice (dentro de `row`) de un campo de respaldo (ej. nombre del
+// conductor) para buscar la fila cuando la clave principal (ej. DNI) viene vacía —
+// el reporte diario casi nunca trae DNI, así que sin esto se crea una fila nueva cada vez.
+async function guardarFilaOrdenadaDirecta(hoja, row, headersReal, keyColIndex, keyColIndexRespaldo){
   if(!GS_URL) return false;
   try {
     const payload = { hoja, rowOrdenada: row, keyColIndex: keyColIndex||0 };
     if(headersReal && headersReal.length === row.length) payload.headers = headersReal;
+    if(keyColIndexRespaldo!=null) payload.keyColIndexRespaldo = keyColIndexRespaldo;
     const r = await fetch(GS_URL, {
       method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
@@ -2423,7 +2429,7 @@ async function toggleDocCond(id, campo){
   }
   renderConductores();
   if(GS_URL){
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND);
+    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'));
     if(ok) showToast(nuevoValor==='✓' ? '✓ Marcado y guardado' : '✗ Desmarcado y guardado','ok');
     else { showToast('⚠ No se pudo guardar en Sheets, reintenta','err'); CONDUCTORES[idx][campo] = (nuevoValor==='✓')?'✗':'✓'; renderConductores(); }
   } else {
@@ -2459,7 +2465,7 @@ async function guardarCeldaCond(id, campo, valor){
   }
   renderConductores();
   if(GS_URL){
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND);
+    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'));
     if(ok) showToast('✓ Guardado','ok');
     else showToast('⚠ Error al guardar en Sheets, verifica conexión','err');
   } else {
@@ -2516,7 +2522,7 @@ function renderCondRow(r, num){
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="white-space:nowrap"><button onclick="editarConductor('${dni}')" title="Editar conductor" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>${r.dni||'—'}</td>
     <td style="max-width:160px;white-space:normal;font-size:12px;font-weight:500">${r.conductor||'—'}</td>
-    <td>${badge(r.estado||'ACTIVO')} ${badgeActivoHoy(esCondActivoHoy(r))}${condDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarConductor('${dni}')" title="Faltan ${condDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : ''}</td>
+    <td>${badge(r.estado||'ACTIVO')} ${badgeActivoHoy(esCondActivoHoy(r))}${condDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarConductor('${dni}')" title="Falta: ${condDatosFaltantesList(r).join(', ')} — clic para completar">⚠ Falta: ${condDatosFaltantesList(r).join(', ')}</span>` : ''}</td>
     ${editable('proveedor', r.proveedor)}
     ${editable('placa', r.placa)}
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
@@ -2741,7 +2747,7 @@ function renderUnidRow(r, num){
   return `<tr${r._nuevaUnidad ? ' style="background:rgba(16,185,129,0.05)"' : ''}>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2);white-space:nowrap">${r._nuevaUnidad?'':`<button onclick="editarUnidad('${placaEsc}')" title="Editar unidad" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>`}${r.placa||'—'}</td>
-    <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')+' '+badgeActivoHoy(esUnidActivoHoy(r))}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : (unidDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarUnidad('${placaEsc}')" title="Faltan ${unidDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : '')}</td>
+    <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')+' '+badgeActivoHoy(esUnidActivoHoy(r))}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : (unidDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarUnidad('${placaEsc}')" title="Falta: ${unidDatosFaltantesList(r).join(', ')} — clic para completar">⚠ Falta: ${unidDatosFaltantesList(r).join(', ')}</span>` : '')}</td>
     <td data-placa="${placaEsc}" data-campo="proveedor" onclick="editCeldaUnidClick(this)" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer;max-width:150px">${provCellHtml(r.proveedor,'unid')}</td>
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td style="font-size:11px">${r.tipo||'—'}</td>
@@ -3498,13 +3504,13 @@ function tarjetaUnidadHTML(u, i, enRuta){
   const pl=(u.placa||'').replace(/'/g,"\\'");
   const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocUnidModal('${pl}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
   const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditPlacaModal('${pl}','${diasC}','${fechaC}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
-  const faltanU = unidDatosFaltantes(u);
+  const faltanU = unidDatosFaltantesList(u);
   return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:12px">${u.placa||'—'}${enRuta?' <span style="font-family:inherit;font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''}</span>
       <button onclick="event.stopPropagation();editarUnidad('${pl}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
     </div>
-    ${faltanU>0?`<div onclick="event.stopPropagation();editarUnidad('${pl}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Completar — faltan ${faltanU} dato(s) básicos</div>`:''}
+    ${faltanU.length>0?`<div onclick="event.stopPropagation();editarUnidad('${pl}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Falta: ${faltanU.join(', ')}</div>`:''}
     <div style="display:flex;flex-wrap:wrap;gap:4px">
       ${estPill(u.estadoSoat,'SOAT','diasSoat','fechaSoat',u.diasSoat)}${estPill(u.estadoRtv,'RTV','diasRtv','fechaRtv',u.diasRtv)}${estPill(u.estadoTc,'TUC','diasTc','fechaTc',u.diasTc)}
       ${docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u).map(d=>pill(u[d.campo],d.lbl,d.campo)).join('')}
@@ -3518,13 +3524,13 @@ function tarjetaConductorHTML(c, i, enRuta){
   const nm=(c.conductor||'').replace(/'/g,"\\'");
   const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocCondModal('${dn}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
   const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditDniModal('${dn}','${diasC}','${fechaC}','${nm}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
-  const faltanC = condDatosFaltantes(c);
+  const faltanC = condDatosFaltantesList(c);
   return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <span style="font-weight:600;color:#111;font-size:12px">${c.conductor||'—'}${enRuta?' <span style="font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''} <span style="font-size:10px;color:#9ca3af;font-family:var(--mono)">· DNI ${c.dni||'—'}</span></span>
       <button onclick="event.stopPropagation();editarConductor('${dn}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
     </div>
-    ${faltanC>0?`<div onclick="event.stopPropagation();editarConductor('${dn}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Completar — faltan ${faltanC} dato(s) básicos</div>`:''}
+    ${faltanC.length>0?`<div onclick="event.stopPropagation();editarConductor('${dn}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Falta: ${faltanC.join(', ')}</div>`:''}
     <div style="display:flex;flex-wrap:wrap;gap:4px">
       ${estPill(c.estadoLic,'Lic','diasLic','fechaLic',c.diasLic)}${estPill(c.estadoSctr,'SCTR','diasSctr','fechaSctr',c.diasSctr)}
       ${pill(c.docDni,'DNI','docDni')}${pill(c.docLic,'Lic','docLic')}${pill(c.docRecord,'Récord','docRecord')}${pill(c.docSctr,'SCTR','docSctr')}${pill(c.docEmo,'EMO','docEmo')}${pill(c.docCul,'CUL','docCul')}
@@ -4505,7 +4511,7 @@ async function leerReporte(){
       const partes=[];
       if(faltanUnid>0) partes.push(`${faltanUnid} unidad(es)`);
       if(faltanCond>0) partes.push(`${faltanCond} conductor(es)`);
-      msg2+=partes.join(' y ')+' — busca el badge "⚠ Completar" en las tablas';
+      msg2+=partes.join(' y ')+' — busca el badge "⚠ Falta: ..." en las tablas';
       setTimeout(()=>showToast(msg2,'warn'),1600);
     }
 
@@ -4542,7 +4548,7 @@ async function sincronizarReporteADB(){
   for(const dni of dnisSync){
     const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
     if(idx<0) continue;
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND);
+    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'));
     if(ok) okC++;
   }
   for(const nom of provsSync){
@@ -4748,7 +4754,7 @@ async function guardarEdit(){
   // Guardar y esperar confirmación real antes de avisar al usuario
   if(GS_URL){
     const ok = tipo==='conductor'
-      ? await guardarFilaOrdenada('CONDUCTORES', reg, COLORDER_COND, 0, HEADERS_COND)
+      ? await guardarFilaOrdenada('CONDUCTORES', reg, COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'))
       : await guardarFilaOrdenada('UNIDADES', reg, COLORDER_UNID, 0, HEADERS_UNID);
     if(ok) showToast('✓ Fecha actualizada y guardada','ok');
     else showToast('⚠ No se pudo guardar en Sheets, reintenta','err');
@@ -5017,7 +5023,7 @@ async function guardarConductor(){
     });
   }
   renderConductores();
-  const ok=await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND);
+  const ok=await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'));
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
   const cm=document.getElementById('c-msg'); if(cm) cm.textContent=new Date().toLocaleTimeString('es-PE');
 }
