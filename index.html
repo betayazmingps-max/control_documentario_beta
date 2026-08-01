@@ -3469,7 +3469,7 @@ function renderProveedores(){
       onmouseout="this.style.boxShadow='';this.style.transform=''">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px">
         <div style="font-size:13.5px;font-weight:700;color:#111;line-height:1.3">${p.nombre}</div>
-        <span class="badge ok" style="flex-shrink:0">ACTIVO</span>
+        ${badge(p.estado||'ACTIVO')}
       </div>
       <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;font-family:var(--mono)">${p.ruc||'—'}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
@@ -3615,21 +3615,24 @@ function abrirDetalleProv(i){
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:10px">📋 Checklist Documentario del Proveedor (clic para marcar)</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">${docsHtml}</div>`;
 
-  // ── Bloque: UNIDADES con su propia documentación (solo activas hoy + botón para ver base) ──
+  // ── Bloque: UNIDADES con su propia documentación (solo ACTIVO + botón para ver el resto) ──
   const bloqueUnid = (()=>{
-      const uHoy = unids.filter(u=>placasHoy.has(normPlaca(u.placa)));
-      const uBase = unids.filter(u=>!placasHoy.has(normPlaca(u.placa)));
-      const hayRep = placasHoy.size>0;
-      const listaPrincipal = hayRep ? uHoy : unids;       // si no hay reporte, muestra todas
-      const ocultas = hayRep ? uBase : [];
-      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades ${hayRep?`activas hoy (${uHoy.length})`:`(${unids.length})`}</div><div style="margin-bottom:8px">`;
-      html += listaPrincipal.length ? listaPrincipal.map(u=>tarjetaUnidadHTML(u,i,placasHoy.has(normPlaca(u.placa)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin unidades activas hoy</div>';
+      // "Activa" = estado guardado ACTIVO (persiste aunque recargues la página o no
+      // tengas el reporte del día abierto en este momento). "enRuta" (badge verde) sigue
+      // usando el reporte cargado ahora mismo, solo como indicador visual extra.
+      const uHoy = unids.filter(u=>(u.estado||'').toUpperCase()==='ACTIVO');
+      const uBase = unids.filter(u=>(u.estado||'').toUpperCase()!=='ACTIVO');
+      const hayRep = true;
+      const listaPrincipal = uHoy;
+      const ocultas = uBase;
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades activas (${uHoy.length})</div><div style="margin-bottom:8px">`;
+      html += listaPrincipal.length ? listaPrincipal.map(u=>tarjetaUnidadHTML(u,i,placasHoy.has(normPlaca(u.placa)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin unidades activas</div>';
       html += unidsNuevas.map(un=>{const e=(un.placa||'').replace(/"/g,'&quot;');const ce=(un.centro||'').replace(/'/g,"\\'"),mo=(un.modalidad||'').replace(/'/g,"\\'"),ca=(un.tipoServicio||'').replace(/'/g,"\\'"),pv=(nombre||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-family:var(--mono);font-weight:700;color:#92400e;font-size:12px">${un.placa} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVA</span></span>
         <button onclick="abrirRegUnid2('${e}',{proveedor:'${pv}',centro:'${ce}',modalidad:'${mo}',categoria:'${ca}'})" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
       </div>`;}).join('');
       if(ocultas.length){
-        html += `<button onclick="event.stopPropagation();toggleVerBaseUnid()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_UNID?'▲ Ocultar':'▼ Ver '+ocultas.length+' unidad(es) más en base'}</button>`;
+        html += `<button onclick="event.stopPropagation();toggleVerBaseUnid()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_UNID?'▲ Ocultar':'▼ Ver '+ocultas.length+' unidad(es) INACTIVA(S)'}</button>`;
         if(PV_VER_BASE_UNID) html += '<div style="margin-top:8px">'+ocultas.map(u=>tarjetaUnidadHTML(u,i,false)).join('')+'</div>';
       }
       html+='</div>';
@@ -3638,20 +3641,19 @@ function abrirDetalleProv(i){
 
   // ── Bloque: CONDUCTORES con su propia documentación ──
   const bloqueCond = (()=>{
-      const cActivo=c=>(String(c.dni||'').trim()&&dnisHoy.has(String(c.dni||'').trim()))||condsNomHoy.has(normNombre(c.conductor));
+      const cActivo=c=>(c.estado||'').toUpperCase()==='ACTIVO';
       const cHoy = conds.filter(cActivo);
       const cBase = conds.filter(c=>!cActivo(c));
-      const hayRep = (dnisHoy.size>0||condsNomHoy.size>0);
-      const listaPrincipal = hayRep ? cHoy : conds;
-      const ocultas = hayRep ? cBase : [];
-      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores ${hayRep?`activos hoy (${cHoy.length})`:`(${conds.length})`}</div><div>`;
-      html += listaPrincipal.length ? listaPrincipal.map(c=>tarjetaConductorHTML(c,i,cActivo(c))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin conductores activos hoy</div>';
+      const listaPrincipal = cHoy;
+      const ocultas = cBase;
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores activos (${cHoy.length})</div><div>`;
+      html += listaPrincipal.length ? listaPrincipal.map(c=>tarjetaConductorHTML(c,i,dnisHoy.has(String(c.dni||'').trim())||condsNomHoy.has(normNombre(c.conductor)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin conductores activos</div>';
       html += condsNuevos.map(c=>{const nm=(c.nombre||'').replace(/'/g,"\\'"),dn=(c.dni||'').replace(/'/g,"\\'"),pl=(c.placa||'').replace(/'/g,"\\'"),ce=(c.centro||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-weight:600;color:#92400e;font-size:12px">${c.nombre||'—'} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVO</span><br><span style="font-size:10px;color:#b45309;font-family:var(--mono)">DNI ${c.dni||'—'}</span></span>
         <button onclick="irRegistrarConductor('${nm}','${dn}','${(nombre||'').replace(/'/g,"\\'")}','${pl}','${ce}')" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
       </div>`;}).join('');
       if(ocultas.length){
-        html += `<button onclick="event.stopPropagation();toggleVerBaseCond()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_COND?'▲ Ocultar':'▼ Ver '+ocultas.length+' conductor(es) más en base'}</button>`;
+        html += `<button onclick="event.stopPropagation();toggleVerBaseCond()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_COND?'▲ Ocultar':'▼ Ver '+ocultas.length+' conductor(es) INACTIVO(S)'}</button>`;
         if(PV_VER_BASE_COND) html += '<div style="margin-top:8px">'+ocultas.map(c=>tarjetaConductorHTML(c,i,false)).join('')+'</div>';
       }
       html+='</div>';
@@ -4095,6 +4097,11 @@ function renderAlertas(){
 // ═══════════════════════════════════════════════
 let REP_ROWS=[], REP_FILTRO='todos';
 let PLACAS_INACTIVADAS_HOY = new Set();
+let CONDS_CAMBIADOS_HOY = new Set();   // índices de CONDUCTORES cuyo estado cambió al cargar el reporte de hoy
+let PROVS_CAMBIADOS_HOY = new Set();   // nombres de proveedores cuyo estado cambió al cargar el reporte de hoy
+// Clave única para identificar un conductor: DNI si lo tiene, si no, su nombre normalizado
+// (el reporte diario casi nunca trae DNI, así que hay que poder reconocerlo igual por nombre)
+function keyCond(c){ return (c&&c.dni&&normDni(c.dni)) || (c&&normText(c.conductor)) || ''; }
 function previewRepNombre(i){document.getElementById('rep-nombre').textContent=i.files[0]?.name||'Ningún archivo';}
 function normPlaca(p){
   return (p||'').toString().toUpperCase().trim().replace(/[\s\-\.]/g,'');
@@ -4463,16 +4470,43 @@ async function leerReporte(){
     window._REP_COND_COUNT  = seenConds.size   || REP_ROWS.filter(r=>r.conductor||r.dni).length;
     window._REP_PROV_COUNT  = seenProvs.size;
     
-    // ✅ ACTIVAR PROVEEDORES DEL REPORTE
-    REP_ROWS.forEach(r => {
-      if(r.proveedor){
-        const p = PROVEEDORES.find(pv => (pv.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase());
-        if(p) p.estado = 'ACTIVO';
+    // ✅🔴 ACTIVAR/INACTIVAR según lo que trae el reporte de HOY
+    // (unidades/conductores/proveedores que SÍ vienen → ACTIVO; los que NO vienen → INACTIVO)
+    CONDS_CAMBIADOS_HOY = new Set();
+    PROVS_CAMBIADOS_HOY = new Set();
+
+    // — Conductores —
+    const condsHoyKeys = new Set();
+    REP_ROWS.forEach(r=>{ if(r.condBD){ const k=keyCond(r.condBD); if(k) condsHoyKeys.add(k); } });
+    CONDUCTORES.forEach((c,idx)=>{
+      const k = keyCond(c);
+      if(!k) return;
+      if(condsHoyKeys.has(k)){
+        if((c.estado||'').toUpperCase()!=='ACTIVO'){ c.estado='ACTIVO'; CONDS_CAMBIADOS_HOY.add(idx); }
+      } else if((c.estado||'').toUpperCase()!=='INACTIVO'){
+        c.estado='INACTIVO'; CONDS_CAMBIADOS_HOY.add(idx);
       }
     });
 
-    // 🔴 INACTIVAR UNIDADES QUE NO VIENEN EN EL REPORTE DE HOY
-    // (las que SÍ vienen ya se marcan ACTIVO dentro de resolverUnidCond)
+    // — Proveedores —
+    const provsHoyNombres = new Set();
+    REP_ROWS.forEach(r => {
+      if(r.proveedor){
+        const p = PROVEEDORES.find(pv => (pv.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase());
+        if(p) provsHoyNombres.add((p.nombre||'').trim().toUpperCase());
+      }
+    });
+    PROVEEDORES.forEach(p=>{
+      const nomNorm=(p.nombre||'').trim().toUpperCase();
+      if(!nomNorm) return;
+      if(provsHoyNombres.has(nomNorm)){
+        if((p.estado||'').toUpperCase()!=='ACTIVO'){ p.estado='ACTIVO'; PROVS_CAMBIADOS_HOY.add(p.nombre); }
+      } else if((p.estado||'').toUpperCase()!=='INACTIVO'){
+        p.estado='INACTIVO'; PROVS_CAMBIADOS_HOY.add(p.nombre);
+      }
+    });
+
+    // — Unidades —
     PLACAS_INACTIVADAS_HOY = new Set();
     UNIDADES.forEach(u=>{
       const pn = normPlaca(u.placa);
@@ -4509,6 +4543,8 @@ async function leerReporte(){
     if(autoUnid>0) msg+=` · ${autoUnid} unidad(es) creadas automático`;
     if(autoProv>0) msg+=` · ${autoProv} proveedor(es) creados automático`;
     if(PLACAS_INACTIVADAS_HOY.size>0) msg+=` · ${PLACAS_INACTIVADAS_HOY.size} unidad(es) marcadas INACTIVO (no vinieron hoy)`;
+    if(CONDS_CAMBIADOS_HOY.size>0) msg+=` · ${CONDS_CAMBIADOS_HOY.size} conductor(es) cambiaron de estado`;
+    if(PROVS_CAMBIADOS_HOY.size>0) msg+=` · ${PROVS_CAMBIADOS_HOY.size} proveedor(es) cambiaron de estado`;
     showToast(msg,'ok');
     if(faltanUnid>0 || faltanCond>0){
       let msg2='⚠ Falta completar información: ';
@@ -4533,15 +4569,17 @@ async function leerReporte(){
 async function sincronizarReporteADB(){
   if(!GS_URL) return; // sin Sheets conectado no hay nada que sincronizar
   const placasSync = new Set();
-  const dnisSync = new Set();
+  const condsSyncIdx = new Set(); // por ÍNDICE, no por DNI (muchos conductores no tienen DNI)
   REP_ROWS.forEach(r=>{
     if(r.unidBD && r.unidBD.placa) placasSync.add(r.unidBD.placa);
-    if(r.condBD && r.condBD.dni) dnisSync.add(r.condBD.dni);
+    if(r.condBD){ const idx = CONDUCTORES.indexOf(r.condBD); if(idx>=0) condsSyncIdx.add(idx); }
   });
   PLACAS_INACTIVADAS_HOY.forEach(p=>placasSync.add(p));
-  const provsSync = PROVEEDORES.filter(p=>p._autoCreado).map(p=>p.nombre);
-  if(!placasSync.size && !dnisSync.size && !provsSync.length) return;
-  showToast(`⏳ Sincronizando ${placasSync.size} unidad(es), ${dnisSync.size} conductor(es) y ${provsSync.length} proveedor(es)...`,'ok');
+  CONDS_CAMBIADOS_HOY.forEach(idx=>condsSyncIdx.add(idx));
+  const provsSync = new Set(PROVEEDORES.filter(p=>p._autoCreado).map(p=>p.nombre));
+  PROVS_CAMBIADOS_HOY.forEach(n=>provsSync.add(n));
+  if(!placasSync.size && !condsSyncIdx.size && !provsSync.size) return;
+  showToast(`⏳ Sincronizando ${placasSync.size} unidad(es), ${condsSyncIdx.size} conductor(es) y ${provsSync.size} proveedor(es)...`,'ok');
   let okU=0, okC=0, okP=0;
   for(const placa of placasSync){
     const idx = UNIDADES.findIndex(u=>u.placa===placa);
@@ -4549,9 +4587,8 @@ async function sincronizarReporteADB(){
     const ok = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, HEADERS_UNID);
     if(ok) okU++;
   }
-  for(const dni of dnisSync){
-    const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
-    if(idx<0) continue;
+  for(const idx of condsSyncIdx){
+    if(idx<0 || idx>=CONDUCTORES.length) continue;
     const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'));
     if(ok) okC++;
   }
