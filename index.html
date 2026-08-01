@@ -563,7 +563,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <th>Est. Lic</th><th>Días Lic ✏️</th>
             <th>Est. SCTR</th><th>Días SCTR ✏️</th>
             <th>DNI</th><th>Lic</th><th>Récord</th><th>SCTR</th><th>EMO ✏️</th><th>CUL</th>
-            <th>Cumpl.</th><th>📁 Carpeta</th><th>🔗 Récord</th>
+            <th>Cumpl.</th><th>📁 Carpeta</th>
           </tr></thead>
           <tbody id="cond-tbody"><tr><td colspan="20" class="empty-state">Cargando...</td></tr></tbody>
         </table>
@@ -626,7 +626,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <th>T.Prop</th><th>SOAT</th><th>RTV</th><th>TUC</th><th>MNTO</th><th>Boletín</th><th>Póliza</th><th>Seg.RC</th><th>Seg.Carga</th>
             <th>Cumpl.</th><th>📁 Carpeta</th><th>🪪 Tarjeta</th>
           </tr></thead>
-          <tbody id="unid-tbody"><tr><td colspan="32" class="empty-state">Cargando...</td></tr></tbody>
+          <tbody id="unid-tbody"><tr><td colspan="31" class="empty-state">Cargando...</td></tr></tbody>
         </table>
       </div>
       <div class="tbl-footer">
@@ -1298,12 +1298,6 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         </div>
       </div>
       <div class="form-sec">
-        <div class="form-sec-title">📋 Papeletas MTC</div>
-        <div class="form-grid g4">
-          <div class="form-group full"><label class="form-label">🔗 Link Récord de Papeletas (MTC)</label><input class="form-input" type="text" id="c-record-link" placeholder="https://... (constancia/reporte MTC)"></div>
-        </div>
-      </div>
-      <div class="form-sec">
         <div class="form-sec-title">✅ Cumplimiento Documentario</div>
         <div class="check-group" style="margin-bottom:12px;">
           <label class="check-item"><input type="checkbox" id="ch-dni" onchange="actualizarCumplCond()"><label for="ch-dni">D.N.I.</label></label>
@@ -1677,9 +1671,6 @@ function parseCsv(text){
 
 // Orden EXACTO de columnas del Sheet UNIDADES (47 columnas)
 const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','tieneRtv','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','cumpl','carpeta','tarjetaLink'];
-// Nombres REALES de columna en la hoja UNIDADES, en el mismo orden que COLORDER_UNID.
-// Permiten guardar buscando cada columna por su NOMBRE (robusto ante reordenamientos).
-const HEADERS_UNID = ['Placa','Estado','Proveedor','Centro','Detalle Centro','Modalidad','Tipo de Unidad','Año Fab.','Antigüedad','Categoría','Marca','Carrocería','N° Asientos','N° Pasajeros','Ejes','Ruedas','Peso Bruto','Peso Neto','Reacondicionado','Tiene Tarj. Prop.','Fecha Vencimiento SOAT','Días Vencimiento SOAT','Alerta SOAT','Uso SOAT','Tipo de Seguro','Aseguradora','Tipo SOAT','LE TOCA RVT','Fecha Vencimiento RTV','Días Vencimiento RTV','Alerta RTV','Observaciones','¿Tiene T.C.?','Fecha Vencimiento T.C.','Días Vencimiento T.C.','Alerta T.C.','Propietario','Responsable','Tarj. Prop.','SOAT','Rev. Tec.','TUC','Program MNTO','Boletin Informativo - SUNARP','Poliza','Seguro RC','Seguro de Carga','Cumplimiento','CARPETA','tarjetaLink'];
 
 // Documentos de UNIDAD (10) con su etiqueta y a qué categorías aplican
 const DOCS_UNID = [
@@ -1711,25 +1702,19 @@ function unidProveedorReporteDistinto(u){
   }
   return null;
 }
-function unidDatosFaltantesList(u){
-  if(!u) return [];
+function unidDatosFaltantes(u){
+  if(!u) return 0;
   const esMoto=esMotoTipo(u.tipo);
-  const campos=[['Año Fab.',u.anio],['Marca',u.marca],['Fecha Vencimiento SOAT',u.fechaSoat],['Aseguradora',u.aseguradora]];
-  if(!esMoto){
-    const rtvNA = u.tieneRtv==='NO APLICA' || u.tieneRtv==='AÚN NO LE TOCA';
-    if(!rtvNA) campos.push(['Fecha Vencimiento RTV',u.fechaRtv]);
-    campos.push(['¿Tiene T.C.?',u.tieneTc]);
-  }
-  return campos.filter(([lbl,v])=>!v || !String(v).trim()).map(([lbl])=>lbl);
+  const campos=[u.anio, u.marca, u.fechaSoat, u.aseguradora];
+  if(!esMoto){ campos.push(u.fechaRtv); campos.push(u.tieneTc); }
+  return campos.filter(v=>!v || !String(v).trim()).length;
 }
-function unidDatosFaltantes(u){ return unidDatosFaltantesList(u).length; }
 // Cuenta datos BÁSICOS que aún faltan llenar en un conductor (para marcarlo "⚠ Completar")
-function condDatosFaltantesList(c){
-  if(!c) return [];
-  const campos=[['Fecha de Revalidación (Lic.)',c.fechaLic],['Categoría Licencia',c.catLic],['Celular',c.celular],['Fecha Vencimiento SCTR',c.fechaSctr]];
-  return campos.filter(([lbl,v])=>!v || !String(v).trim()).map(([lbl])=>lbl);
+function condDatosFaltantes(c){
+  if(!c) return 0;
+  const campos=[c.fechaLic, c.catLic, c.celular, c.fechaSctr];
+  return campos.filter(v=>!v || !String(v).trim()).length;
 }
-function condDatosFaltantes(c){ return condDatosFaltantesList(c).length; }
 // Documentos que aplican a una unidad según su categoría de servicio y tipo de vehículo.
 // El 3er parámetro (u) es opcional: si la unidad tiene marcado "NO APLICA"/"AÚN NO LE TOCA"
 // para RTV o TUC, esos documentos se excluyen del checklist (no cuentan como pendientes).
@@ -1758,34 +1743,19 @@ function provServicioDeUnidad(u){
 
 // Orden EXACTO de columnas del Sheet CONDUCTORES (33-34 columnas)
 const COLORDER_COND = ['dni','conductor','estado','proveedor','placa','tipoUnidad','centro','ruta','turno','numLic','catLic','fechaLic','diasLic','estadoLic','restriccion','celular','record','cantPapeletas','puntosFirmes','puntosProceso','puntosTotal','alertaPuntos','asegSctr','tipoSctr','fechaSctr','diasSctr','estadoSctr','docDni','docLic','docRecord','docSctr','docEmo','docCul','cumpl','carpeta'];
-const HEADERS_COND = ['DNI.','Conductor','Estado','Proveedor','Placa','Tipo Unidad','Centro','Ruta','Turno','N° Licencia de Conducir','Categoría Licencia','Fecha de Revalidación','Días Vencimiento Lic.','Estado Licencia','Restricción','Celular','Record Papeletas (MTC)','Cantidad Papeletas','Puntos Firmes','Puntos en Proceso','Puntos en Total','Alerta Puntos (MTC)','Aseguradora SCTR','Tipo de SCTR','Fecha Vencimiento SCTR','Días Vencimiento SCTR','Estado SCTR','DNI','LICENCIA DE CONDUCIR','RECORD DE CONDUCTOR','SCTR','EMO -  EXAMEN MÉDICO OCUPACIONAL','CERTIFICADO UNICO LABORAL','Cumplimiento','CARPETA'];
 
 // Convierte un registro interno → array ordenado según las columnas del Sheet
 function recordToRow(rec, order){ return order.map(k => String(rec[k] ?? '')); }
 
 // Guarda/actualiza una fila respetando el orden EXACTO de columnas
-async function guardarFilaOrdenada(hoja, rec, order, keyColIndex, headersReal, keyColIndexRespaldo){
-  if(!GS_URL) return false;
-  const row = recordToRow(rec, order);
-  return await guardarFilaOrdenadaDirecta(hoja, row, headersReal, keyColIndex, keyColIndexRespaldo);
-}
-
-// Guarda un array de valores YA ARMADO (row), buscando cada columna por su nombre real
-// (headersReal) en la hoja, en vez de asumir una posición fija. Usado por UNIDADES,
-// CONDUCTORES y PROVEEDORES.
-// keyColIndexRespaldo: índice (dentro de `row`) de un campo de respaldo (ej. nombre del
-// conductor) para buscar la fila cuando la clave principal (ej. DNI) viene vacía —
-// el reporte diario casi nunca trae DNI, así que sin esto se crea una fila nueva cada vez.
-async function guardarFilaOrdenadaDirecta(hoja, row, headersReal, keyColIndex, keyColIndexRespaldo){
+async function guardarFilaOrdenada(hoja, rec, order, keyColIndex){
   if(!GS_URL) return false;
   try {
-    const payload = { hoja, rowOrdenada: row, keyColIndex: keyColIndex||0 };
-    if(headersReal && headersReal.length === row.length) payload.headers = headersReal;
-    if(keyColIndexRespaldo!=null) payload.keyColIndexRespaldo = keyColIndexRespaldo;
+    const row = recordToRow(rec, order);
     const r = await fetch(GS_URL, {
       method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ hoja, rowOrdenada: row, keyColIndex: keyColIndex||0 })
     });
     if(!r.ok){
       console.error('GS ERROR: HTTP', r.status, await r.text().catch(()=>''));
@@ -2433,7 +2403,7 @@ async function toggleDocCond(id, campo){
   }
   renderConductores();
   if(GS_URL){
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'));
+    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
     if(ok) showToast(nuevoValor==='✓' ? '✓ Marcado y guardado' : '✗ Desmarcado y guardado','ok');
     else { showToast('⚠ No se pudo guardar en Sheets, reintenta','err'); CONDUCTORES[idx][campo] = (nuevoValor==='✓')?'✗':'✓'; renderConductores(); }
   } else {
@@ -2469,7 +2439,7 @@ async function guardarCeldaCond(id, campo, valor){
   }
   renderConductores();
   if(GS_URL){
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'));
+    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
     if(ok) showToast('✓ Guardado','ok');
     else showToast('⚠ Error al guardar en Sheets, verifica conexión','err');
   } else {
@@ -2526,7 +2496,7 @@ function renderCondRow(r, num){
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="white-space:nowrap"><button onclick="editarConductor('${dni}')" title="Editar conductor" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>${r.dni||'—'}</td>
     <td style="max-width:160px;white-space:normal;font-size:12px;font-weight:500">${r.conductor||'—'}</td>
-    <td>${badge(r.estado||'ACTIVO')} ${badgeActivoHoy(esCondActivoHoy(r))}${condDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarConductor('${dni}')" title="Falta: ${condDatosFaltantesList(r).join(', ')} — clic para completar">⚠ Falta: ${condDatosFaltantesList(r).join(', ')}</span>` : ''}</td>
+    <td>${badge(r.estado||'ACTIVO')} ${badgeActivoHoy(esCondActivoHoy(r))}${condDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarConductor('${dni}')" title="Faltan ${condDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : ''}</td>
     ${editable('proveedor', r.proveedor)}
     ${editable('placa', r.placa)}
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
@@ -2543,7 +2513,6 @@ function renderCondRow(r, num){
     ${chk(r.docCul,'docCul')}
     <td>${barCumpl(r.cumpl||'—')}</td>
     <td style="text-align:center">${r.carpeta ? `<a href="${r.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(59,130,246,0.12);color:#2563eb;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">📁 Abrir</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
-    <td style="text-align:center">${r.record ? `<a href="${r.record}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(124,58,237,0.12);color:var(--accent2);padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">🔗 Ver</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
   </tr>`;
 }
 
@@ -2675,7 +2644,7 @@ function renderConductores(){
 // ═══════════════════════════════════════════════
 
 async function toggleDocUnid(placa, campo){
-  const idx = UNIDADES.findIndex(u=>u.placa===placa);
+  const idx = UNIDADES.findIndex(u=>normPlaca(u.placa)===normPlaca(placa));
   if(idx<0){ showToast('Unidad no encontrada','err'); return; }
   const actual = UNIDADES[idx][campo];
   const nuevoValor = (actual==='✓') ? '✗' : '✓';
@@ -2696,7 +2665,7 @@ async function toggleDocUnid(placa, campo){
   }
   renderUnidades();
   if(GS_URL){
-    const okSave = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, HEADERS_UNID);
+    const okSave = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
     if(okSave) showToast(nuevoValor==='✓' ? '✓ Marcado y guardado' : '✗ Desmarcado y guardado','ok');
     else { showToast('⚠ No se pudo guardar en Sheets, reintenta','err'); UNIDADES[idx][campo] = actual; renderUnidades(); }
   } else {
@@ -2721,7 +2690,7 @@ function editCeldaUnid(placa, campo, valorActual){
   inp.focus();
 }
 async function guardarCeldaUnid(placa, campo, valor){
-  const idx = UNIDADES.findIndex(u=>u.placa===placa);
+  const idx = UNIDADES.findIndex(u=>normPlaca(u.placa)===normPlaca(placa));
   if(idx<0) return;
   UNIDADES[idx][campo] = valor.trim().toUpperCase();
   if(REP_ROWS.length > 0){
@@ -2734,7 +2703,7 @@ async function guardarCeldaUnid(placa, campo, valor){
   }
   renderUnidades();
   if(GS_URL){
-    const okSave = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, HEADERS_UNID);
+    const okSave = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
     if(okSave) showToast('✓ Guardado','ok');
     else showToast('⚠ Error al guardar en Sheets, verifica conexión','err');
   } else {
@@ -2751,7 +2720,7 @@ function renderUnidRow(r, num){
   return `<tr${r._nuevaUnidad ? ' style="background:rgba(16,185,129,0.05)"' : ''}>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2);white-space:nowrap">${r._nuevaUnidad?'':`<button onclick="editarUnidad('${placaEsc}')" title="Editar unidad" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>`}${r.placa||'—'}</td>
-    <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')+' '+badgeActivoHoy(esUnidActivoHoy(r))}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : (unidDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarUnidad('${placaEsc}')" title="Falta: ${unidDatosFaltantesList(r).join(', ')} — clic para completar">⚠ Falta: ${unidDatosFaltantesList(r).join(', ')}</span>` : '')}</td>
+    <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')+' '+badgeActivoHoy(esUnidActivoHoy(r))}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : (unidDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarUnidad('${placaEsc}')" title="Faltan ${unidDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : '')}</td>
     <td data-placa="${placaEsc}" data-campo="proveedor" onclick="editCeldaUnidClick(this)" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer;max-width:150px">${provCellHtml(r.proveedor,'unid')}</td>
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td style="font-size:11px">${r.tipo||'—'}</td>
@@ -2779,7 +2748,7 @@ function renderUnidRow(r, num){
     ${chk(r.docSeguroCarga,'docSeguroCarga')}
     <td>${barCumpl(r.cumpl||'—')}</td>
     <td style="text-align:center">${r.carpeta ? `<a href="${r.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(59,130,246,0.12);color:#2563eb;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">📁 Abrir</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
-    <td style="text-align:center">${r.tarjetaLink ? tarjetaBtn(r.tarjetaLink) : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
+    <td style="text-align:center">${r.tarjetaLink ? `<a href="${r.tarjetaLink}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(124,58,237,0.12);color:var(--accent2);padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">🪪 Ver</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
   </tr>`;
 }
 
@@ -2841,7 +2810,7 @@ function renderUnidades(){
     const sl=rows.slice((pg-1)*PS2,pg*PS2);
     document.getElementById('unid-tbody').innerHTML=sl.length
       ? sl.map((r,i)=>renderUnidRow(r,(pg-1)*PS2+i+1)).join('')
-      : '<tr><td colspan="32" class="empty-state">Sin unidades</td></tr>';
+      : '<tr><td colspan="31" class="empty-state">Sin unidades</td></tr>';
     renderPag('unid-pag','unid-info',pg,rows.length,v=>{ state.unidades.page=v; renderUnidades(); });
     return;
   }
@@ -2849,7 +2818,7 @@ function renderUnidades(){
   // NO mostrar el reporte del día disfrazado de "base completa" — avisar claramente.
   if(!UNID_MODO_DIA && UNIDADES.length===0){
     document.getElementById('unid-count').textContent='0 registros';
-    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="32" class="empty-state">📋 Aún no se sincronizó la base completa de Unidades desde Google Sheets. Si quieres ver las unidades del reporte del día cargado, usa el botón "Ver reporte del día".</td></tr>';
+    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="31" class="empty-state">📋 Aún no se sincronizó la base completa de Unidades desde Google Sheets. Si quieres ver las unidades del reporte del día cargado, usa el botón "Ver reporte del día".</td></tr>';
     document.getElementById('unid-info').textContent='—';
     document.getElementById('unid-pag').innerHTML='';
     return;
@@ -2857,7 +2826,7 @@ function renderUnidades(){
   // Sin Excel cargado y modo día → mensaje
   if(UNID_MODO_DIA && REP_ROWS.length===0){
     document.getElementById('unid-count').textContent='0 registros';
-    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="32" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver las unidades</td></tr>';
+    document.getElementById('unid-tbody').innerHTML='<tr><td colspan="31" class="empty-state">📋 Sube el Excel del día en <b>Reporte Diario</b> para ver las unidades</td></tr>';
     document.getElementById('unid-info').textContent='—';
     document.getElementById('unid-pag').innerHTML='';
     return;
@@ -2900,7 +2869,7 @@ function renderUnidades(){
   const sl=rows.slice((pg-1)*PS2,pg*PS2);
   document.getElementById('unid-tbody').innerHTML=sl.length
     ? sl.map((r,i)=>renderUnidRow(r,(pg-1)*PS2+i+1)).join('')
-    : '<tr><td colspan="32" class="empty-state">Sin unidades</td></tr>';
+    : '<tr><td colspan="31" class="empty-state">Sin unidades</td></tr>';
   renderPag('unid-pag','unid-info',pg,rows.length,v=>{ if(UNID_MODO_DIA){if(!ST.unidades)ST.unidades={};ST.unidades.page=v;}else state.unidades.page=v; renderUnidades(); });
 }
 
@@ -2925,12 +2894,14 @@ const DOCS_PROV=[
   'Decl.J. Normas y Políticas',  // 11
   'Cotización',                  // 12
   'Carta Comp. Materia Prima',   // 13  (solo MATERIA PRIMA)
+  'Carta Comp. Refrigerado',     // 14  (solo REFRIGERADO)
 ];
-const N_DOCS_PROV = DOCS_PROV.length; // 14
+const N_DOCS_PROV = DOCS_PROV.length; // 15
 // Abreviaturas cortas para encabezados de tabla
-const DOCS_PROV_ABBR=['CONT','RUC','PODER','BETA','SENT','CLINT','DEUDA','REF.C','BROCH','ANTEC','DJ-SEG','DJ-N&P','COTIZ','C.MP'];
+const DOCS_PROV_ABBR=['CONT','RUC','PODER','BETA','SENT','CLINT','DEUDA','REF.C','BROCH','ANTEC','DJ-SEG','DJ-N&P','COTIZ','C.MP','C.REF'];
 // Índices de docs que solo aplican a ciertas categorías
 const DOC_SOLO_MP     = 13;
+const DOC_SOLO_REFRIG = 14;
 
 // Devuelve los índices de documentos que APLICAN según la categoría del proveedor
 function docsAplicables(p){
@@ -2938,6 +2909,7 @@ function docsAplicables(p){
   const idx = [];
   for(let i=0;i<N_DOCS_PROV;i++){
     if(i===DOC_SOLO_MP     && cat!=='MATERIA PRIMA')  continue;
+    if(i===DOC_SOLO_REFRIG && cat!=='REFRIGERADO')    continue;
     idx.push(i);
   }
   return idx;
@@ -3073,7 +3045,7 @@ const PROV_COLS = [
   'DEUDA COACTIVA','REFERENCIAS COMERCIAL','BROCHURE O CARTA DE PRESENTACION',
   'ANTECEDENTES','DECLARACION JURADA DE NORMAS DE SEGURIDAD',
   'DECLARACION JURADA DE NORMAS Y POLITICAS','COTIZACION',
-  'CARTA DE COMPROMISO MATERIA PRIMA',
+  'CARTA DE COMPROMISO MATERIA PRIMA','CARTA DE COMPROMISO REFRIGERADO',
   'CUMPLIMIENTO','% cumplimiento','Carpeta Proveedor'
 ];
 
@@ -3094,7 +3066,7 @@ async function guardarProvEnSheets(nombreProv){
     ...pd.docs.map((v,i)=> !aplica.has(i) ? 'N/A' : (v?'VERDADERO':'FALSO')),
     `${ok}/${tot} (${pct}%)`, `${pct}%`, prov.carpeta||''
   ];
-  return await guardarFilaOrdenadaDirecta('PROVEEDORES', row, PROV_COLS, 0);
+  return await guardarEnSheets('PROVEEDORES', PROV_COLS, row, 'Proveedor');
 }
 
 async function toggleProvDoc(n,i){
@@ -3189,6 +3161,44 @@ function metricaProv(p){
 // Tarjetas individuales cuando "Ver cumplimiento de" = Unidades / Conductores
 // (una tarjeta por CADA unidad o CADA conductor, con su propio % de documentos)
 // ═══════════════════════════════════════════════
+// Agrupa un array de tarjetas por proveedor y arma secciones colapsables (cerradas por defecto).
+// getterProveedor: función que recibe el item y devuelve el nombre del proveedor.
+// cardHtmlFn: función que recibe el item y devuelve el HTML de su tarjeta.
+function renderTarjetasAgrupadas(items, campoProveedor, etiquetaPlural, cardHtmlFn){
+  const grupos = {};
+  items.forEach(it=>{
+    const key = (it[campoProveedor]||'SIN PROVEEDOR').toString().trim() || 'SIN PROVEEDOR';
+    if(!grupos[key]) grupos[key] = [];
+    grupos[key].push(it);
+  });
+  const nombres = Object.keys(grupos).sort((a,b)=>a.localeCompare(b));
+  return nombres.map((prov,gi)=>{
+    const its = grupos[prov];
+    const pcts = its.map(it=>it._pct||0);
+    const avg = pcts.length ? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length) : 0;
+    const col = avg>=80?'#10b981':avg>=50?'#f59e0b':'#ef4444';
+    const gid = 'grp-tj-'+gi+'-'+prov.replace(/[^a-zA-Z0-9]/g,'').slice(0,24);
+    return `<div style="grid-column:1/-1">
+      <div onclick="toggleGrupoTarjetas('${gid}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f9fafb;border:1px solid #ebebeb;border-radius:10px;cursor:pointer;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;color:#111">
+          <span id="${gid}-chev" style="font-size:11px;transition:transform .15s;display:inline-block">▶</span> 🏢 ${escapeHtml(prov)}
+        </div>
+        <div style="font-size:12px;color:${col};font-weight:700">${its.length} ${etiquetaPlural} · ${avg}%</div>
+      </div>
+      <div id="${gid}" style="display:none;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-bottom:16px">
+        ${its.map(cardHtmlFn).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleGrupoTarjetas(gid){
+  const el = document.getElementById(gid);
+  const chev = document.getElementById(gid+'-chev');
+  if(!el) return;
+  const abierto = el.style.display !== 'none';
+  el.style.display = abierto ? 'none' : 'grid';
+  if(chev) chev.style.transform = abierto ? '' : 'rotate(90deg)';
+}
 function renderTarjetasUnidades(f){
   const cont = document.getElementById('prov-cards');
   const placaGrupos={};
@@ -3220,7 +3230,7 @@ function renderTarjetasUnidades(f){
   sk('pvk-total',unids.length); sk('pvk-completos',kc); sk('pvk-incompletos',ki); sk('pvk-criticos',kx);
   document.getElementById('prov-count').textContent=unids.length+' unidades';
   if(!unids.length){ cont.innerHTML='<div class="empty-state" style="grid-column:1/-1">Sin unidades para los filtros aplicados</div>'; return; }
-  cont.innerHTML = unids.map(u=>{
+  const cardUnidHtml = u=>{
     const col=u._pct>=80?'#10b981':u._pct>=50?'#f59e0b':'#ef4444';
     const zonaP=zonaDeProveedor(u.proveedor);
     const respU=responsableDeUnidad(u);
@@ -3251,7 +3261,8 @@ function renderTarjetasUnidades(f){
         <span style="color:var(--accent);font-weight:600;flex-shrink:0">Ver ficha →</span>
       </div>
     </div>`;
-  }).join('');
+  };
+  cont.innerHTML = renderTarjetasAgrupadas(unids, 'proveedor', 'unidades', cardUnidHtml);
 }
 function renderTarjetasConductores(f){
   const cont = document.getElementById('prov-cards');
@@ -3289,7 +3300,7 @@ function renderTarjetasConductores(f){
   sk('pvk-total',conds.length); sk('pvk-completos',kc); sk('pvk-incompletos',ki); sk('pvk-criticos',kx);
   document.getElementById('prov-count').textContent=conds.length+' conductores';
   if(!conds.length){ cont.innerHTML='<div class="empty-state" style="grid-column:1/-1">Sin conductores para los filtros aplicados</div>'; return; }
-  cont.innerHTML = conds.map(c=>{
+  const cardCondHtml = c=>{
     const col=c._pct>=80?'#10b981':c._pct>=50?'#f59e0b':'#ef4444';
     const zonaP=zonaDeProveedor(c.proveedor);
     const respC=responsableDeProveedor(c.proveedor);
@@ -3321,7 +3332,8 @@ function renderTarjetasConductores(f){
         <span style="color:var(--accent);font-weight:600;flex-shrink:0">Ver ficha →</span>
       </div>
     </div>`;
-  }).join('');
+  };
+  cont.innerHTML = renderTarjetasAgrupadas(conds, 'proveedor', 'conductores', cardCondHtml);
 }
 function renderProveedores(){
   const cont = document.getElementById('prov-cards');
@@ -3469,7 +3481,7 @@ function renderProveedores(){
       onmouseout="this.style.boxShadow='';this.style.transform=''">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px">
         <div style="font-size:13.5px;font-weight:700;color:#111;line-height:1.3">${p.nombre}</div>
-        ${badge(p.estado||'ACTIVO')}
+        <span class="badge ok" style="flex-shrink:0">ACTIVO</span>
       </div>
       <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;font-family:var(--mono)">${p.ruc||'—'}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
@@ -3508,13 +3520,13 @@ function tarjetaUnidadHTML(u, i, enRuta){
   const pl=(u.placa||'').replace(/'/g,"\\'");
   const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocUnidModal('${pl}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
   const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditPlacaModal('${pl}','${diasC}','${fechaC}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
-  const faltanU = unidDatosFaltantesList(u);
+  const faltanU = unidDatosFaltantes(u);
   return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:12px">${u.placa||'—'}${enRuta?' <span style="font-family:inherit;font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''}</span>
       <button onclick="event.stopPropagation();editarUnidad('${pl}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
     </div>
-    ${faltanU.length>0?`<div onclick="event.stopPropagation();editarUnidad('${pl}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Falta: ${faltanU.join(', ')}</div>`:''}
+    ${faltanU>0?`<div onclick="event.stopPropagation();editarUnidad('${pl}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Completar — faltan ${faltanU} dato(s) básicos</div>`:''}
     <div style="display:flex;flex-wrap:wrap;gap:4px">
       ${estPill(u.estadoSoat,'SOAT','diasSoat','fechaSoat',u.diasSoat)}${estPill(u.estadoRtv,'RTV','diasRtv','fechaRtv',u.diasRtv)}${estPill(u.estadoTc,'TUC','diasTc','fechaTc',u.diasTc)}
       ${docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u).map(d=>pill(u[d.campo],d.lbl,d.campo)).join('')}
@@ -3528,13 +3540,13 @@ function tarjetaConductorHTML(c, i, enRuta){
   const nm=(c.conductor||'').replace(/'/g,"\\'");
   const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocCondModal('${dn}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
   const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditDniModal('${dn}','${diasC}','${fechaC}','${nm}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
-  const faltanC = condDatosFaltantesList(c);
+  const faltanC = condDatosFaltantes(c);
   return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <span style="font-weight:600;color:#111;font-size:12px">${c.conductor||'—'}${enRuta?' <span style="font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''} <span style="font-size:10px;color:#9ca3af;font-family:var(--mono)">· DNI ${c.dni||'—'}</span></span>
       <button onclick="event.stopPropagation();editarConductor('${dn}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
     </div>
-    ${faltanC.length>0?`<div onclick="event.stopPropagation();editarConductor('${dn}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Falta: ${faltanC.join(', ')}</div>`:''}
+    ${faltanC>0?`<div onclick="event.stopPropagation();editarConductor('${dn}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Completar — faltan ${faltanC} dato(s) básicos</div>`:''}
     <div style="display:flex;flex-wrap:wrap;gap:4px">
       ${estPill(c.estadoLic,'Lic','diasLic','fechaLic',c.diasLic)}${estPill(c.estadoSctr,'SCTR','diasSctr','fechaSctr',c.diasSctr)}
       ${pill(c.docDni,'DNI','docDni')}${pill(c.docLic,'Lic','docLic')}${pill(c.docRecord,'Récord','docRecord')}${pill(c.docSctr,'SCTR','docSctr')}${pill(c.docEmo,'EMO','docEmo')}${pill(c.docCul,'CUL','docCul')}
@@ -3615,24 +3627,21 @@ function abrirDetalleProv(i){
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:10px">📋 Checklist Documentario del Proveedor (clic para marcar)</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">${docsHtml}</div>`;
 
-  // ── Bloque: UNIDADES con su propia documentación (solo ACTIVO + botón para ver el resto) ──
+  // ── Bloque: UNIDADES con su propia documentación (solo activas hoy + botón para ver base) ──
   const bloqueUnid = (()=>{
-      // "Activa" = estado guardado ACTIVO (persiste aunque recargues la página o no
-      // tengas el reporte del día abierto en este momento). "enRuta" (badge verde) sigue
-      // usando el reporte cargado ahora mismo, solo como indicador visual extra.
-      const uHoy = unids.filter(u=>(u.estado||'').toUpperCase()==='ACTIVO');
-      const uBase = unids.filter(u=>(u.estado||'').toUpperCase()!=='ACTIVO');
-      const hayRep = true;
-      const listaPrincipal = uHoy;
-      const ocultas = uBase;
-      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades activas (${uHoy.length})</div><div style="margin-bottom:8px">`;
-      html += listaPrincipal.length ? listaPrincipal.map(u=>tarjetaUnidadHTML(u,i,placasHoy.has(normPlaca(u.placa)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin unidades activas</div>';
+      const uHoy = unids.filter(u=>placasHoy.has(normPlaca(u.placa)));
+      const uBase = unids.filter(u=>!placasHoy.has(normPlaca(u.placa)));
+      const hayRep = placasHoy.size>0;
+      const listaPrincipal = hayRep ? uHoy : unids;       // si no hay reporte, muestra todas
+      const ocultas = hayRep ? uBase : [];
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades ${hayRep?`activas hoy (${uHoy.length})`:`(${unids.length})`}</div><div style="margin-bottom:8px">`;
+      html += listaPrincipal.length ? listaPrincipal.map(u=>tarjetaUnidadHTML(u,i,placasHoy.has(normPlaca(u.placa)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin unidades activas hoy</div>';
       html += unidsNuevas.map(un=>{const e=(un.placa||'').replace(/"/g,'&quot;');const ce=(un.centro||'').replace(/'/g,"\\'"),mo=(un.modalidad||'').replace(/'/g,"\\'"),ca=(un.tipoServicio||'').replace(/'/g,"\\'"),pv=(nombre||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-family:var(--mono);font-weight:700;color:#92400e;font-size:12px">${un.placa} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVA</span></span>
         <button onclick="abrirRegUnid2('${e}',{proveedor:'${pv}',centro:'${ce}',modalidad:'${mo}',categoria:'${ca}'})" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
       </div>`;}).join('');
       if(ocultas.length){
-        html += `<button onclick="event.stopPropagation();toggleVerBaseUnid()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_UNID?'▲ Ocultar':'▼ Ver '+ocultas.length+' unidad(es) INACTIVA(S)'}</button>`;
+        html += `<button onclick="event.stopPropagation();toggleVerBaseUnid()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_UNID?'▲ Ocultar':'▼ Ver '+ocultas.length+' unidad(es) más en base'}</button>`;
         if(PV_VER_BASE_UNID) html += '<div style="margin-top:8px">'+ocultas.map(u=>tarjetaUnidadHTML(u,i,false)).join('')+'</div>';
       }
       html+='</div>';
@@ -3641,19 +3650,20 @@ function abrirDetalleProv(i){
 
   // ── Bloque: CONDUCTORES con su propia documentación ──
   const bloqueCond = (()=>{
-      const cActivo=c=>(c.estado||'').toUpperCase()==='ACTIVO';
+      const cActivo=c=>(String(c.dni||'').trim()&&dnisHoy.has(String(c.dni||'').trim()))||condsNomHoy.has(normNombre(c.conductor));
       const cHoy = conds.filter(cActivo);
       const cBase = conds.filter(c=>!cActivo(c));
-      const listaPrincipal = cHoy;
-      const ocultas = cBase;
-      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores activos (${cHoy.length})</div><div>`;
-      html += listaPrincipal.length ? listaPrincipal.map(c=>tarjetaConductorHTML(c,i,dnisHoy.has(String(c.dni||'').trim())||condsNomHoy.has(normNombre(c.conductor)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin conductores activos</div>';
+      const hayRep = (dnisHoy.size>0||condsNomHoy.size>0);
+      const listaPrincipal = hayRep ? cHoy : conds;
+      const ocultas = hayRep ? cBase : [];
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores ${hayRep?`activos hoy (${cHoy.length})`:`(${conds.length})`}</div><div>`;
+      html += listaPrincipal.length ? listaPrincipal.map(c=>tarjetaConductorHTML(c,i,cActivo(c))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin conductores activos hoy</div>';
       html += condsNuevos.map(c=>{const nm=(c.nombre||'').replace(/'/g,"\\'"),dn=(c.dni||'').replace(/'/g,"\\'"),pl=(c.placa||'').replace(/'/g,"\\'"),ce=(c.centro||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-weight:600;color:#92400e;font-size:12px">${c.nombre||'—'} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVO</span><br><span style="font-size:10px;color:#b45309;font-family:var(--mono)">DNI ${c.dni||'—'}</span></span>
         <button onclick="irRegistrarConductor('${nm}','${dn}','${(nombre||'').replace(/'/g,"\\'")}','${pl}','${ce}')" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
       </div>`;}).join('');
       if(ocultas.length){
-        html += `<button onclick="event.stopPropagation();toggleVerBaseCond()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_COND?'▲ Ocultar':'▼ Ver '+ocultas.length+' conductor(es) INACTIVO(S)'}</button>`;
+        html += `<button onclick="event.stopPropagation();toggleVerBaseCond()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_COND?'▲ Ocultar':'▼ Ver '+ocultas.length+' conductor(es) más en base'}</button>`;
         if(PV_VER_BASE_COND) html += '<div style="margin-top:8px">'+ocultas.map(c=>tarjetaConductorHTML(c,i,false)).join('')+'</div>';
       }
       html+='</div>';
@@ -3793,9 +3803,10 @@ function renderRPChecklist(){
   const aplica=[];
   for(let i=0;i<N_DOCS_PROV;i++){
     if(i===DOC_SOLO_MP && cat!=='MATERIA PRIMA') continue;
+    if(i===DOC_SOLO_REFRIG && cat!=='REFRIGERADO') continue;
     aplica.push(i);
   }
-  const aviso = !cat ? '<div style="grid-column:1/-1;color:var(--warn);font-size:11px;padding:4px 0 8px">⚠ Sin categoría: se muestran los documentos comunes. Selecciona una categoría arriba para ver los específicos (Materia Prima).</div>' : '';
+  const aviso = !cat ? '<div style="grid-column:1/-1;color:var(--warn);font-size:11px;padding:4px 0 8px">⚠ Sin categoría: se muestran los documentos comunes. Selecciona una categoría arriba para ver los específicos (Materia Prima / Refrigerado).</div>' : '';
   cont.innerHTML=aviso+aplica.map(i=>`<label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:${RP_DOCS_STATE[i]?'var(--success-bg)':'var(--bg2)'};border:1.5px solid ${RP_DOCS_STATE[i]?'var(--success)':'var(--border)'};border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500">
     <input type="checkbox" data-di="${i}" ${RP_DOCS_STATE[i]?'checked':''} onchange="RP_DOCS_STATE[${i}]=this.checked;renderRPChecklist()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
     <span>${DOCS_PROV[i]}</span></label>`).join('');
@@ -3823,6 +3834,7 @@ function calcRPcumpl(){
   const aplica=[];
   for(let i=0;i<N_DOCS_PROV;i++){
     if(i===DOC_SOLO_MP && cat!=='MATERIA PRIMA') continue;
+    if(i===DOC_SOLO_REFRIG && cat!=='REFRIGERADO') continue;
     aplica.push(i);
   }
   const tot=aplica.length, ok=aplica.filter(i=>RP_DOCS_STATE[i]).length;
@@ -4096,12 +4108,6 @@ function renderAlertas(){
 // REPORTE DIARIO
 // ═══════════════════════════════════════════════
 let REP_ROWS=[], REP_FILTRO='todos';
-let PLACAS_INACTIVADAS_HOY = new Set();
-let CONDS_CAMBIADOS_HOY = new Set();   // índices de CONDUCTORES cuyo estado cambió al cargar el reporte de hoy
-let PROVS_CAMBIADOS_HOY = new Set();   // nombres de proveedores cuyo estado cambió al cargar el reporte de hoy
-// Clave única para identificar un conductor: DNI si lo tiene, si no, su nombre normalizado
-// (el reporte diario casi nunca trae DNI, así que hay que poder reconocerlo igual por nombre)
-function keyCond(c){ return (c&&c.dni&&normDni(c.dni)) || (c&&normText(c.conductor)) || ''; }
 function previewRepNombre(i){document.getElementById('rep-nombre').textContent=i.files[0]?.name||'Ningún archivo';}
 function normPlaca(p){
   return (p||'').toString().toUpperCase().trim().replace(/[\s\-\.]/g,'');
@@ -4425,7 +4431,7 @@ async function leerReporte(){
       const {unidBD, condBD} = resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, tipoServicio, tipoUnidExc, ruta, turno});
 
       // Contar únicos reales
-      if(placa) seenPlacas.add(normPlaca(placa));
+      if(placa) seenPlacas.add(placa);
       if(conductor||dni) seenConds.add(dni||normText(conductor));
       const provRaw=(provExcel||condBD?.proveedor||unidBD?.proveedor||'').trim().toUpperCase();
       // Si ya existe un proveedor parecido en la base (match exacto o difuso), usamos SU nombre
@@ -4470,50 +4476,11 @@ async function leerReporte(){
     window._REP_COND_COUNT  = seenConds.size   || REP_ROWS.filter(r=>r.conductor||r.dni).length;
     window._REP_PROV_COUNT  = seenProvs.size;
     
-    // ✅🔴 ACTIVAR/INACTIVAR según lo que trae el reporte de HOY
-    // (unidades/conductores/proveedores que SÍ vienen → ACTIVO; los que NO vienen → INACTIVO)
-    CONDS_CAMBIADOS_HOY = new Set();
-    PROVS_CAMBIADOS_HOY = new Set();
-
-    // — Conductores —
-    const condsHoyKeys = new Set();
-    REP_ROWS.forEach(r=>{ if(r.condBD){ const k=keyCond(r.condBD); if(k) condsHoyKeys.add(k); } });
-    CONDUCTORES.forEach((c,idx)=>{
-      const k = keyCond(c);
-      if(!k) return;
-      if(condsHoyKeys.has(k)){
-        if((c.estado||'').toUpperCase()!=='ACTIVO'){ c.estado='ACTIVO'; CONDS_CAMBIADOS_HOY.add(idx); }
-      } else if((c.estado||'').toUpperCase()!=='INACTIVO'){
-        c.estado='INACTIVO'; CONDS_CAMBIADOS_HOY.add(idx);
-      }
-    });
-
-    // — Proveedores —
-    const provsHoyNombres = new Set();
+    // ✅ ACTIVAR PROVEEDORES DEL REPORTE
     REP_ROWS.forEach(r => {
       if(r.proveedor){
         const p = PROVEEDORES.find(pv => (pv.nombre||'').trim().toUpperCase() === (r.proveedor||'').trim().toUpperCase());
-        if(p) provsHoyNombres.add((p.nombre||'').trim().toUpperCase());
-      }
-    });
-    PROVEEDORES.forEach(p=>{
-      const nomNorm=(p.nombre||'').trim().toUpperCase();
-      if(!nomNorm) return;
-      if(provsHoyNombres.has(nomNorm)){
-        if((p.estado||'').toUpperCase()!=='ACTIVO'){ p.estado='ACTIVO'; PROVS_CAMBIADOS_HOY.add(p.nombre); }
-      } else if((p.estado||'').toUpperCase()!=='INACTIVO'){
-        p.estado='INACTIVO'; PROVS_CAMBIADOS_HOY.add(p.nombre);
-      }
-    });
-
-    // — Unidades —
-    PLACAS_INACTIVADAS_HOY = new Set();
-    UNIDADES.forEach(u=>{
-      const pn = normPlaca(u.placa);
-      if(!pn) return;
-      if(!seenPlacas.has(pn) && (u.estado||'').toUpperCase()!=='INACTIVO'){
-        u.estado = 'INACTIVO';
-        PLACAS_INACTIVADAS_HOY.add(u.placa);
+        if(p) p.estado = 'ACTIVO';
       }
     });
 
@@ -4542,16 +4509,13 @@ async function leerReporte(){
     if(autoCond>0) msg+=` · ${autoCond} conductor(es) creados automático`;
     if(autoUnid>0) msg+=` · ${autoUnid} unidad(es) creadas automático`;
     if(autoProv>0) msg+=` · ${autoProv} proveedor(es) creados automático`;
-    if(PLACAS_INACTIVADAS_HOY.size>0) msg+=` · ${PLACAS_INACTIVADAS_HOY.size} unidad(es) marcadas INACTIVO (no vinieron hoy)`;
-    if(CONDS_CAMBIADOS_HOY.size>0) msg+=` · ${CONDS_CAMBIADOS_HOY.size} conductor(es) cambiaron de estado`;
-    if(PROVS_CAMBIADOS_HOY.size>0) msg+=` · ${PROVS_CAMBIADOS_HOY.size} proveedor(es) cambiaron de estado`;
     showToast(msg,'ok');
     if(faltanUnid>0 || faltanCond>0){
       let msg2='⚠ Falta completar información: ';
       const partes=[];
       if(faltanUnid>0) partes.push(`${faltanUnid} unidad(es)`);
       if(faltanCond>0) partes.push(`${faltanCond} conductor(es)`);
-      msg2+=partes.join(' y ')+' — busca el badge "⚠ Falta: ..." en las tablas';
+      msg2+=partes.join(' y ')+' — busca el badge "⚠ Completar" en las tablas';
       setTimeout(()=>showToast(msg2,'warn'),1600);
     }
 
@@ -4569,27 +4533,25 @@ async function leerReporte(){
 async function sincronizarReporteADB(){
   if(!GS_URL) return; // sin Sheets conectado no hay nada que sincronizar
   const placasSync = new Set();
-  const condsSyncIdx = new Set(); // por ÍNDICE, no por DNI (muchos conductores no tienen DNI)
+  const dnisSync = new Set();
   REP_ROWS.forEach(r=>{
     if(r.unidBD && r.unidBD.placa) placasSync.add(r.unidBD.placa);
-    if(r.condBD){ const idx = CONDUCTORES.indexOf(r.condBD); if(idx>=0) condsSyncIdx.add(idx); }
+    if(r.condBD && r.condBD.dni) dnisSync.add(r.condBD.dni);
   });
-  PLACAS_INACTIVADAS_HOY.forEach(p=>placasSync.add(p));
-  CONDS_CAMBIADOS_HOY.forEach(idx=>condsSyncIdx.add(idx));
-  const provsSync = new Set(PROVEEDORES.filter(p=>p._autoCreado).map(p=>p.nombre));
-  PROVS_CAMBIADOS_HOY.forEach(n=>provsSync.add(n));
-  if(!placasSync.size && !condsSyncIdx.size && !provsSync.size) return;
-  showToast(`⏳ Sincronizando ${placasSync.size} unidad(es), ${condsSyncIdx.size} conductor(es) y ${provsSync.size} proveedor(es)...`,'ok');
+  const provsSync = PROVEEDORES.filter(p=>p._autoCreado).map(p=>p.nombre);
+  if(!placasSync.size && !dnisSync.size && !provsSync.length) return;
+  showToast(`⏳ Sincronizando ${placasSync.size} unidad(es), ${dnisSync.size} conductor(es) y ${provsSync.length} proveedor(es)...`,'ok');
   let okU=0, okC=0, okP=0;
   for(const placa of placasSync){
-    const idx = UNIDADES.findIndex(u=>u.placa===placa);
+    const idx = UNIDADES.findIndex(u=>normPlaca(u.placa)===normPlaca(placa));
     if(idx<0) continue;
-    const ok = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, HEADERS_UNID);
+    const ok = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
     if(ok) okU++;
   }
-  for(const idx of condsSyncIdx){
-    if(idx<0 || idx>=CONDUCTORES.length) continue;
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'));
+  for(const dni of dnisSync){
+    const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
+    if(idx<0) continue;
+    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
     if(ok) okC++;
   }
   for(const nom of provsSync){
@@ -4795,8 +4757,8 @@ async function guardarEdit(){
   // Guardar y esperar confirmación real antes de avisar al usuario
   if(GS_URL){
     const ok = tipo==='conductor'
-      ? await guardarFilaOrdenada('CONDUCTORES', reg, COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'))
-      : await guardarFilaOrdenada('UNIDADES', reg, COLORDER_UNID, 0, HEADERS_UNID);
+      ? await guardarFilaOrdenada('CONDUCTORES', reg, COLORDER_COND, 0)
+      : await guardarFilaOrdenada('UNIDADES', reg, COLORDER_UNID, 0);
     if(ok) showToast('✓ Fecha actualizada y guardada','ok');
     else showToast('⚠ No se pudo guardar en Sheets, reintenta','err');
   } else {
@@ -5064,7 +5026,7 @@ async function guardarConductor(){
     });
   }
   renderConductores();
-  const ok=await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND, COLORDER_COND.indexOf('conductor'));
+  const ok=await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
   const cm=document.getElementById('c-msg'); if(cm) cm.textContent=new Date().toLocaleTimeString('es-PE');
 }
@@ -5126,7 +5088,7 @@ async function guardarUnidad(){
     });
   }
   renderUnidades();
-  const ok=await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, HEADERS_UNID);
+  const ok=await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
   const um=document.getElementById('u-msg'); if(um) um.textContent=new Date().toLocaleTimeString('es-PE');
 }
