@@ -623,7 +623,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <th>SOAT ✏️</th><th>Días SOAT</th>
             <th>RTV ✏️</th><th>Días RTV</th>
             <th>T.C. ✏️</th><th>Días T.C.</th>
-            <th>T.Prop</th><th>SOAT</th><th>RTV</th><th>TUC</th><th>MNTO</th><th>Boletín</th><th>Póliza</th><th>Seg.RC</th><th>Seg.Carga</th><th>CheckList</th>
+            <th>T.Prop</th><th>SOAT</th><th>RTV</th><th>TUC</th><th>MNTO</th><th>Boletín</th><th>Póliza</th><th>Seg.RC</th><th>Seg.Carga</th>
             <th>Cumpl.</th><th>📁 Carpeta</th><th>🪪 Tarjeta</th>
           </tr></thead>
           <tbody id="unid-tbody"><tr><td colspan="32" class="empty-state">Cargando...</td></tr></tbody>
@@ -1399,7 +1399,6 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <label class="check-item"><input type="checkbox" id="uch-poliza" onchange="actualizarCumplUnid()"><label for="uch-poliza">Póliza</label></label>
           <label class="check-item"><input type="checkbox" id="uch-seguro-rc" onchange="actualizarCumplUnid()"><label for="uch-seguro-rc">Seguro RC</label></label>
           <label class="check-item"><input type="checkbox" id="uch-seguro-carga" onchange="actualizarCumplUnid()"><label for="uch-seguro-carga">Seguro de Carga</label></label>
-          <label class="check-item"><input type="checkbox" id="uch-checklist" onchange="actualizarCumplUnid()"><label for="uch-checklist">Check List Recep./Devol.</label></label>
         </div>
         <div class="form-group" style="max-width:120px;"><label class="form-label">% Cumpl. <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-cumpl" readonly></div>
       </div>
@@ -1677,7 +1676,10 @@ function parseCsv(text){
 }
 
 // Orden EXACTO de columnas del Sheet UNIDADES (47 columnas)
-const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','tieneRtv','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','docCheckList','cumpl','carpeta','tarjetaLink'];
+const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','tieneRtv','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','cumpl','carpeta','tarjetaLink'];
+// Nombres REALES de columna en la hoja UNIDADES, en el mismo orden que COLORDER_UNID.
+// Permiten guardar buscando cada columna por su NOMBRE (robusto ante reordenamientos).
+const HEADERS_UNID = ['Placa','Estado','Proveedor','Centro','Detalle Centro','Modalidad','Tipo de Unidad','Año Fab.','Antigüedad','Categoría','Marca','Carrocería','N° Asientos','N° Pasajeros','Ejes','Ruedas','Peso Bruto','Peso Neto','Reacondicionado','Tiene Tarj. Prop.','Fecha Vencimiento SOAT','Días Vencimiento SOAT','Alerta SOAT','Uso SOAT','Tipo de Seguro','Aseguradora','Tipo SOAT','LE TOCA RVT','Fecha Vencimiento RTV','Días Vencimiento RTV','Alerta RTV','Observaciones','¿Tiene T.C.?','Fecha Vencimiento T.C.','Días Vencimiento T.C.','Alerta T.C.','Propietario','Responsable','Tarj. Prop.','SOAT','Rev. Tec.','TUC','Program MNTO','Boletin Informativo - SUNARP','Poliza','Seguro RC','Seguro de Carga','Cumplimiento','CARPETA','tarjetaLink'];
 
 // Documentos de UNIDAD (10) con su etiqueta y a qué categorías aplican
 const DOCS_UNID = [
@@ -1690,7 +1692,6 @@ const DOCS_UNID = [
   {campo:'docPoliza',    lbl:'Póliza',      cat:['CARGA SECA','FLOTA VEHICULAR','REFRIGERADO']},
   {campo:'docSeguroRc',  lbl:'Seguro RC',   cat:['MATERIA PRIMA']},
   {campo:'docSeguroCarga',lbl:'Seguro Carga',cat:['CARGA SECA']},
-  {campo:'docCheckList', lbl:'Check List',  cat:['FLOTA VEHICULAR']},
 ];
 // Detecta si un tipo de vehículo es moto/mototaxi/motocarga (no requieren RTV ni Tarjeta de Circulación)
 function esMotoTipo(tipo){
@@ -1751,19 +1752,30 @@ function provServicioDeUnidad(u){
 
 // Orden EXACTO de columnas del Sheet CONDUCTORES (33-34 columnas)
 const COLORDER_COND = ['dni','conductor','estado','proveedor','placa','tipoUnidad','centro','ruta','turno','numLic','catLic','fechaLic','diasLic','estadoLic','restriccion','celular','record','cantPapeletas','puntosFirmes','puntosProceso','puntosTotal','alertaPuntos','asegSctr','tipoSctr','fechaSctr','diasSctr','estadoSctr','docDni','docLic','docRecord','docSctr','docEmo','docCul','cumpl','carpeta'];
+const HEADERS_COND = ['DNI.','Conductor','Estado','Proveedor','Placa','Tipo Unidad','Centro','Ruta','Turno','N° Licencia de Conducir','Categoría Licencia','Fecha de Revalidación','Días Vencimiento Lic.','Estado Licencia','Restricción','Celular','Record Papeletas (MTC)','Cantidad Papeletas','Puntos Firmes','Puntos en Proceso','Puntos en Total','Alerta Puntos (MTC)','Aseguradora SCTR','Tipo de SCTR','Fecha Vencimiento SCTR','Días Vencimiento SCTR','Estado SCTR','DNI','LICENCIA DE CONDUCIR','RECORD DE CONDUCTOR','SCTR','EMO -  EXAMEN MÉDICO OCUPACIONAL','CERTIFICADO UNICO LABORAL','Cumplimiento','CARPETA'];
 
 // Convierte un registro interno → array ordenado según las columnas del Sheet
 function recordToRow(rec, order){ return order.map(k => String(rec[k] ?? '')); }
 
 // Guarda/actualiza una fila respetando el orden EXACTO de columnas
-async function guardarFilaOrdenada(hoja, rec, order, keyColIndex){
+async function guardarFilaOrdenada(hoja, rec, order, keyColIndex, headersReal){
+  if(!GS_URL) return false;
+  const row = recordToRow(rec, order);
+  return await guardarFilaOrdenadaDirecta(hoja, row, headersReal, keyColIndex);
+}
+
+// Guarda un array de valores YA ARMADO (row), buscando cada columna por su nombre real
+// (headersReal) en la hoja, en vez de asumir una posición fija. Usado por UNIDADES,
+// CONDUCTORES y PROVEEDORES.
+async function guardarFilaOrdenadaDirecta(hoja, row, headersReal, keyColIndex){
   if(!GS_URL) return false;
   try {
-    const row = recordToRow(rec, order);
+    const payload = { hoja, rowOrdenada: row, keyColIndex: keyColIndex||0 };
+    if(headersReal && headersReal.length === row.length) payload.headers = headersReal;
     const r = await fetch(GS_URL, {
       method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({ hoja, rowOrdenada: row, keyColIndex: keyColIndex||0 })
+      body: JSON.stringify(payload)
     });
     if(!r.ok){
       console.error('GS ERROR: HTTP', r.status, await r.text().catch(()=>''));
@@ -1940,7 +1952,6 @@ async function syncFromSheets(){
         docPoliza:     boolDoc(o['poliza']),
         docSeguroRc:   boolDoc(o['seguro rc']),
         docSeguroCarga:boolDoc(o['seguro de carga']),
-        docCheckList:  boolDoc(o['check list recepcion devolucion']||o['check list recepcion y devolucion']||o['sheck list de recepcion y devolucion de unidad']),
         cumpl:         o.cumplimiento||'—',
         carpeta:       o['carpeta unidad']||o.carpeta||'',
         tarjetaLink:   o['tarjetalink']||o['tarjeta link']||'',
@@ -2412,7 +2423,7 @@ async function toggleDocCond(id, campo){
   }
   renderConductores();
   if(GS_URL){
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
+    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND);
     if(ok) showToast(nuevoValor==='✓' ? '✓ Marcado y guardado' : '✗ Desmarcado y guardado','ok');
     else { showToast('⚠ No se pudo guardar en Sheets, reintenta','err'); CONDUCTORES[idx][campo] = (nuevoValor==='✓')?'✗':'✓'; renderConductores(); }
   } else {
@@ -2448,7 +2459,7 @@ async function guardarCeldaCond(id, campo, valor){
   }
   renderConductores();
   if(GS_URL){
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
+    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND);
     if(ok) showToast('✓ Guardado','ok');
     else showToast('⚠ Error al guardar en Sheets, verifica conexión','err');
   } else {
@@ -2675,7 +2686,7 @@ async function toggleDocUnid(placa, campo){
   }
   renderUnidades();
   if(GS_URL){
-    const okSave = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
+    const okSave = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, HEADERS_UNID);
     if(okSave) showToast(nuevoValor==='✓' ? '✓ Marcado y guardado' : '✗ Desmarcado y guardado','ok');
     else { showToast('⚠ No se pudo guardar en Sheets, reintenta','err'); UNIDADES[idx][campo] = actual; renderUnidades(); }
   } else {
@@ -2713,7 +2724,7 @@ async function guardarCeldaUnid(placa, campo, valor){
   }
   renderUnidades();
   if(GS_URL){
-    const okSave = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
+    const okSave = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, HEADERS_UNID);
     if(okSave) showToast('✓ Guardado','ok');
     else showToast('⚠ Error al guardar en Sheets, verifica conexión','err');
   } else {
@@ -2756,10 +2767,9 @@ function renderUnidRow(r, num){
     ${chk(r.docPoliza,'docPoliza')}
     ${chk(r.docSeguroRc,'docSeguroRc')}
     ${chk(r.docSeguroCarga,'docSeguroCarga')}
-    ${chk(r.docCheckList,'docCheckList')}
     <td>${barCumpl(r.cumpl||'—')}</td>
     <td style="text-align:center">${r.carpeta ? `<a href="${r.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(59,130,246,0.12);color:#2563eb;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">📁 Abrir</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
-    <td style="text-align:center">${r.tarjetaLink ? `<a href="${r.tarjetaLink}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;background:rgba(124,58,237,0.12);color:var(--accent2);padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">🪪 Ver</a>` : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
+    <td style="text-align:center">${r.tarjetaLink ? tarjetaBtn(r.tarjetaLink) : '<span style="color:var(--text3);font-size:11px">—</span>'}</td>
   </tr>`;
 }
 
@@ -2905,14 +2915,12 @@ const DOCS_PROV=[
   'Decl.J. Normas y Políticas',  // 11
   'Cotización',                  // 12
   'Carta Comp. Materia Prima',   // 13  (solo MATERIA PRIMA)
-  'Carta Comp. Refrigerado',     // 14  (solo REFRIGERADO)
 ];
-const N_DOCS_PROV = DOCS_PROV.length; // 15
+const N_DOCS_PROV = DOCS_PROV.length; // 14
 // Abreviaturas cortas para encabezados de tabla
-const DOCS_PROV_ABBR=['CONT','RUC','PODER','BETA','SENT','CLINT','DEUDA','REF.C','BROCH','ANTEC','DJ-SEG','DJ-N&P','COTIZ','C.MP','C.REF'];
+const DOCS_PROV_ABBR=['CONT','RUC','PODER','BETA','SENT','CLINT','DEUDA','REF.C','BROCH','ANTEC','DJ-SEG','DJ-N&P','COTIZ','C.MP'];
 // Índices de docs que solo aplican a ciertas categorías
 const DOC_SOLO_MP     = 13;
-const DOC_SOLO_REFRIG = 14;
 
 // Devuelve los índices de documentos que APLICAN según la categoría del proveedor
 function docsAplicables(p){
@@ -2920,7 +2928,6 @@ function docsAplicables(p){
   const idx = [];
   for(let i=0;i<N_DOCS_PROV;i++){
     if(i===DOC_SOLO_MP     && cat!=='MATERIA PRIMA')  continue;
-    if(i===DOC_SOLO_REFRIG && cat!=='REFRIGERADO')    continue;
     idx.push(i);
   }
   return idx;
@@ -3056,7 +3063,7 @@ const PROV_COLS = [
   'DEUDA COACTIVA','REFERENCIAS COMERCIAL','BROCHURE O CARTA DE PRESENTACION',
   'ANTECEDENTES','DECLARACION JURADA DE NORMAS DE SEGURIDAD',
   'DECLARACION JURADA DE NORMAS Y POLITICAS','COTIZACION',
-  'CARTA DE COMPROMISO MATERIA PRIMA','CARTA DE COMPROMISO REFRIGERADO',
+  'CARTA DE COMPROMISO MATERIA PRIMA',
   'CUMPLIMIENTO','% cumplimiento','Carpeta Proveedor'
 ];
 
@@ -3077,7 +3084,7 @@ async function guardarProvEnSheets(nombreProv){
     ...pd.docs.map((v,i)=> !aplica.has(i) ? 'N/A' : (v?'VERDADERO':'FALSO')),
     `${ok}/${tot} (${pct}%)`, `${pct}%`, prov.carpeta||''
   ];
-  return await guardarEnSheets('PROVEEDORES', PROV_COLS, row, 'Proveedor');
+  return await guardarFilaOrdenadaDirecta('PROVEEDORES', row, PROV_COLS, 0);
 }
 
 async function toggleProvDoc(n,i){
@@ -3774,10 +3781,9 @@ function renderRPChecklist(){
   const aplica=[];
   for(let i=0;i<N_DOCS_PROV;i++){
     if(i===DOC_SOLO_MP && cat!=='MATERIA PRIMA') continue;
-    if(i===DOC_SOLO_REFRIG && cat!=='REFRIGERADO') continue;
     aplica.push(i);
   }
-  const aviso = !cat ? '<div style="grid-column:1/-1;color:var(--warn);font-size:11px;padding:4px 0 8px">⚠ Sin categoría: se muestran los documentos comunes. Selecciona una categoría arriba para ver los específicos (Materia Prima / Refrigerado).</div>' : '';
+  const aviso = !cat ? '<div style="grid-column:1/-1;color:var(--warn);font-size:11px;padding:4px 0 8px">⚠ Sin categoría: se muestran los documentos comunes. Selecciona una categoría arriba para ver los específicos (Materia Prima).</div>' : '';
   cont.innerHTML=aviso+aplica.map(i=>`<label style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:${RP_DOCS_STATE[i]?'var(--success-bg)':'var(--bg2)'};border:1.5px solid ${RP_DOCS_STATE[i]?'var(--success)':'var(--border)'};border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--text2);font-weight:500">
     <input type="checkbox" data-di="${i}" ${RP_DOCS_STATE[i]?'checked':''} onchange="RP_DOCS_STATE[${i}]=this.checked;renderRPChecklist()" style="accent-color:var(--accent);width:13px;height:13px;flex-shrink:0">
     <span>${DOCS_PROV[i]}</span></label>`).join('');
@@ -3805,7 +3811,6 @@ function calcRPcumpl(){
   const aplica=[];
   for(let i=0;i<N_DOCS_PROV;i++){
     if(i===DOC_SOLO_MP && cat!=='MATERIA PRIMA') continue;
-    if(i===DOC_SOLO_REFRIG && cat!=='REFRIGERADO') continue;
     aplica.push(i);
   }
   const tot=aplica.length, ok=aplica.filter(i=>RP_DOCS_STATE[i]).length;
@@ -4079,6 +4084,7 @@ function renderAlertas(){
 // REPORTE DIARIO
 // ═══════════════════════════════════════════════
 let REP_ROWS=[], REP_FILTRO='todos';
+let PLACAS_INACTIVADAS_HOY = new Set();
 function previewRepNombre(i){document.getElementById('rep-nombre').textContent=i.files[0]?.name||'Ningún archivo';}
 function normPlaca(p){
   return (p||'').toString().toUpperCase().trim().replace(/[\s\-\.]/g,'');
@@ -4247,7 +4253,7 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
       fechaRtv:'',diasRtv:'',estadoRtv:'',obsRtv:esMoto?'NO APLICA (moto)':'',
       tieneTc:esMoto?'NO APLICA':'',fechaTc:'',diasTc:'',estadoTc:'',
       propietario:'',responsable:'',
-      docTarjProp:'✗',docSoat:'✗',docRtv:'✗',docTc:'✗',docMnto:'✗',docBoletin:'✗',docPoliza:'✗',docSeguroRc:'✗',docSeguroCarga:'✗',docCheckList:'✗',
+      docTarjProp:'✗',docSoat:'✗',docRtv:'✗',docTc:'✗',docMnto:'✗',docBoletin:'✗',docPoliza:'✗',docSeguroRc:'✗',docSeguroCarga:'✗',
       cumpl:'0/7 (0%)', carpeta:'', tarjetaLink:'', _autoCreado:true
     };
     UNIDADES.push(unidBD);
@@ -4402,7 +4408,7 @@ async function leerReporte(){
       const {unidBD, condBD} = resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, tipoServicio, tipoUnidExc, ruta, turno});
 
       // Contar únicos reales
-      if(placa) seenPlacas.add(placa);
+      if(placa) seenPlacas.add(normPlaca(placa));
       if(conductor||dni) seenConds.add(dni||normText(conductor));
       const provRaw=(provExcel||condBD?.proveedor||unidBD?.proveedor||'').trim().toUpperCase();
       // Si ya existe un proveedor parecido en la base (match exacto o difuso), usamos SU nombre
@@ -4455,6 +4461,18 @@ async function leerReporte(){
       }
     });
 
+    // 🔴 INACTIVAR UNIDADES QUE NO VIENEN EN EL REPORTE DE HOY
+    // (las que SÍ vienen ya se marcan ACTIVO dentro de resolverUnidCond)
+    PLACAS_INACTIVADAS_HOY = new Set();
+    UNIDADES.forEach(u=>{
+      const pn = normPlaca(u.placa);
+      if(!pn) return;
+      if(!seenPlacas.has(pn) && (u.estado||'').toUpperCase()!=='INACTIVO'){
+        u.estado = 'INACTIVO';
+        PLACAS_INACTIVADAS_HOY.add(u.placa);
+      }
+    });
+
     renderReporte();
     document.getElementById('rep-kpi-row').style.display='';
     document.getElementById('rep-filtros').style.display='flex';
@@ -4480,6 +4498,7 @@ async function leerReporte(){
     if(autoCond>0) msg+=` · ${autoCond} conductor(es) creados automático`;
     if(autoUnid>0) msg+=` · ${autoUnid} unidad(es) creadas automático`;
     if(autoProv>0) msg+=` · ${autoProv} proveedor(es) creados automático`;
+    if(PLACAS_INACTIVADAS_HOY.size>0) msg+=` · ${PLACAS_INACTIVADAS_HOY.size} unidad(es) marcadas INACTIVO (no vinieron hoy)`;
     showToast(msg,'ok');
     if(faltanUnid>0 || faltanCond>0){
       let msg2='⚠ Falta completar información: ';
@@ -4509,6 +4528,7 @@ async function sincronizarReporteADB(){
     if(r.unidBD && r.unidBD.placa) placasSync.add(r.unidBD.placa);
     if(r.condBD && r.condBD.dni) dnisSync.add(r.condBD.dni);
   });
+  PLACAS_INACTIVADAS_HOY.forEach(p=>placasSync.add(p));
   const provsSync = PROVEEDORES.filter(p=>p._autoCreado).map(p=>p.nombre);
   if(!placasSync.size && !dnisSync.size && !provsSync.length) return;
   showToast(`⏳ Sincronizando ${placasSync.size} unidad(es), ${dnisSync.size} conductor(es) y ${provsSync.length} proveedor(es)...`,'ok');
@@ -4516,13 +4536,13 @@ async function sincronizarReporteADB(){
   for(const placa of placasSync){
     const idx = UNIDADES.findIndex(u=>u.placa===placa);
     if(idx<0) continue;
-    const ok = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
+    const ok = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, HEADERS_UNID);
     if(ok) okU++;
   }
   for(const dni of dnisSync){
     const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
     if(idx<0) continue;
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
+    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND);
     if(ok) okC++;
   }
   for(const nom of provsSync){
@@ -4728,8 +4748,8 @@ async function guardarEdit(){
   // Guardar y esperar confirmación real antes de avisar al usuario
   if(GS_URL){
     const ok = tipo==='conductor'
-      ? await guardarFilaOrdenada('CONDUCTORES', reg, COLORDER_COND, 0)
-      : await guardarFilaOrdenada('UNIDADES', reg, COLORDER_UNID, 0);
+      ? await guardarFilaOrdenada('CONDUCTORES', reg, COLORDER_COND, 0, HEADERS_COND)
+      : await guardarFilaOrdenada('UNIDADES', reg, COLORDER_UNID, 0, HEADERS_UNID);
     if(ok) showToast('✓ Fecha actualizada y guardada','ok');
     else showToast('⚠ No se pudo guardar en Sheets, reintenta','err');
   } else {
@@ -4779,7 +4799,7 @@ function actualizarCumplCond(){
   document.getElementById('c-cumpl').value=`${ok}/${chs.length} (${Math.round(ok/chs.length*100)}%)`;
 }
 // Mapeo checkbox del form → campo interno
-const UCH_MAP={'uch-tarj':'docTarjProp','uch-soat':'docSoat','uch-rtv':'docRtv','uch-tc':'docTc','uch-mnto':'docMnto','uch-boletin':'docBoletin','uch-poliza':'docPoliza','uch-seguro-rc':'docSeguroRc','uch-seguro-carga':'docSeguroCarga','uch-checklist':'docCheckList'};
+const UCH_MAP={'uch-tarj':'docTarjProp','uch-soat':'docSoat','uch-rtv':'docRtv','uch-tc':'docTc','uch-mnto':'docMnto','uch-boletin':'docBoletin','uch-poliza':'docPoliza','uch-seguro-rc':'docSeguroRc','uch-seguro-carga':'docSeguroCarga'};
 function actualizarCumplUnid(){
   const cat=document.getElementById('u-tiposervicio')?.value||'';
   const tipoV=document.getElementById('u-tipo')?.value||'';
@@ -4997,7 +5017,7 @@ async function guardarConductor(){
     });
   }
   renderConductores();
-  const ok=await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
+  const ok=await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, HEADERS_COND);
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
   const cm=document.getElementById('c-msg'); if(cm) cm.textContent=new Date().toLocaleTimeString('es-PE');
 }
@@ -5041,7 +5061,6 @@ async function guardarUnidad(){
     docPoliza:document.getElementById('uch-poliza').checked?'✓':'✗',
     docSeguroRc:document.getElementById('uch-seguro-rc')?.checked?'✓':'✗',
     docSeguroCarga:document.getElementById('uch-seguro-carga')?.checked?'✓':'✗',
-    docCheckList:document.getElementById('uch-checklist')?.checked?'✓':'✗',
     tipoServicio:document.getElementById('u-tiposervicio')?.value||'',
     cumpl:document.getElementById('u-cumpl')?.value||''};
   recalcular();
@@ -5060,7 +5079,7 @@ async function guardarUnidad(){
     });
   }
   renderUnidades();
-  const ok=await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
+  const ok=await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, HEADERS_UNID);
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
   const um=document.getElementById('u-msg'); if(um) um.textContent=new Date().toLocaleTimeString('es-PE');
 }
