@@ -3179,7 +3179,7 @@ function renderTarjetasAgrupadas(items, campoProveedor, etiquetaPlural, cardHtml
     const col = avg>=80?'#10b981':avg>=50?'#f59e0b':'#ef4444';
     const gid = 'grp-tj-'+gi+'-'+prov.replace(/[^a-zA-Z0-9]/g,'').slice(0,24);
     return `<div style="grid-column:1/-1">
-      <div onclick="toggleGrupoTarjetas('${gid}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f9fafb;border:1px solid #ebebeb;border-radius:10px;cursor:pointer;margin-bottom:8px">
+      <div onclick="toggleGrupoTarjetas('${gid}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f9fafb;border:1px solid #ebebeb;border-left:4px solid ${col};border-radius:10px;cursor:pointer;margin-bottom:8px">
         <div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;color:#111">
           <span id="${gid}-chev" style="font-size:11px;transition:transform .15s;display:inline-block">▶</span> 🏢 ${escapeHtml(prov)}
         </div>
@@ -3634,22 +3634,7 @@ function abrirDetalleProv(i){
       const hayRep = placasHoy.size>0;
       const listaPrincipal = hayRep ? uHoy : unids;       // si no hay reporte, muestra todas
       const ocultas = hayRep ? uBase : [];
-      // Estadística de documentación por unidad (cuántas están completas/en proceso/incompletas)
-      const unidsPct = unids.map(u=>{
-        const ap = docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u);
-        const ok = ap.filter(d=>u[d.campo]==='✓').length;
-        const tot = ap.length;
-        return tot ? Math.round(ok/tot*100) : 0;
-      });
-      const uComp = unidsPct.filter(p=>p>=80).length;
-      const uProc = unidsPct.filter(p=>p>=50&&p<80).length;
-      const uInc  = unidsPct.filter(p=>p<50).length;
-      let html = unids.length ? `<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <span style="font-size:11px;font-weight:700;background:#f0fdf4;color:#15803d;padding:4px 10px;border-radius:20px">✅ ${uComp} completa${uComp===1?'':'s'}</span>
-        <span style="font-size:11px;font-weight:700;background:#fffbeb;color:#b45309;padding:4px 10px;border-radius:20px">🟡 ${uProc} en proceso</span>
-        <span style="font-size:11px;font-weight:700;background:#fef2f2;color:#b91c1c;padding:4px 10px;border-radius:20px">🔴 ${uInc} falta documentación</span>
-      </div>` : '';
-      html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades ${hayRep?`activas hoy (${uHoy.length})`:`(${unids.length})`}</div><div style="margin-bottom:8px">`;
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades ${hayRep?`activas hoy (${uHoy.length})`:`(${unids.length})`}</div><div style="margin-bottom:8px">`;
       html += listaPrincipal.length ? listaPrincipal.map(u=>tarjetaUnidadHTML(u,i,placasHoy.has(normPlaca(u.placa)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin unidades activas hoy</div>';
       html += unidsNuevas.map(un=>{const e=(un.placa||'').replace(/"/g,'&quot;');const ce=(un.centro||'').replace(/'/g,"\\'"),mo=(un.modalidad||'').replace(/'/g,"\\'"),ca=(un.tipoServicio||'').replace(/'/g,"\\'"),pv=(nombre||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-family:var(--mono);font-weight:700;color:#92400e;font-size:12px">${un.placa} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVA</span></span>
