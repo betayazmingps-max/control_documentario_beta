@@ -2959,6 +2959,8 @@ function abrirDetalleProvPorNombre(nombre, tab){
   if(idx<0){ if(typeof showToast==='function') showToast('Proveedor no encontrado','err'); return; }
   PV_MAP = PROVEEDORES.map(p=>p.nombre); // asegura índice válido para el modal, sin importar el filtro actual
   PV_DETALLE_TAB = tab||'prov';
+  PV_SOLO_PLACA = null;
+  PV_SOLO_COND = null;
   abrirDetalleProv(idx);
 }
 // Botón "ojito" para ver la tarjeta de circulación (tarjetaLink) de una unidad, en cualquier tabla
@@ -3304,10 +3306,10 @@ function renderTarjetasConductores(f){
     const col=c._pct>=80?'#10b981':c._pct>=50?'#f59e0b':'#ef4444';
     const zonaP=zonaDeProveedor(c.proveedor);
     const respC=responsableDeProveedor(c.proveedor);
-    const provEsc=(c.proveedor||'').replace(/'/g,"\\'");
+    const nomJs=(c.conductor||'').replace(/'/g,"\\'");
     const pProv=_provPorNombreFlex(c.proveedor);
     const cat=pProv?clasifServicio(provTipoServicio(pProv)):'';
-    return `<div onclick="abrirDetalleProvPorNombre('${provEsc}','cond')" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
+    return `<div onclick="abrirDetalleConductorSolo('${nomJs}')" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
       onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.10)';this.style.transform='translateY(-2px)'"
       onmouseout="this.style.boxShadow='';this.style.transform=''">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px">
@@ -3512,12 +3514,14 @@ function renderProveedores(){
 let PV_DETALLE_I = null; // índice del proveedor abierto en el modal (para refrescar)
 let PV_DETALLE_TAB = 'prov'; // pestaña activa del modal: 'prov' | 'unid' | 'cond' | 'todo'
 let PV_SOLO_PLACA = null; // si está seteada, el modal muestra SOLO esa unidad (no la ficha completa del proveedor)
+let PV_SOLO_COND = null;  // si está seteada, el modal muestra SOLO ese conductor (no la ficha completa del proveedor)
 
 // Muestra solo los datos de UNA unidad (sin la ficha completa del proveedor)
 function abrirDetalleUnidadSola(placa){
   const u = UNIDADES.find(x=>normPlaca(x.placa)===normPlaca(placa));
   if(!u){ showToast('Unidad no encontrada','err'); return; }
   PV_SOLO_PLACA = u.placa;
+  PV_SOLO_COND = null;
   PV_DETALLE_I = null;
   const idxProv = PROVEEDORES.findIndex(p=>normProvName(p.nombre)===normProvName(u.proveedor));
   const box = document.getElementById('pv-detalle-box');
@@ -3532,9 +3536,36 @@ function abrirDetalleUnidadSola(placa){
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
       <div style="font-size:12px;color:#9ca3af">🏢 ${u.proveedor||'—'}</div>
-      ${idxProv>=0?`<button onclick="PV_SOLO_PLACA=null;PV_DETALLE_TAB='todo';abrirDetalleProv(${idxProv})" title="Ver ficha completa del proveedor" style="background:#f3f4f6;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👁️</button>`:''}
+      ${idxProv>=0?`<button onclick="abrirDetalleProvPorNombre('${provEsc}','todo')" title="Ver ficha completa del proveedor" style="background:#f3f4f6;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👁️</button>`:''}
     </div>
     ${tarjetaUnidadHTML(u, idxProv, false)}`;
+  document.getElementById('pv-detalle-modal').classList.add('open');
+}
+
+// Muestra solo los datos de UN conductor, buscado por NOMBRE (sin la ficha completa del proveedor)
+function abrirDetalleConductorSolo(nombre){
+  const idx = findCondPorNombre(nombre);
+  if(idx<0){ showToast('Conductor no encontrado','err'); return; }
+  const c = CONDUCTORES[idx];
+  PV_SOLO_COND = c.conductor;
+  PV_SOLO_PLACA = null;
+  PV_DETALLE_I = null;
+  const idxProv = PROVEEDORES.findIndex(p=>normProvName(p.nombre)===normProvName(c.proveedor));
+  const box = document.getElementById('pv-detalle-box');
+  const provEsc = (c.proveedor||'').replace(/'/g,"\\'");
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:6px">
+      <div style="font-size:18px;font-weight:800;color:#111">👤 ${c.conductor||'—'}</div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button onclick="editarConductor('${(c.dni||'').replace(/'/g,"\\'")}')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 14px;height:30px;cursor:pointer;font-size:12px;font-weight:700">✏️ Editar</button>
+        <button onclick="cerrarDetalleProv()" style="background:#f3f4f6;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#6b7280">✕</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <div style="font-size:12px;color:#9ca3af">🏢 ${c.proveedor||'—'}</div>
+      ${idxProv>=0?`<button onclick="abrirDetalleProvPorNombre('${provEsc}','todo')" title="Ver ficha completa del proveedor" style="background:#f3f4f6;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👁️</button>`:''}
+    </div>
+    ${tarjetaConductorHTML(c, idxProv, false)}`;
   document.getElementById('pv-detalle-modal').classList.add('open');
 }
 let PV_VER_BASE_UNID = false, PV_VER_BASE_COND = false; // mostrar también los de base (no solo activos hoy)
@@ -3743,7 +3774,7 @@ function cambiarTabDetalleProv(tab){
   PV_DETALLE_TAB = tab;
   if(PV_DETALLE_I!==null) abrirDetalleProv(PV_DETALLE_I);
 }
-function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); PV_DETALLE_I=null; PV_DETALLE_TAB='prov'; PV_SOLO_PLACA=null; }
+function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); PV_DETALLE_I=null; PV_DETALLE_TAB='prov'; PV_SOLO_PLACA=null; PV_SOLO_COND=null; }
 // Editar fecha de vencimiento de UNIDAD desde el modal del proveedor
 function abrirEditPlacaModal(placa, diasCampo, fechaCampo, i){
   PV_DETALLE_I = i;
@@ -3802,11 +3833,11 @@ async function toggleDocUnidModal(placa, campo, i){
   await toggleDocUnid(placa, campo);   // actualiza UNIDADES + REP_ROWS + guarda en Sheets
   if(PV_SOLO_PLACA) abrirDetalleUnidadSola(PV_SOLO_PLACA);
   else abrirDetalleProv(i);                 // refresca el modal
-}
-// Editar documento de CONDUCTOR desde el modal del proveedor
+}// Editar documento de CONDUCTOR desde el modal del proveedor
 async function toggleDocCondModal(dni, campo, i){
   await toggleDocCond(dni, campo);     // actualiza CONDUCTORES + REP_ROWS + guarda en Sheets
-  abrirDetalleProv(i);                 // refresca el modal
+  if(PV_SOLO_COND) abrirDetalleConductorSolo(PV_SOLO_COND);
+  else abrirDetalleProv(i);                 // refresca el modal
 }
 
 function expCSVProv(){
@@ -4777,9 +4808,11 @@ async function guardarEdit(){
   }
   cerrarEdit();
   render();
-  // Si el modal de detalle está abierto, refrescarlo con el nuevo valor (solo-placa o ficha de proveedor)
+  // Si el modal de detalle está abierto, refrescarlo con el nuevo valor (solo-placa, solo-conductor o ficha de proveedor)
   if(PV_SOLO_PLACA && document.getElementById('pv-detalle-modal')?.classList.contains('open')){
     abrirDetalleUnidadSola(PV_SOLO_PLACA);
+  } else if(PV_SOLO_COND && document.getElementById('pv-detalle-modal')?.classList.contains('open')){
+    abrirDetalleConductorSolo(PV_SOLO_COND);
   } else if(PV_DETALLE_I!==null && document.getElementById('pv-detalle-modal')?.classList.contains('open')){
     abrirDetalleProv(PV_DETALLE_I);
   }
