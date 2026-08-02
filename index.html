@@ -3234,9 +3234,9 @@ function renderTarjetasUnidades(f){
     const col=u._pct>=80?'#10b981':u._pct>=50?'#f59e0b':'#ef4444';
     const zonaP=zonaDeProveedor(u.proveedor);
     const respU=responsableDeUnidad(u);
-    const provEsc=(u.proveedor||'').replace(/'/g,"\\'");
+    const placaEsc=(u.placa||'').replace(/'/g,"\\'");
     const cat=clasifServicio(u.tipoServicio||provServicioDeUnidad(u));
-    return `<div onclick="abrirDetalleProvPorNombre('${provEsc}','unid')" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
+    return `<div onclick="abrirDetalleUnidadSola('${placaEsc}')" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
       onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.10)';this.style.transform='translateY(-2px)'"
       onmouseout="this.style.boxShadow='';this.style.transform=''">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px">
@@ -3258,11 +3258,11 @@ function renderTarjetasUnidades(f){
       <div style="font-size:9.5px;color:#9ca3af;margin-bottom:6px">📄 Docs. de la unidad</div>
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#9ca3af;gap:6px">
         <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">🏢 ${u.proveedor||'—'}</span>
-        <span style="color:var(--accent);font-weight:600;flex-shrink:0">Ver ficha →</span>
+        <span style="color:var(--accent);font-weight:600;flex-shrink:0">Ver placa →</span>
       </div>
     </div>`;
   };
-  cont.innerHTML = renderTarjetasAgrupadas(unids, 'proveedor', 'unidades', cardUnidHtml);
+  cont.innerHTML = unids.map(cardUnidHtml).join('');
 }
 function renderTarjetasConductores(f){
   const cont = document.getElementById('prov-cards');
@@ -3740,7 +3740,7 @@ function cambiarTabDetalleProv(tab){
   PV_DETALLE_TAB = tab;
   if(PV_DETALLE_I!==null) abrirDetalleProv(PV_DETALLE_I);
 }
-function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); PV_DETALLE_I=null; PV_DETALLE_TAB='prov'; }
+function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); PV_DETALLE_I=null; PV_DETALLE_TAB='prov'; PV_SOLO_PLACA=null; }
 // Editar fecha de vencimiento de UNIDAD desde el modal del proveedor
 function abrirEditPlacaModal(placa, diasCampo, fechaCampo, i){
   PV_DETALLE_I = i;
@@ -4774,8 +4774,10 @@ async function guardarEdit(){
   }
   cerrarEdit();
   render();
-  // Si el modal de detalle del proveedor está abierto, refrescarlo con el nuevo valor
-  if(PV_DETALLE_I!==null && document.getElementById('pv-detalle-modal')?.classList.contains('open')){
+  // Si el modal de detalle está abierto, refrescarlo con el nuevo valor (solo-placa o ficha de proveedor)
+  if(PV_SOLO_PLACA && document.getElementById('pv-detalle-modal')?.classList.contains('open')){
+    abrirDetalleUnidadSola(PV_SOLO_PLACA);
+  } else if(PV_DETALLE_I!==null && document.getElementById('pv-detalle-modal')?.classList.contains('open')){
     abrirDetalleProv(PV_DETALLE_I);
   }
   // Guardar y esperar confirmación real antes de avisar al usuario
