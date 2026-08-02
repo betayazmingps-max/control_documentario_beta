@@ -3530,7 +3530,10 @@ function abrirDetalleUnidadSola(placa){
         <button onclick="cerrarDetalleProv()" style="background:#f3f4f6;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#6b7280">✕</button>
       </div>
     </div>
-    <div style="font-size:12px;color:#9ca3af;margin-bottom:16px">🏢 ${u.proveedor||'—'}${idxProv>=0?` · <a href="#" onclick="event.preventDefault();PV_SOLO_PLACA=null;abrirDetalleProv(${idxProv})" style="color:var(--accent)">Ver ficha del proveedor →</a>`:''}</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <div style="font-size:12px;color:#9ca3af">🏢 ${u.proveedor||'—'}</div>
+      ${idxProv>=0?`<button onclick="PV_SOLO_PLACA=null;PV_DETALLE_TAB='todo';abrirDetalleProv(${idxProv})" title="Ver ficha completa del proveedor" style="background:#f3f4f6;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👁️</button>`:''}
+    </div>
     ${tarjetaUnidadHTML(u, idxProv, false)}`;
   document.getElementById('pv-detalle-modal').classList.add('open');
 }
