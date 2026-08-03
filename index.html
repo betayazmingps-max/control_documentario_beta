@@ -3175,7 +3175,7 @@ function renderTarjetasAgrupadas(items, campoProveedor, etiquetaPlural, cardHtml
   });
   const nombres = Object.keys(grupos).sort((a,b)=>a.localeCompare(b));
   return nombres.map((prov,gi)=>{
-    const its = grupos[prov];
+    const its = [...grupos[prov]].sort((a,b)=>(a.conductor||'').toString().trim().localeCompare((b.conductor||'').toString().trim(),'es',{sensitivity:'base'}));
     const pcts = its.map(it=>it._pct||0);
     const avg = pcts.length ? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length) : 0;
     const col = avg>=80?'#10b981':avg>=50?'#f59e0b':'#ef4444';
@@ -3338,15 +3338,18 @@ function renderTarjetasConductores(f){
       </div>
       <div style="font-size:9.5px;color:#9ca3af;margin-bottom:6px">📄 Docs. del conductor</div>
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#9ca3af;gap:6px">
-        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">🏢 ${c.proveedor||'—'}</span>
-        <span style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-          ${pProv?`<button onclick="event.stopPropagation();abrirDetalleProvPorNombre('${provEsc}','todo')" title="Ver ficha completa del proveedor" style="background:#f3f4f6;border:none;border-radius:6px;width:22px;height:22px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center">👁️</button>`:''}
-          <span style="color:var(--accent);font-weight:600">Ver ficha →</span>
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;display:flex;align-items:center;gap:6px">
+          🏢 ${c.proveedor||'—'}
+          ${pProv?`<button onclick="event.stopPropagation();abrirDetalleProvPorNombre('${provEsc}','todo')" title="Ver ficha completa del proveedor" style="background:#f3f4f6;border:none;border-radius:6px;width:20px;height:20px;flex-shrink:0;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center">👁️</button>`:''}
+        </span>
+        <span style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:11px">🚛 ${placaHoy||c.placa||'—'}</span>
         </span>
       </div>
     </div>`;
   };
-  cont.innerHTML = renderTarjetasAgrupadas(conds, 'proveedor', 'conductores', cardCondHtml);
+  const condsOrdenados = [...conds].sort((a,b)=>(a.conductor||'').toString().trim().localeCompare((b.conductor||'').toString().trim(),'es',{sensitivity:'base'}));
+  cont.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">${condsOrdenados.map(cardCondHtml).join('')}</div>`;
 }
 function renderProveedores(){
   const cont = document.getElementById('prov-cards');
