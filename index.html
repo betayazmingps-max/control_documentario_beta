@@ -1808,9 +1808,11 @@ async function syncFromSheets(){
   showToast('Sincronizando desde Google Sheets...','');
   updateGSStatus('syncing');
   try {
-    const condRaw  = await leerHoja('CONDUCTORES');
-    const unidRaw  = await leerHoja('UNIDADES');
-    const provRaw  = await leerHoja('PROVEEDORES');
+    const [condRaw, unidRaw, provRaw] = await Promise.all([
+      leerHoja('CONDUCTORES'),
+      leerHoja('UNIDADES'),
+      leerHoja('PROVEEDORES')
+    ]);
 
     // ── Helper global boolDoc ──────────────────────────────────────────────────
     const boolDoc = v => {
@@ -2030,6 +2032,11 @@ async function syncFromSheets(){
       if(el){el.textContent='Sync: '+now;el.style.display='';}
       const el2=document.getElementById('gs-sync-time');
       if(el2) el2.textContent='· actualizado '+now;
+      // Guardar copia local (caché) para que el próximo ingreso cargue instantáneo
+      // mientras se sincroniza en segundo plano con Sheets.
+      try{
+        localStorage.setItem('bd_cache_v1', JSON.stringify({t:Date.now(), CONDUCTORES, UNIDADES, PROVEEDORES}));
+      }catch(e){ console.warn('No se pudo guardar caché BD:', e); }
     } else {
       showToast('Conectado pero hojas vacías — verifica nombres de hojas','warn');
       updateGSStatus('empty');
@@ -3349,7 +3356,7 @@ function renderTarjetasConductores(f){
     </div>`;
   };
   const condsOrdenados = [...conds].sort((a,b)=>(a.conductor||'').toString().trim().localeCompare((b.conductor||'').toString().trim(),'es',{sensitivity:'base'}));
-  cont.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">${condsOrdenados.map(cardCondHtml).join('')}</div>`;
+  cont.innerHTML = condsOrdenados.map(cardCondHtml).join('');
 }
 function renderProveedores(){
   const cont = document.getElementById('prov-cards');
@@ -6504,15 +6511,37 @@ if(!localStorage.getItem('gs_url') && GS_URL){
 // Set today's date on report
 document.getElementById('rep-fecha').value = new Date().toISOString().slice(0,10);
 
+// ── Carga instantánea desde caché local (si existe) mientras se sincroniza de fondo ──
+let _bdCacheUsada = false;
+try{
+  const raw = localStorage.getItem('bd_cache_v1');
+  if(raw){
+    const c = JSON.parse(raw);
+    if(c && Array.isArray(c.CONDUCTORES) && c.CONDUCTORES.length){
+      CONDUCTORES = c.CONDUCTORES; UNIDADES = c.UNIDADES||[]; PROVEEDORES = c.PROVEEDORES||[];
+      _bdCacheUsada = true;
+    }
+  }
+}catch(e){ console.warn('No se pudo leer caché BD:', e); }
+
 if(GS_URL){
   updateGSStatus('syncing');
   const lsEl=document.getElementById('gs-last-sync');
   if(lsEl) lsEl.style.display='';
-  mostrarCargando(true);
-  syncFromSheets()
-    .then(()=>{ sincPDdesdeSheet(); recalcular(); render(); restaurarRepActivo(); })
-    .catch(e=>{ console.error(e); renderDashboard(); })
-    .finally(()=>mostrarCargando(false));
+  if(_bdCacheUsada){
+    // Ya tenemos datos (de la última vez) → mostrar la app YA, sin spinner bloqueante,
+    // y sincronizar con Sheets en segundo plano para traer lo más reciente.
+    sincPDdesdeSheet(); recalcular(); render(); restaurarRepActivo();
+    mostrarCargando(false);
+    syncFromSheets().catch(e=>console.error(e));
+  } else {
+    // Primera vez (no hay caché aún) → sí toca esperar el sync inicial.
+    mostrarCargando(true);
+    syncFromSheets()
+      .then(()=>{ sincPDdesdeSheet(); recalcular(); render(); restaurarRepActivo(); })
+      .catch(e=>{ console.error(e); renderDashboard(); })
+      .finally(()=>mostrarCargando(false));
+  }
 } else {
   renderDashboard();
   renderConductores();
