@@ -3288,7 +3288,18 @@ function renderTarjetasConductores(f){
     if(dn){ if(!dniGrupos[dn]) dniGrupos[dn]=new Set(); dniGrupos[dn].add(String(r.grupo).trim()); }
     if(nm){ if(!nomGrupos[nm]) nomGrupos[nm]=new Set(); nomGrupos[nm].add(String(r.grupo).trim()); }
   });
+  const enRepDni={}, enRepNombre={};
+  (typeof REP_ROWS!=='undefined'?REP_ROWS:[]).forEach(r=>{
+    const dn=String(r.dni||'').trim(); const nm=_normNomG(r.conductor);
+    if(dn) enRepDni[dn]=true;
+    if(nm) enRepNombre[nm]=true;
+  });
   let conds = CONDUCTORES.filter(c=>!esConductorBeta(c) && (c.estado||'ACTIVO').toUpperCase()==='ACTIVO');
+  conds = conds.filter(c=>{
+    const dn=String(c.dni||'').trim();
+    const nm=_normNomG(c.conductor);
+    return (dn && enRepDni[dn]) || (nm && enRepNombre[nm]);
+  });
   conds = conds.map(c=>{
     const ok=DOCS_C_PROV.filter(d=>c[d.c]==='✓').length;
     const tot=DOCS_C_PROV.length;
@@ -3313,7 +3324,10 @@ function renderTarjetasConductores(f){
   const sk=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   sk('pvk-total',conds.length); sk('pvk-completos',kc); sk('pvk-incompletos',ki); sk('pvk-criticos',kx);
   document.getElementById('prov-count').textContent=conds.length+' conductores';
-  if(!conds.length){ cont.innerHTML='<div class="empty-state" style="grid-column:1/-1">Sin conductores para los filtros aplicados</div>'; return; }
+  if(!conds.length){
+    const msg=(typeof REP_ROWS!=='undefined'&&REP_ROWS.length) ? 'Sin conductores para los filtros aplicados (dentro del reporte de hoy)' : 'No hay reporte del día cargado — sube el reporte para ver los conductores de hoy';
+    cont.innerHTML=`<div class="empty-state" style="grid-column:1/-1">${msg}</div>`; return;
+  }
   const cardCondHtml = c=>{
     const col=c._pct>=80?'#10b981':c._pct>=50?'#f59e0b':'#ef4444';
     const zonaP=zonaDeProveedor(c.proveedor);
