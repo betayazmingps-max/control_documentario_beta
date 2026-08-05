@@ -3279,7 +3279,8 @@ function renderTarjetasConductores(f){
   const dniGrupos={}, nomGrupos={};
   const placaHoyPorNombre={}, placaHoyPorDni={};
   (typeof REP_ROWS!=='undefined'?REP_ROWS:[]).forEach(r=>{
-    const dn=String(r.dni||'').trim(); const nm=_normNomG(r.conductor);
+    const dn=String((r.condBD&&r.condBD.dni)||r.dni||'').trim();
+    const nm=_normNomG((r.condBD&&r.condBD.conductor)||r.conductor);
     if(r.placa){
       if(dn && !placaHoyPorDni[dn]) placaHoyPorDni[dn]=r.placa;
       if(nm && !placaHoyPorNombre[nm]) placaHoyPorNombre[nm]=r.placa;
@@ -3290,7 +3291,10 @@ function renderTarjetasConductores(f){
   });
   const enRepDni={}, enRepNombre={};
   (typeof REP_ROWS!=='undefined'?REP_ROWS:[]).forEach(r=>{
-    const dn=String(r.dni||'').trim(); const nm=_normNomG(r.conductor);
+    // Usar el conductor YA cruzado con la base (r.condBD) si existe — es más confiable
+    // que el dni/nombre crudo del Excel, que puede venir con distinto formato.
+    const dn=String((r.condBD&&r.condBD.dni)||r.dni||'').trim();
+    const nm=_normNomG((r.condBD&&r.condBD.conductor)||r.conductor);
     if(dn) enRepDni[dn]=true;
     if(nm) enRepNombre[nm]=true;
   });
