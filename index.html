@@ -992,6 +992,9 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <span class="count-tag" id="rep-prov-count">0</span>
         <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
           <input class="search-box" id="rep-prov-srch" placeholder="🔍 Buscar..." oninput="renderReporteProveedores()" style="width:150px">
+          <select class="filter-sel" id="rep-prov-provsel" onchange="filtrarProveedorCl('rep-prov-provsel',this.value)" style="min-width:170px">
+            <option value="">🏢 Todos los proveedores</option>
+          </select>
           <select class="filter-sel" id="rep-prov-sede" onchange="renderReporteProveedores()"><option value="">Todas las sedes</option></select>
           <select class="filter-sel" id="rep-prov-cat" onchange="renderReporteProveedores()">
             <option value="">Todas las categorías</option>
@@ -1027,6 +1030,9 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <span class="count-tag" id="cl-unid-count">0</span>
         <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
           <input class="search-box" id="cl-unid-srch" placeholder="🔍 Placa o proveedor..." oninput="renderChecklistUnid()" style="width:170px">
+          <select class="filter-sel" id="cl-unid-provsel" onchange="filtrarProveedorCl('cl-unid-provsel',this.value)" style="min-width:170px">
+            <option value="">🏢 Todos los proveedores</option>
+          </select>
           <select class="filter-sel" id="cl-unid-cat" onchange="renderChecklistUnid()">
             <option value="">Todas las categorías</option>
             <option value="MATERIA PRIMA">Materia Prima</option>
@@ -1060,6 +1066,9 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <span class="count-tag" id="cl-cond-count">0</span>
         <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
           <input class="search-box" id="cl-cond-srch" placeholder="🔍 Nombre, DNI o proveedor..." oninput="renderChecklistCond()" style="width:200px">
+          <select class="filter-sel" id="cl-cond-provsel" onchange="filtrarProveedorCl('cl-cond-provsel',this.value)" style="min-width:170px">
+            <option value="">🏢 Todos los proveedores</option>
+          </select>
           <select class="filter-sel" id="cl-cond-doc" onchange="renderChecklistCond()">
             <option value="">Todos</option>
             <option value="completo">✅ Completos</option>
@@ -2032,11 +2041,6 @@ async function syncFromSheets(){
       if(el){el.textContent='Sync: '+now;el.style.display='';}
       const el2=document.getElementById('gs-sync-time');
       if(el2) el2.textContent='· actualizado '+now;
-      // Guardar copia local (caché) para que el próximo ingreso cargue instantáneo
-      // mientras se sincroniza en segundo plano con Sheets.
-      try{
-        localStorage.setItem('bd_cache_v1', JSON.stringify({t:Date.now(), CONDUCTORES, UNIDADES, PROVEEDORES}));
-      }catch(e){ console.warn('No se pudo guardar caché BD:', e); }
     } else {
       showToast('Conectado pero hojas vacías — verifica nombres de hojas','warn');
       updateGSStatus('empty');
@@ -3289,21 +3293,18 @@ function renderTarjetasConductores(f){
     if(dn){ if(!dniGrupos[dn]) dniGrupos[dn]=new Set(); dniGrupos[dn].add(String(r.grupo).trim()); }
     if(nm){ if(!nomGrupos[nm]) nomGrupos[nm]=new Set(); nomGrupos[nm].add(String(r.grupo).trim()); }
   });
-  const enRepDni={}, enRepNombre={};
+  // Set de referencias EXACTAS a los conductores de la base que corresponden al reporte
+  // de hoy (usando la misma función de cruce ya probada), para no confundir conductores
+  // distintos que compartan el mismo nombre (evita mostrar duplicados/homónimos).
+  const repSet = new Set();
   (typeof REP_ROWS!=='undefined'?REP_ROWS:[]).forEach(r=>{
-    // Usar el conductor YA cruzado con la base (r.condBD) si existe — es más confiable
-    // que el dni/nombre crudo del Excel, que puede venir con distinto formato.
-    const dn=String((r.condBD&&r.condBD.dni)||r.dni||'').trim();
-    const nm=_normNomG((r.condBD&&r.condBD.conductor)||r.conductor);
-    if(dn) enRepDni[dn]=true;
-    if(nm) enRepNombre[nm]=true;
+    const dni = (r.condBD&&r.condBD.dni) || r.dni || '';
+    const nombre = (r.condBD&&r.condBD.conductor) || r.conductor || '';
+    const match = (typeof buscarConductorBD==='function') ? buscarConductorBD(nombre, dni) : null;
+    if(match) repSet.add(match);
   });
   let conds = CONDUCTORES.filter(c=>!esConductorBeta(c) && (c.estado||'ACTIVO').toUpperCase()==='ACTIVO');
-  conds = conds.filter(c=>{
-    const dn=String(c.dni||'').trim();
-    const nm=_normNomG(c.conductor);
-    return (dn && enRepDni[dn]) || (nm && enRepNombre[nm]);
-  });
+  conds = conds.filter(c=>repSet.has(c));
   conds = conds.map(c=>{
     const ok=DOCS_C_PROV.filter(d=>c[d.c]==='✓').length;
     const tot=DOCS_C_PROV.length;
@@ -4213,6 +4214,7 @@ function renderAlertas(){
 // REPORTE DIARIO
 // ═══════════════════════════════════════════════
 let REP_ROWS=[], REP_FILTRO='todos';
+let REP_NOMBRES_INVALIDOS=[];
 function previewRepNombre(i){document.getElementById('rep-nombre').textContent=i.files[0]?.name||'Ningún archivo';}
 function normPlaca(p){
   return (p||'').toString().toUpperCase().trim().replace(/[\s\-\.]/g,'');
@@ -4386,17 +4388,29 @@ function resolverUnidCond({placa, conductor, dni, provExcel, centro, modalidad, 
     };
     UNIDADES.push(unidBD);
   }
+  const _nombreValido = s => {
+    const t=(s||'').toString().trim();
+    // Debe tener al menos 2 letras reales (evita crear conductores con "*", ".", "-", espacios, etc.)
+    const letras=(t.match(/[A-Za-zÀ-ÿ]/g)||[]).length;
+    return letras>=2;
+  };
   if(!condBD && (conductor||dni) && !(conductor||'').toUpperCase().includes('BETA')){
-    condBD = {
-      dni: normDni(dni), conductor:(conductor||'').toUpperCase(), estado:'ACTIVO', proveedor:provCanon, placa,
-      tipoUnidad:tipoUnidExc||'', centro:centro||'', ruta:ruta||'', turno:turno||'',
-      numLic:'',catLic:'',fechaLic:'',diasLic:'',estadoLic:'',restriccion:'',celular:'',
-      record:'',cantPapeletas:'0',puntosFirmes:'0',puntosProceso:'0',puntosTotal:'0',alertaPuntos:'',
-      asegSctr:'',tipoSctr:'',fechaSctr:'',diasSctr:'',estadoSctr:'',
-      docDni:'✗',docLic:'✗',docRecord:'✗',docSctr:'✗',docEmo:'✗',docCul:'✗',
-      cumpl:'0/6 (0%)', carpeta:'', _autoCreado:true
-    };
-    CONDUCTORES.push(condBD);
+    if(_nombreValido(conductor) || normDni(dni)){
+      condBD = {
+        dni: normDni(dni), conductor:(conductor||'').toUpperCase(), estado:'ACTIVO', proveedor:provCanon, placa,
+        tipoUnidad:tipoUnidExc||'', centro:centro||'', ruta:ruta||'', turno:turno||'',
+        numLic:'',catLic:'',fechaLic:'',diasLic:'',estadoLic:'',restriccion:'',celular:'',
+        record:'',cantPapeletas:'0',puntosFirmes:'0',puntosProceso:'0',puntosTotal:'0',alertaPuntos:'',
+        asegSctr:'',tipoSctr:'',fechaSctr:'',diasSctr:'',estadoSctr:'',
+        docDni:'✗',docLic:'✗',docRecord:'✗',docSctr:'✗',docEmo:'✗',docCul:'✗',
+        cumpl:'0/6 (0%)', carpeta:'', _autoCreado:true
+      };
+      CONDUCTORES.push(condBD);
+    } else {
+      // Nombre inválido (vacío, "*", solo símbolos, etc.) y sin DNI → no se crea nada.
+      // Se registra para avisar al usuario en el resumen del reporte.
+      if(typeof REP_NOMBRES_INVALIDOS!=='undefined') REP_NOMBRES_INVALIDOS.push({placa, conductor, provExcel});
+    }
   }
 
   if(unidBD){
@@ -4506,10 +4520,30 @@ async function leerReporte(){
       return;
     }
 
+    // ── Separar filas con varios conductores en un mismo campo ──────────────
+    // Ej: "JOSE NICANOR SANCHEZ / JUAN HENRY SANCHEZ" (turnos día/tarde/noche que
+    // comparten la misma placa) → se separan en 2 filas independientes, cada una
+    // con su propio nombre pero la MISMA placa, para que cada conductor se
+    // reconozca y actualice por separado en la base.
+    if(COL.conductor){
+      const expanded=[];
+      rows.forEach(row=>{
+        const raw=(row[COL.conductor]||'').toString();
+        const partes=raw.split('/').map(s=>s.trim()).filter(Boolean);
+        if(partes.length>1){
+          partes.forEach(nombreParte=>{ expanded.push({...row,[COL.conductor]:nombreParte}); });
+        } else {
+          expanded.push(row);
+        }
+      });
+      rows=expanded;
+    }
+
     // ── Parsear filas ────────────────────────────────────────────────────────
     const seenPlacas=new Set();
     const seenConds=new Set();
     const seenProvs=new Set();
+    REP_NOMBRES_INVALIDOS=[];
 
     REP_ROWS=rows.map(row=>{
       const placa     = COL.placa     ? (row[COL.placa]    ||'').toString().toUpperCase().trim().replace(/[\s\-]/g,'') : '';
@@ -4615,6 +4649,10 @@ async function leerReporte(){
     if(autoUnid>0) msg+=` · ${autoUnid} unidad(es) creadas automático`;
     if(autoProv>0) msg+=` · ${autoProv} proveedor(es) creados automático`;
     showToast(msg,'ok');
+    if(REP_NOMBRES_INVALIDOS.length>0){
+      const ejemplos = REP_NOMBRES_INVALIDOS.slice(0,3).map(x=>x.placa||'(sin placa)').join(', ');
+      showToast(`⚠ ${REP_NOMBRES_INVALIDOS.length} fila(s) con nombre de conductor vacío/inválido no se crearon (ej: ${ejemplos}) — revísalas en el Excel`,'err');
+    }
     if(faltanUnid>0 || faltanCond>0){
       let msg2='⚠ Falta completar información: ';
       const partes=[];
@@ -5379,6 +5417,7 @@ function postCargarReporte(){
 // ── Cuadro de Proveedores del día con checklist documentario (en Reporte) ──
 function renderReporteProveedores(){
   const thead=document.getElementById('rep-prov-thead'); if(!thead) return;
+  poblarSelectsProveedorCl();
 
   // Sedes, Grupos y Tipo de Servicio donde opera cada proveedor (según el reporte, si hay)
   const provSedes={}, provGrupos={}, provTiposServ={};
@@ -5403,6 +5442,7 @@ function renderReporteProveedores(){
 
   poblarSelectResponsable('rep-prov-resp');
   const fSearch=(document.getElementById('rep-prov-srch')||{value:''}).value.toLowerCase();
+  const fProv=(document.getElementById('rep-prov-provsel')||{value:''}).value;
   const fSede=(document.getElementById('rep-prov-sede')||{value:''}).value;
   const fCat =(document.getElementById('rep-prov-cat')||{value:''}).value;
   const fDoc =(document.getElementById('rep-prov-doc')||{value:''}).value;
@@ -5423,6 +5463,7 @@ function renderReporteProveedores(){
   provValidos().forEach(p=>{
     const nUp=(p.nombre||'').trim().toUpperCase();
     if(provsRep && !provsRep.has(nUp)) return;
+    if(fProv && (p.nombre||'').trim()!==fProv) return;
     if(fSearch && !JSON.stringify(p).toLowerCase().includes(fSearch)) return;
     const cat=clasifServicio(provTipoServicio(p));
     if(fCat && cat!==fCat) return;
@@ -5537,13 +5578,42 @@ function poblarFiltroTipoServCl(){
   sel.innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option value="${t}">${t}</option>`).join('');
   if(tipos.includes(actual)) sel.value=actual;
 }
-function renderChecklist(){ poblarFiltroGrupoCl(); poblarFiltroTipoServCl(); renderReporteProveedores(); renderChecklistUnid(); renderChecklistCond(); }
+function renderChecklist(){ poblarFiltroGrupoCl(); poblarFiltroTipoServCl(); poblarSelectsProveedorCl(); renderReporteProveedores(); renderChecklistUnid(); renderChecklistCond(); }
+// Llena los 3 selects de "Proveedor" (uno por pestaña) con los proveedores que
+// tienen datos en el reporte del día (o toda la base activa si no hay reporte cargado).
+function poblarSelectsProveedorCl(){
+  const hayRep=(typeof REP_ROWS!=='undefined' && REP_ROWS.length>0);
+  let nombres;
+  if(hayRep){
+    nombres=[...new Set(REP_ROWS.map(r=>(r.proveedor||'').trim()).filter(Boolean))];
+  } else {
+    nombres=[...new Set(provValidos().map(p=>(p.nombre||'').trim()).filter(Boolean))];
+  }
+  nombres.sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  ['rep-prov-provsel','cl-unid-provsel','cl-cond-provsel'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel) return;
+    const actual=sel.value;
+    sel.innerHTML='<option value="">🏢 Todos los proveedores</option>'+nombres.map(n=>`<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
+    if(nombres.includes(actual)) sel.value=actual;
+  });
+}
+// Cuando se elige un proveedor en cualquiera de las 3 pestañas, se sincroniza en las otras
+// para armar el informe completo de ese proveedor sin tener que re-seleccionarlo 3 veces.
+function filtrarProveedorCl(idOrigen, valor){
+  ['rep-prov-provsel','cl-unid-provsel','cl-cond-provsel'].forEach(id=>{
+    if(id===idOrigen) return;
+    const sel=document.getElementById(id); if(sel) sel.value=valor;
+  });
+  renderReporteProveedores(); renderChecklistUnid(); renderChecklistCond();
+}
 
 // ── CHECKLIST UNIDADES ──
 function renderChecklistUnid(){
   const thead=document.getElementById('cl-unid-thead'); if(!thead) return;
+  poblarSelectsProveedorCl();
   poblarSelectResponsable('cl-unid-resp');
   const fSearch=(document.getElementById('cl-unid-srch')||{value:''}).value.toLowerCase();
+  const fProv=(document.getElementById('cl-unid-provsel')||{value:''}).value;
   const fCat=(document.getElementById('cl-unid-cat')||{value:''}).value;
   const fDoc=(document.getElementById('cl-unid-doc')||{value:''}).value;
   const fGrupo=(document.getElementById('cl-grupo-filtro')||{value:''}).value;
@@ -5573,6 +5643,7 @@ function renderChecklistUnid(){
   [..._m.values()].forEach(u=>{
     const pn=normPlaca(u.placa);
     if(placasRep && !placasRep.has(pn)) return;
+    if(fProv && (u.proveedor||'').trim()!==fProv) return;
     if(fGrupo && !(placaGrupos[pn]&&placaGrupos[pn].has(fGrupo))) return;
     if(fTipoServ && !(placaTiposServ[pn]&&placaTiposServ[pn].has(fTipoServ))) return;
     if(fSearch && !((u.placa||'')+' '+(u.proveedor||'')).toLowerCase().includes(fSearch)) return;
@@ -5634,8 +5705,10 @@ function toggleClUnidDoc(placa,campo){ toggleDocUnid(placa,campo).then(()=>{ if(
 // ── CHECKLIST CONDUCTORES ──
 function renderChecklistCond(){
   const thead=document.getElementById('cl-cond-thead'); if(!thead) return;
+  poblarSelectsProveedorCl();
   poblarSelectResponsable('cl-cond-resp');
   const fSearch=(document.getElementById('cl-cond-srch')||{value:''}).value.toLowerCase();
+  const fProv=(document.getElementById('cl-cond-provsel')||{value:''}).value;
   const fDoc=(document.getElementById('cl-cond-doc')||{value:''}).value;
   const fGrupo=(document.getElementById('cl-grupo-filtro')||{value:''}).value;
   const fTipoServ=(document.getElementById('cl-tiposerv-filtro')||{value:''}).value;
@@ -5669,6 +5742,7 @@ function renderChecklistCond(){
       const enRep=(dn&&dnisRep.has(dn))||nomsRep.has(normNom(c.conductor));
       if(!enRep) return;
     }
+    if(fProv && (c.proveedor||'').trim()!==fProv) return;
     if(fGrupo){
       const dn=String(c.dni||'').trim(); const nm=normNom(c.conductor);
       const grpsC = (dn&&dniGrupos[dn]) || nomGrupos[nm];
@@ -6526,40 +6600,21 @@ function _reconstruirRepRows(minimal, fecha){
 if(!localStorage.getItem('gs_url') && GS_URL){
   localStorage.setItem('gs_url', GS_URL);
 }
+// Limpieza: ya no se usa la caché local de la base (causaba que se sobreescribiera
+// el Sheet real con datos viejos). Se borra cualquier copia vieja guardada.
+try{ localStorage.removeItem('bd_cache_v1'); }catch(e){}
 // Set today's date on report
 document.getElementById('rep-fecha').value = new Date().toISOString().slice(0,10);
-
-// ── Carga instantánea desde caché local (si existe) mientras se sincroniza de fondo ──
-let _bdCacheUsada = false;
-try{
-  const raw = localStorage.getItem('bd_cache_v1');
-  if(raw){
-    const c = JSON.parse(raw);
-    if(c && Array.isArray(c.CONDUCTORES) && c.CONDUCTORES.length){
-      CONDUCTORES = c.CONDUCTORES; UNIDADES = c.UNIDADES||[]; PROVEEDORES = c.PROVEEDORES||[];
-      _bdCacheUsada = true;
-    }
-  }
-}catch(e){ console.warn('No se pudo leer caché BD:', e); }
 
 if(GS_URL){
   updateGSStatus('syncing');
   const lsEl=document.getElementById('gs-last-sync');
   if(lsEl) lsEl.style.display='';
-  if(_bdCacheUsada){
-    // Ya tenemos datos (de la última vez) → mostrar la app YA, sin spinner bloqueante,
-    // y sincronizar con Sheets en segundo plano para traer lo más reciente.
-    sincPDdesdeSheet(); recalcular(); render(); restaurarRepActivo();
-    mostrarCargando(false);
-    syncFromSheets().catch(e=>console.error(e));
-  } else {
-    // Primera vez (no hay caché aún) → sí toca esperar el sync inicial.
-    mostrarCargando(true);
-    syncFromSheets()
-      .then(()=>{ sincPDdesdeSheet(); recalcular(); render(); restaurarRepActivo(); })
-      .catch(e=>{ console.error(e); renderDashboard(); })
-      .finally(()=>mostrarCargando(false));
-  }
+  mostrarCargando(true);
+  syncFromSheets()
+    .then(()=>{ sincPDdesdeSheet(); recalcular(); render(); restaurarRepActivo(); })
+    .catch(e=>{ console.error(e); renderDashboard(); })
+    .finally(()=>mostrarCargando(false));
 } else {
   renderDashboard();
   renderConductores();
