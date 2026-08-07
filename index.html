@@ -146,6 +146,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 /* ── TABLES ── */
 .tbl-wrap{background:#fff;border:1px solid #ebebeb;border-radius:14px;overflow:hidden;margin-bottom:20px;}
 .tbl-scroll{overflow-x:auto;overflow-y:auto;max-height:65vh;}
+/* En Checklist se quiere ver la tabla completa (sin scroll interno) para poder
+   capturar pantalla de todo de una vez — que sea la página la que se desplace. */
+#page-checklist .tbl-scroll{max-height:none;overflow-y:visible;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead th{
   text-align:left;padding:12px 14px;
