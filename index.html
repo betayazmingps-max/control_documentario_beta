@@ -3107,7 +3107,7 @@ async function sincronizarEstadoProveedores(){
       cambios.push(p.nombre);
     }
   });
-  if(!cambios.length) return;
+  if(!cambios.length){ showToast(`🔄 Proveedores: revisados ${PROVEEDORES.length}, sin cambios de estado`,'ok'); return; }
   for(const nombre of cambios){
     try{ await guardarProvEnSheets(nombre); }
     catch(e){ console.error('Error actualizando estado de', nombre, e); }
@@ -3146,7 +3146,7 @@ async function sincronizarEstadoUnidades(){
       cambios.push(u);
     }
   }
-  if(!cambios.length) return;
+  if(!cambios.length){ showToast(`🔄 Unidades: revisadas ${UNIDADES.length}, en reporte ${enReporte.size}, sin cambios de estado`,'ok'); return; }
   for(const u of cambios){
     try{ await guardarFilaOrdenada('UNIDADES', u, COLORDER_UNID, 0); }
     catch(e){ console.error('Error actualizando estado de unidad', u.placa, e); }
@@ -3188,7 +3188,7 @@ async function sincronizarEstadoConductores(){
       cambios.push(c);
     }
   }
-  if(!cambios.length) return;
+  if(!cambios.length){ showToast(`🔄 Conductores: revisados ${CONDUCTORES.length}, en reporte ${enReporte.size}, sin cambios de estado`,'ok'); return; }
   for(const c of cambios){
     try{ await guardarFilaOrdenada('CONDUCTORES', c, COLORDER_COND, 0); }
     catch(e){ console.error('Error actualizando estado de conductor', c.conductor, e); }
@@ -4786,9 +4786,9 @@ async function leerReporte(){
     postCargarReporte();
     guardarRepActivo(); // persistir en localStorage + Sheets
     sincronizarReporteADB(); // guardar Centro/Proveedor/Categoría/Modalidad/Conductor en Sheets automáticamente
-    sincronizarEstadoProveedores(); // activar/desactivar proveedores según si están o no en el reporte de hoy
-    sincronizarEstadoUnidades();    // ídem para unidades
-    sincronizarEstadoConductores(); // ídem para conductores
+    sincronizarEstadoProveedores().catch(e=>console.error('sincronizarEstadoProveedores falló:',e)); // activar/desactivar proveedores según si están o no en el reporte de hoy
+    sincronizarEstadoUnidades().catch(e=>console.error('sincronizarEstadoUnidades falló:',e));    // ídem para unidades
+    sincronizarEstadoConductores().catch(e=>console.error('sincronizarEstadoConductores falló:',e)); // ídem para conductores
   } catch(e){
     console.error(e);
     showToast('Error al leer: '+e.message,'err');
