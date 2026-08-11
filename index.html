@@ -672,7 +672,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <option value="incompleto">❌ Incompleto (&lt;50%)</option>
         </select>
         <select class="filter-sel" id="pv-origen" onchange="renderProveedores()">
-          <option value="todos">Toda la base</option>
+          <option value="todos" selected>Toda la base</option>
           <option value="reporte">📋 Solo del reporte del día</option>
         </select>
         <select class="filter-sel" id="pv-grupo" onchange="renderProveedores()">
@@ -3085,6 +3085,124 @@ async function guardarProvEnSheets(nombreProv){
   return await guardarEnSheets('PROVEEDORES', PROV_COLS, row, 'Proveedor');
 }
 
+// Activa/desactiva proveedores en la base según si aparecen o no en el reporte del día
+// que se acaba de subir. Reutiliza buscarProveedorPorNombre (match exacto, tolera
+// puntos/comas tipo "S.A.C." vs "SAC", acentos, y 1-3 letras de diferencia por typo)
+// para no duplicar ni confundir un proveedor por una pequeña variación de escritura.
+async function sincronizarEstadoProveedores(){
+  if(!GS_URL) return;
+  if(!REP_ROWS || !REP_ROWS.length) return; // sin reporte cargado, no tocar nada
+  // r.proveedor ya viene canonicalizado (mismo nombre exacto que en PROVEEDORES) desde
+  // el armado de REP_ROWS, así que comparar en mayúsculas es seguro y sin duplicados.
+  const provsHoy = new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()).filter(Boolean));
+  const cambios=[];
+  PROVEEDORES.forEach(p=>{
+    const nUp=(p.nombre||'').trim().toUpperCase();
+    if(!nUp || nUp.length<3) return;
+    const enReporte = provsHoy.has(nUp);
+    const estadoActual=(p.estado||'ACTIVO').toUpperCase();
+    const estadoNuevo = enReporte ? 'ACTIVO' : 'INACTIVO';
+    if(estadoActual!==estadoNuevo){
+      p.estado=estadoNuevo;
+      cambios.push(p.nombre);
+    }
+  });
+  if(!cambios.length) return;
+  for(const nombre of cambios){
+    try{ await guardarProvEnSheets(nombre); }
+    catch(e){ console.error('Error actualizando estado de', nombre, e); }
+  }
+  const activados=cambios.filter(n=>{
+    const p=PROVEEDORES.find(x=>x.nombre===n);
+    return p && p.estado==='ACTIVO';
+  }).length;
+  const desactivados=cambios.length-activados;
+  let msg='🔄 Proveedores actualizados:';
+  if(activados) msg+=` ${activados} activado(s)`;
+  if(desactivados) msg+=` · ${desactivados} desactivado(s) (no están en el reporte de hoy)`;
+  showToast(msg,'ok');
+  if(typeof renderProveedores==='function') renderProveedores();
+}
+
+// Activa/desactiva UNIDADES según si su placa aparece o no en el reporte del día.
+// Usa buscarPorPlaca (misma normalización que ya usa el resto del sistema) para
+// identificar cada unidad con exactitud, sin duplicados.
+async function sincronizarEstadoUnidades(){
+  if(!GS_URL) return;
+  if(!REP_ROWS || !REP_ROWS.length) return;
+  const enReporte = new Set();
+  REP_ROWS.forEach(r=>{
+    if(!r.placa) return;
+    const u = (typeof buscarPorPlaca==='function') ? buscarPorPlaca(r.placa) : null;
+    if(u) enReporte.add(u);
+  });
+  const cambios=[];
+  for(const u of UNIDADES){
+    if(!u.placa || String(u.placa).trim().length<3) continue;
+    const estadoActual=(u.estado||'ACTIVO').toUpperCase();
+    const estadoNuevo = enReporte.has(u) ? 'ACTIVO' : 'INACTIVO';
+    if(estadoActual!==estadoNuevo){
+      u.estado=estadoNuevo;
+      cambios.push(u);
+    }
+  }
+  if(!cambios.length) return;
+  for(const u of cambios){
+    try{ await guardarFilaOrdenada('UNIDADES', u, COLORDER_UNID, 0); }
+    catch(e){ console.error('Error actualizando estado de unidad', u.placa, e); }
+  }
+  const activadas=cambios.filter(u=>u.estado==='ACTIVO').length;
+  const desactivadas=cambios.length-activadas;
+  let msg='🔄 Unidades actualizadas:';
+  if(activadas) msg+=` ${activadas} activada(s)`;
+  if(desactivadas) msg+=` · ${desactivadas} desactivada(s) (no están en el reporte de hoy)`;
+  showToast(msg,'ok');
+  if(typeof renderUnidades==='function') renderUnidades();
+}
+
+// Activa/desactiva CONDUCTORES según si aparecen o no en el reporte del día.
+// Usa buscarConductorBD (mismo cruce robusto por DNI/nombre, tolerante a mayúsculas,
+// tildes, orden de palabras y 1-2 letras de diferencia) para identificar a cada
+// conductor con exactitud, evitando confundir homónimos o duplicados.
+// Los "conductor beta" (placeholder de turnos sin conductor asignado) no se tocan.
+async function sincronizarEstadoConductores(){
+  if(!GS_URL) return;
+  if(!REP_ROWS || !REP_ROWS.length) return;
+  const enReporte = new Set();
+  REP_ROWS.forEach(r=>{
+    if(esConductorBeta({conductor:r.conductor})) return;
+    const dni = (r.condBD&&r.condBD.dni) || r.dni || '';
+    const nombre = (r.condBD&&r.condBD.conductor) || r.conductor || '';
+    if(!dni && !nombre) return;
+    const c = (typeof buscarConductorBD==='function') ? buscarConductorBD(nombre, dni) : null;
+    if(c) enReporte.add(c);
+  });
+  const cambios=[];
+  for(const c of CONDUCTORES){
+    if(esConductorBeta(c)) continue;
+    if(!c.conductor || String(c.conductor).trim().length<3) continue;
+    const estadoActual=(c.estado||'ACTIVO').toUpperCase();
+    const estadoNuevo = enReporte.has(c) ? 'ACTIVO' : 'INACTIVO';
+    if(estadoActual!==estadoNuevo){
+      c.estado=estadoNuevo;
+      cambios.push(c);
+    }
+  }
+  if(!cambios.length) return;
+  for(const c of cambios){
+    try{ await guardarFilaOrdenada('CONDUCTORES', c, COLORDER_COND, 0); }
+    catch(e){ console.error('Error actualizando estado de conductor', c.conductor, e); }
+  }
+  const activados=cambios.filter(c=>c.estado==='ACTIVO').length;
+  const desactivados=cambios.length-activados;
+  let msg='🔄 Conductores actualizados:';
+  if(activados) msg+=` ${activados} activado(s)`;
+  if(desactivados) msg+=` · ${desactivados} desactivado(s) (no están en el reporte de hoy)`;
+  showToast(msg,'ok');
+  if(typeof renderConductores==='function') renderConductores();
+  if(typeof renderTarjetasConductores==='function' && document.getElementById('prov-cards')) renderProveedores();
+}
+
 async function toggleProvDoc(n,i){
   const d=getPD(n); const prev=d.docs[i]; d.docs[i]=!d.docs[i]; PD[n]=d; savePD();
   if(typeof renderProveedores==="function") renderProveedores();
@@ -4668,6 +4786,9 @@ async function leerReporte(){
     postCargarReporte();
     guardarRepActivo(); // persistir en localStorage + Sheets
     sincronizarReporteADB(); // guardar Centro/Proveedor/Categoría/Modalidad/Conductor en Sheets automáticamente
+    sincronizarEstadoProveedores(); // activar/desactivar proveedores según si están o no en el reporte de hoy
+    sincronizarEstadoUnidades();    // ídem para unidades
+    sincronizarEstadoConductores(); // ídem para conductores
   } catch(e){
     console.error(e);
     showToast('Error al leer: '+e.message,'err');
