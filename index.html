@@ -3108,10 +3108,16 @@ async function sincronizarEstadoProveedores(){
     }
   });
   if(!cambios.length){ showToast(`🔄 Proveedores: revisados ${PROVEEDORES.length}, sin cambios de estado`,'ok'); return; }
-  for(const nombre of cambios){
-    try{ await guardarProvEnSheets(nombre); }
-    catch(e){ console.error('Error actualizando estado de', nombre, e); }
-  }
+  // ⚠ DESACTIVADO TEMPORALMENTE: guardarProvEnSheets() reescribe la fila COMPLETA
+  // (incluye las 15 columnas de documentos), y como esas celdas en el Sheet real
+  // tienen LINKS (no solo texto), guardar así los borra y los reemplaza con
+  // "VERDADERO/FALSO" en texto plano. Hasta tener una forma de actualizar SOLO
+  // la celda de Estado sin tocar los documentos, esto se queda solo en memoria
+  // (para que la vista de la app funcione), sin escribir al Sheet.
+  // for(const nombre of cambios){
+  //   try{ await guardarProvEnSheets(nombre); }
+  //   catch(e){ console.error('Error actualizando estado de', nombre, e); }
+  // }
   const activados=cambios.filter(n=>{
     const p=PROVEEDORES.find(x=>x.nombre===n);
     return p && p.estado==='ACTIVO';
@@ -3127,6 +3133,23 @@ async function sincronizarEstadoProveedores(){
 // Activa/desactiva UNIDADES según si su placa aparece o no en el reporte del día.
 // Usa buscarPorPlaca (misma normalización que ya usa el resto del sistema) para
 // identificar cada unidad con exactitud, sin duplicados.
+function verDesfaseUnidades(){
+  if(!REP_ROWS || !REP_ROWS.length){ showToast('No hay reporte del día cargado','err'); return; }
+  const enReporte = new Set();
+  REP_ROWS.forEach(r=>{
+    if(!r.placa) return;
+    const u = (typeof buscarPorPlaca==='function') ? buscarPorPlaca(r.placa) : null;
+    if(u) enReporte.add(u);
+  });
+  const activasBase = UNIDADES.filter(u=>u.placa && String(u.placa).trim().length>=3 && (u.estado||'ACTIVO').toUpperCase()==='ACTIVO');
+  const fuera = activasBase.filter(u=>!enReporte.has(u)).map(u=>u.placa).sort();
+  showToast(`Base: ${activasBase.length} activas · Reporte: ${enReporte.size} · Fuera del reporte: ${fuera.length}`,'ok');
+  if(fuera.length){
+    alert('Estas '+fuera.length+' placas están ACTIVAS en la base pero NO aparecen en el reporte de hoy:\n\n'+fuera.join(', '));
+  } else {
+    alert('Todas las placas activas de la base están en el reporte de hoy. ✓');
+  }
+}
 async function sincronizarEstadoUnidades(){
   if(!GS_URL) return;
   if(!REP_ROWS || !REP_ROWS.length) return;
@@ -3147,10 +3170,13 @@ async function sincronizarEstadoUnidades(){
     }
   }
   if(!cambios.length){ showToast(`🔄 Unidades: revisadas ${UNIDADES.length}, en reporte ${enReporte.size}, sin cambios de estado`,'ok'); return; }
-  for(const u of cambios){
-    try{ await guardarFilaOrdenada('UNIDADES', u, COLORDER_UNID, 0); }
-    catch(e){ console.error('Error actualizando estado de unidad', u.placa, e); }
-  }
+  // ⚠ DESACTIVADO TEMPORALMENTE por la misma razón que en Proveedores: guardarFilaOrdenada
+  // reescribe la fila COMPLETA (incluye 'carpeta' y 'tarjetaLink', que pueden tener links
+  // reales en el Sheet). Se queda solo en memoria hasta resolver un guardado seguro.
+  // for(const u of cambios){
+  //   try{ await guardarFilaOrdenada('UNIDADES', u, COLORDER_UNID, 0); }
+  //   catch(e){ console.error('Error actualizando estado de unidad', u.placa, e); }
+  // }
   const activadas=cambios.filter(u=>u.estado==='ACTIVO').length;
   const desactivadas=cambios.length-activadas;
   let msg='🔄 Unidades actualizadas:';
@@ -3189,10 +3215,12 @@ async function sincronizarEstadoConductores(){
     }
   }
   if(!cambios.length){ showToast(`🔄 Conductores: revisados ${CONDUCTORES.length}, en reporte ${enReporte.size}, sin cambios de estado`,'ok'); return; }
-  for(const c of cambios){
-    try{ await guardarFilaOrdenada('CONDUCTORES', c, COLORDER_COND, 0); }
-    catch(e){ console.error('Error actualizando estado de conductor', c.conductor, e); }
-  }
+  // ⚠ DESACTIVADO TEMPORALMENTE por la misma razón: 'carpeta' puede tener un link real
+  // en el Sheet, y el guardado de fila completa lo reemplazaría por texto plano.
+  // for(const c of cambios){
+  //   try{ await guardarFilaOrdenada('CONDUCTORES', c, COLORDER_COND, 0); }
+  //   catch(e){ console.error('Error actualizando estado de conductor', c.conductor, e); }
+  // }
   const activados=cambios.filter(c=>c.estado==='ACTIVO').length;
   const desactivados=cambios.length-activados;
   let msg='🔄 Conductores actualizados:';
