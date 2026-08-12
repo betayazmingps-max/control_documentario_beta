@@ -3370,6 +3370,16 @@ function renderTarjetasUnidades(f){
     placaGrupos[pn].add(String(r.grupo).trim());
   });
   let unids = UNIDADES.filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO');
+  // Igual que en conductores: si el filtro "Origen" está en "Solo del reporte del día",
+  // solo se muestran las placas que están en el reporte (una tarjeta por placa única,
+  // sin duplicar aunque la placa aparezca 2 veces por compartir turno entre 2 conductores).
+  const origenU = (document.getElementById('pv-origen')||{value:'todos'}).value;
+  if(origenU==='reporte' && typeof REP_ROWS!=='undefined' && REP_ROWS.length){
+    const placasHoy = new Set(REP_ROWS.map(r=>normPlaca(r.placa)).filter(Boolean));
+    unids = unids.filter(u=>placasHoy.has(normPlaca(u.placa)));
+  }
+  // Deduplicar por placa (por si la base tiene alguna placa repetida en más de una fila)
+  { const vistos=new Set(); unids=unids.filter(u=>{ const k=normPlaca(u.placa); if(!k||vistos.has(k)) return false; vistos.add(k); return true; }); }
   unids = unids.map(u=>{
     const ap=docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u);
     const ok=ap.filter(d=>u[d.campo]==='✓').length;
@@ -3453,7 +3463,8 @@ function renderTarjetasConductores(f){
     if(match) repSet.add(match);
   });
   let conds = CONDUCTORES.filter(c=>!esConductorBeta(c) && (c.estado||'ACTIVO').toUpperCase()==='ACTIVO');
-  conds = conds.filter(c=>repSet.has(c));
+  const origenC = (document.getElementById('pv-origen')||{value:'todos'}).value;
+  if(origenC==='reporte') conds = conds.filter(c=>repSet.has(c));
   conds = conds.map(c=>{
     const ok=DOCS_C_PROV.filter(d=>c[d.c]==='✓').length;
     const tot=DOCS_C_PROV.length;
@@ -3479,7 +3490,9 @@ function renderTarjetasConductores(f){
   sk('pvk-total',conds.length); sk('pvk-completos',kc); sk('pvk-incompletos',ki); sk('pvk-criticos',kx);
   document.getElementById('prov-count').textContent=conds.length+' conductores';
   if(!conds.length){
-    const msg=(typeof REP_ROWS!=='undefined'&&REP_ROWS.length) ? 'Sin conductores para los filtros aplicados (dentro del reporte de hoy)' : 'No hay reporte del día cargado — sube el reporte para ver los conductores de hoy';
+    const msg=(origenC==='reporte' && !(typeof REP_ROWS!=='undefined'&&REP_ROWS.length))
+      ? 'No hay reporte del día cargado — sube el reporte para ver los conductores de hoy'
+      : 'Sin conductores para los filtros aplicados';
     cont.innerHTML=`<div class="empty-state" style="grid-column:1/-1">${msg}</div>`; return;
   }
   const cardCondHtml = c=>{
