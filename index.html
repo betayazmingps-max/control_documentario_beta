@@ -643,14 +643,14 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   <div class="page active" id="page-proveedores">
     <!-- KPIs resumen -->
     <div class="kpi-grid cols-4" id="pv-kpis" style="margin-bottom:18px">
-      <div class="kpi-card blue"><div class="kpi-label">Proveedores Activos</div><div class="kpi-value" id="pvk-total">0</div><div class="kpi-sub">en operación</div></div>
+      <div class="kpi-card blue"><div class="kpi-label" id="pvk-total-lbl">Proveedores Activos</div><div class="kpi-value" id="pvk-total">0</div><div class="kpi-sub" id="pvk-total-sub">en operación</div></div>
       <div class="kpi-card green"><div class="kpi-label">Documentación Completa</div><div class="kpi-value" id="pvk-completos">0</div><div class="kpi-sub ok">✓ 80% o más</div></div>
       <div class="kpi-card warn"><div class="kpi-label">Documentación Incompleta</div><div class="kpi-value" id="pvk-incompletos">0</div><div class="kpi-sub wu">⚠ les falta</div></div>
       <div class="kpi-card danger"><div class="kpi-label">Críticos</div><div class="kpi-value" id="pvk-criticos">0</div><div class="kpi-sub bad">🔴 menos de 50%</div></div>
     </div>
 
     <div class="section-hd" style="flex-wrap:wrap;gap:8px">
-      <div class="section-title">Proveedores Activos <span class="count-tag" id="prov-count">—</span></div>
+      <div class="section-title" id="prov-section-title">Proveedores Activos <span class="count-tag" id="prov-count">—</span></div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
         <input class="search-box" id="pv-srch" placeholder="🔍 Buscar proveedor..." oninput="renderProveedores()" style="width:180px">
         <select class="filter-sel" id="pv-tiposerv" onchange="renderProveedores()">
@@ -3286,6 +3286,13 @@ function setPvMetrica(m,btn){
   PV_METRICA=m;
   document.querySelectorAll('#pv-metrica-btns .rep-btn').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+  const titulos={proveedor:'Proveedores Activos',unidad:'Unidades Activas',conductor:'Conductores Activos'};
+  const subs={proveedor:'en operación',unidad:'operando hoy',conductor:'en ruta hoy'};
+  const t=titulos[m]||'Proveedores Activos', s=subs[m]||'en operación';
+  const elLbl=document.getElementById('pvk-total-lbl'); if(elLbl) elLbl.textContent=t;
+  const elSub=document.getElementById('pvk-total-sub'); if(elSub) elSub.textContent=s;
+  const elSec=document.getElementById('prov-section-title');
+  if(elSec) elSec.innerHTML=t+' <span class="count-tag" id="prov-count">—</span>';
   renderProveedores();
 }
 // Cumplimiento documentario agregado de las UNIDADES de un proveedor
@@ -3374,9 +3381,12 @@ function renderTarjetasUnidades(f){
   // solo se muestran las placas que están en el reporte (una tarjeta por placa única,
   // sin duplicar aunque la placa aparezca 2 veces por compartir turno entre 2 conductores).
   const origenU = (document.getElementById('pv-origen')||{value:'todos'}).value;
+  const sinReporteHoy = origenU==='reporte' && !(typeof REP_ROWS!=='undefined' && REP_ROWS.length);
   if(origenU==='reporte' && typeof REP_ROWS!=='undefined' && REP_ROWS.length){
     const placasHoy = new Set(REP_ROWS.map(r=>normPlaca(r.placa)).filter(Boolean));
     unids = unids.filter(u=>placasHoy.has(normPlaca(u.placa)));
+  } else if(sinReporteHoy){
+    unids = [];
   }
   // Deduplicar por placa (por si la base tiene alguna placa repetida en más de una fila)
   { const vistos=new Set(); unids=unids.filter(u=>{ const k=normPlaca(u.placa); if(!k||vistos.has(k)) return false; vistos.add(k); return true; }); }
@@ -3401,7 +3411,13 @@ function renderTarjetasUnidades(f){
   const sk=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   sk('pvk-total',unids.length); sk('pvk-completos',kc); sk('pvk-incompletos',ki); sk('pvk-criticos',kx);
   document.getElementById('prov-count').textContent=unids.length+' unidades';
-  if(!unids.length){ cont.innerHTML='<div class="empty-state" style="grid-column:1/-1">Sin unidades para los filtros aplicados</div>'; return; }
+  { const dbg=document.getElementById('prov-debug')||(()=>{const d=document.createElement('div');d.id='prov-debug';d.style.cssText='font-size:10px;color:#c026d3;margin:-4px 0 8px 0';cont.parentNode.insertBefore(d,cont);return d;})();
+    dbg.textContent = `[debug] origen=${origenU} · REP_ROWS=${(typeof REP_ROWS!=='undefined'?REP_ROWS.length:'?')} · placas únicas en reporte=${(typeof REP_ROWS!=='undefined'?new Set(REP_ROWS.map(r=>normPlaca(r.placa)).filter(Boolean)).size:'?')} · unidades mostradas=${unids.length}`;
+  }
+  if(!unids.length){
+    const msg = sinReporteHoy ? 'No hay reporte del día cargado — sube el reporte para ver las unidades de hoy' : 'Sin unidades para los filtros aplicados';
+    cont.innerHTML=`<div class="empty-state" style="grid-column:1/-1">${msg}</div>`; return;
+  }
   const cardUnidHtml = u=>{
     const col=u._pct>=80?'#10b981':u._pct>=50?'#f59e0b':'#ef4444';
     const zonaP=zonaDeProveedor(u.proveedor);
