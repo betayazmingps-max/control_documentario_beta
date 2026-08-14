@@ -1759,6 +1759,43 @@ const COLORDER_COND = ['dni','conductor','estado','proveedor','placa','tipoUnida
 // Convierte un registro interno → array ordenado según las columnas del Sheet
 function recordToRow(rec, order){ return order.map(k => String(rec[k] ?? '')); }
 
+// Igual que recordToRow, pero los campos en camposOmitir se mandan como null
+// (el backend, al ver null, NO TOCA esa celda — así se preservan intactos los
+// links de documentos aunque se guarde el resto de la fila).
+function recordToRowConOmision(rec, order, camposOmitir){
+  const omitirSet = new Set(camposOmitir||[]);
+  return order.map(k => omitirSet.has(k) ? null : String(rec[k] ?? ''));
+}
+
+// Guarda SOLO los campos de "datos" (nunca los de documentos). Se usa para todo
+// lo automático: sincronizar el reporte del día, activar/desactivar por reporte, etc.
+async function guardarFilaOrdenadaSoloDatos(hoja, rec, order, keyColIndex, camposDocumentos, keyColIndexRespaldo){
+  if(!GS_URL) return false;
+  try {
+    const row = recordToRowConOmision(rec, order, camposDocumentos);
+    const payload = { hoja, rowOrdenada: row, keyColIndex: keyColIndex||0 };
+    if(keyColIndexRespaldo!=null) payload.keyColIndexRespaldo = keyColIndexRespaldo;
+    const r = await fetch(GS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(payload)
+    });
+    if(!r.ok){ console.error('GS ERROR: HTTP', r.status, await r.text().catch(()=>'')); return false; }
+    const txt = await r.text().catch(()=> '');
+    if(txt){
+      try{ const j = JSON.parse(txt); if(j && j.ok === false){ console.error('GS ERROR: backend', j); return false; } }
+      catch(e){ /* respuesta no-JSON; se asume ok */ }
+    }
+    return true;
+  } catch(err){ console.error('GS ERROR:', err); return false; }
+}
+
+// Columnas de DOCUMENTOS que jamás deben tocarse desde un guardado automático
+// (pueden tener links reales adjuntos en el Sheet).
+const DOC_FIELDS_COND = ['docDni','docLic','docRecord','docSctr','docEmo','docCul','cumpl','carpeta'];
+const DOC_FIELDS_UNID = ['docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','cumpl','carpeta','tarjetaLink'];
+const DOC_FIELDS_PROV = ['CONTRATO','FICHA RUC','VIGENCIA PODER O DNI DEL REPRESENTANTE LEGAL','CARTA DE COMPROMISO BETA','REPORTE SENTINEL','LISTA CLINTON','DEUDA COACTIVA','REFERENCIAS COMERCIAL','BROCHURE O CARTA DE PRESENTACION','ANTECEDENTES','DECLARACION JURADA DE NORMAS DE SEGURIDAD','DECLARACION JURADA DE NORMAS Y POLITICAS','COTIZACION','CARTA DE COMPROMISO MATERIA PRIMA','CARTA DE COMPROMISO REFRIGERADO','CUMPLIMIENTO','% cumplimiento','Carpeta Proveedor'];
+
 // Guarda/actualiza una fila respetando el orden EXACTO de columnas
 async function guardarFilaOrdenada(hoja, rec, order, keyColIndex){
   if(!GS_URL) return false;
@@ -2417,7 +2454,8 @@ async function toggleDocCond(id, campo){
   }
   renderConductores();
   if(GS_URL){
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
+    const omitir = DOC_FIELDS_COND.filter(f=>f!==campo && f!=='cumpl');
+    const ok = await guardarFilaOrdenadaSoloDatos('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, omitir, COLORDER_COND.indexOf('conductor'));
     if(ok) showToast(nuevoValor==='✓' ? '✓ Marcado y guardado' : '✗ Desmarcado y guardado','ok');
     else { showToast('⚠ No se pudo guardar en Sheets, reintenta','err'); CONDUCTORES[idx][campo] = (nuevoValor==='✓')?'✗':'✓'; renderConductores(); }
   } else {
@@ -2453,7 +2491,8 @@ async function guardarCeldaCond(id, campo, valor){
   }
   renderConductores();
   if(GS_URL){
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
+    const omitir = DOC_FIELDS_COND.filter(f=>f!==campo);
+    const ok = await guardarFilaOrdenadaSoloDatos('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, omitir, COLORDER_COND.indexOf('conductor'));
     if(ok) showToast('✓ Guardado','ok');
     else showToast('⚠ Error al guardar en Sheets, verifica conexión','err');
   } else {
@@ -2679,7 +2718,8 @@ async function toggleDocUnid(placa, campo){
   }
   renderUnidades();
   if(GS_URL){
-    const okSave = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
+    const omitir = DOC_FIELDS_UNID.filter(f=>f!==campo && f!=='cumpl');
+    const okSave = await guardarFilaOrdenadaSoloDatos('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, omitir);
     if(okSave) showToast(nuevoValor==='✓' ? '✓ Marcado y guardado' : '✗ Desmarcado y guardado','ok');
     else { showToast('⚠ No se pudo guardar en Sheets, reintenta','err'); UNIDADES[idx][campo] = actual; renderUnidades(); }
   } else {
@@ -2717,7 +2757,7 @@ async function guardarCeldaUnid(placa, campo, valor){
   }
   renderUnidades();
   if(GS_URL){
-    const okSave = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
+    const okSave = await guardarFilaOrdenadaSoloDatos('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, DOC_FIELDS_UNID);
     if(okSave) showToast('✓ Guardado','ok');
     else showToast('⚠ Error al guardar en Sheets, verifica conexión','err');
   } else {
@@ -3085,6 +3125,27 @@ async function guardarProvEnSheets(nombreProv){
   return await guardarEnSheets('PROVEEDORES', PROV_COLS, row, 'Proveedor');
 }
 
+// Guarda SOLO el Estado (activo/inactivo) de un proveedor, sin tocar ningún otro
+// campo — ni los de contacto ni, sobre todo, ninguna columna de documentos.
+async function guardarProvEstadoSoloDatos(nombreProv){
+  if(!GS_URL) return false;
+  const prov = PROVEEDORES.find(p=>normProvName(p.nombre)===normProvName(nombreProv));
+  if(!prov) return false;
+  const valores = { 'Proveedor':prov.nombre, 'Estado':prov.estado||'' };
+  const row = PROV_COLS.map(h => (h==='Proveedor'||h==='Estado') ? String(valores[h]??'') : null);
+  try{
+    const r = await fetch(GS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ hoja:'PROVEEDORES', rowOrdenada: row, headers: PROV_COLS, keyColIndex: PROV_COLS.indexOf('Proveedor') })
+    });
+    if(!r.ok) return false;
+    const txt = await r.text().catch(()=> '');
+    if(txt){ try{ const j=JSON.parse(txt); if(j && j.ok===false) return false; }catch(e){} }
+    return true;
+  } catch(e){ console.error('guardarProvEstadoSoloDatos error:', e); return false; }
+}
+
 // Activa/desactiva proveedores en la base según si aparecen o no en el reporte del día
 // que se acaba de subir. Reutiliza buscarProveedorPorNombre (match exacto, tolera
 // puntos/comas tipo "S.A.C." vs "SAC", acentos, y 1-3 letras de diferencia por typo)
@@ -3108,16 +3169,12 @@ async function sincronizarEstadoProveedores(){
     }
   });
   if(!cambios.length){ showToast(`🔄 Proveedores: revisados ${PROVEEDORES.length}, sin cambios de estado`,'ok'); return; }
-  // ⚠ DESACTIVADO TEMPORALMENTE: guardarProvEnSheets() reescribe la fila COMPLETA
-  // (incluye las 15 columnas de documentos), y como esas celdas en el Sheet real
-  // tienen LINKS (no solo texto), guardar así los borra y los reemplaza con
-  // "VERDADERO/FALSO" en texto plano. Hasta tener una forma de actualizar SOLO
-  // la celda de Estado sin tocar los documentos, esto se queda solo en memoria
-  // (para que la vista de la app funcione), sin escribir al Sheet.
-  // for(const nombre of cambios){
-  //   try{ await guardarProvEnSheets(nombre); }
-  //   catch(e){ console.error('Error actualizando estado de', nombre, e); }
-  // }
+  // Guardado seguro: SOLO se escribe la celda "Estado" de cada proveedor cambiado.
+  // Ninguna columna de documentos se toca (así no se pierden los links del Sheet).
+  for(const nombre of cambios){
+    try{ await guardarProvEstadoSoloDatos(nombre); }
+    catch(e){ console.error('Error actualizando estado de', nombre, e); }
+  }
   const activados=cambios.filter(n=>{
     const p=PROVEEDORES.find(x=>x.nombre===n);
     return p && p.estado==='ACTIVO';
@@ -3170,13 +3227,12 @@ async function sincronizarEstadoUnidades(){
     }
   }
   if(!cambios.length){ showToast(`🔄 Unidades: revisadas ${UNIDADES.length}, en reporte ${enReporte.size}, sin cambios de estado`,'ok'); return; }
-  // ⚠ DESACTIVADO TEMPORALMENTE por la misma razón que en Proveedores: guardarFilaOrdenada
-  // reescribe la fila COMPLETA (incluye 'carpeta' y 'tarjetaLink', que pueden tener links
-  // reales en el Sheet). Se queda solo en memoria hasta resolver un guardado seguro.
-  // for(const u of cambios){
-  //   try{ await guardarFilaOrdenada('UNIDADES', u, COLORDER_UNID, 0); }
-  //   catch(e){ console.error('Error actualizando estado de unidad', u.placa, e); }
-  // }
+  // Guardado seguro: SOLO se escribe la celda "Estado" de cada unidad cambiada.
+  // Ninguna columna de documentos (carpeta, tarjetaLink, docs) se toca.
+  for(const u of cambios){
+    try{ await guardarFilaOrdenadaSoloDatos('UNIDADES', u, COLORDER_UNID, 0, DOC_FIELDS_UNID); }
+    catch(e){ console.error('Error actualizando estado de unidad', u.placa, e); }
+  }
   const activadas=cambios.filter(u=>u.estado==='ACTIVO').length;
   const desactivadas=cambios.length-activadas;
   let msg='🔄 Unidades actualizadas:';
@@ -3215,12 +3271,12 @@ async function sincronizarEstadoConductores(){
     }
   }
   if(!cambios.length){ showToast(`🔄 Conductores: revisados ${CONDUCTORES.length}, en reporte ${enReporte.size}, sin cambios de estado`,'ok'); return; }
-  // ⚠ DESACTIVADO TEMPORALMENTE por la misma razón: 'carpeta' puede tener un link real
-  // en el Sheet, y el guardado de fila completa lo reemplazaría por texto plano.
-  // for(const c of cambios){
-  //   try{ await guardarFilaOrdenada('CONDUCTORES', c, COLORDER_COND, 0); }
-  //   catch(e){ console.error('Error actualizando estado de conductor', c.conductor, e); }
-  // }
+  // Guardado seguro: SOLO se escribe la celda "Estado" de cada conductor cambiado.
+  // Ninguna columna de documentos (carpeta, docDni, docLic, etc.) se toca.
+  for(const c of cambios){
+    try{ await guardarFilaOrdenadaSoloDatos('CONDUCTORES', c, COLORDER_COND, 0, DOC_FIELDS_COND, COLORDER_COND.indexOf('conductor')); }
+    catch(e){ console.error('Error actualizando estado de conductor', c.conductor, e); }
+  }
   const activados=cambios.filter(c=>c.estado==='ACTIVO').length;
   const desactivados=cambios.length-activados;
   let msg='🔄 Conductores actualizados:';
@@ -3231,10 +3287,36 @@ async function sincronizarEstadoConductores(){
   if(typeof renderTarjetasConductores==='function' && document.getElementById('prov-cards')) renderProveedores();
 }
 
+// Helper genérico: guarda SOLO los campos indicados (objeto {columna: valor}) de un
+// proveedor, sin tocar ninguna otra celda de la fila. 'Proveedor' se incluye siempre
+// como clave. Todo lo demás (incluyendo documentos no mencionados) queda intacto.
+async function guardarProvCamposSoloDatos(nombreProv, valores){
+  if(!GS_URL) return false;
+  const prov = PROVEEDORES.find(p=>normProvName(p.nombre)===normProvName(nombreProv));
+  if(!prov) return false;
+  const vals = { 'Proveedor':prov.nombre, ...valores };
+  const row = PROV_COLS.map(h => (h in vals) ? String(vals[h]??'') : null);
+  try{
+    const r = await fetch(GS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ hoja:'PROVEEDORES', rowOrdenada: row, headers: PROV_COLS, keyColIndex: PROV_COLS.indexOf('Proveedor') })
+    });
+    if(!r.ok) return false;
+    const txt = await r.text().catch(()=> '');
+    if(txt){ try{ const j=JSON.parse(txt); if(j && j.ok===false) return false; }catch(e){} }
+    return true;
+  } catch(e){ console.error('guardarProvCamposSoloDatos error:', e); return false; }
+}
+
 async function toggleProvDoc(n,i){
   const d=getPD(n); const prev=d.docs[i]; d.docs[i]=!d.docs[i]; PD[n]=d; savePD();
   if(typeof renderProveedores==="function") renderProveedores();
-  const ok = await guardarProvEnSheets(n);  // ← guarda TRUE/FALSE en Sheets
+  // Guardado seguro: solo se toca ESTA columna de documento, ninguna otra.
+  const campoDoc = DOC_FIELDS_PROV[i];
+  const ok = campoDoc
+    ? await guardarProvCamposSoloDatos(n, { [campoDoc]: d.docs[i] ? 'VERDADERO' : 'FALSO' })
+    : await guardarProvEnSheets(n); // fallback si el índice no mapea a un doc conocido
   if(ok){ showToast('✓ Guardado','ok'); }
   else {
     showToast('⚠ No se pudo guardar en Sheets, reintenta','err');
@@ -3244,7 +3326,7 @@ async function toggleProvDoc(n,i){
 }
 async function updProvResp(n,v){
   const d=getPD(n); const prev=d.resp; d.resp=v; PD[n]=d; savePD();
-  const ok = await guardarProvEnSheets(n);
+  const ok = await guardarProvCamposSoloDatos(n, {'Responsable':v});
   if(!ok){ showToast('⚠ No se pudo guardar el responsable, reintenta','err'); d.resp=prev; PD[n]=d; savePD(); }
 }
 
@@ -4047,7 +4129,10 @@ async function toggleProvDocModal(i,di){
   const d=getPD(nombre); const prev=d.docs[di]; d.docs[di]=!d.docs[di]; PD[nombre]=d; savePD();
   abrirDetalleProv(i);   // refresca modal
   renderProveedores();   // refresca tarjetas + KPIs
-  const ok = await guardarProvEnSheets(nombre);
+  const campoDoc = DOC_FIELDS_PROV[di];
+  const ok = campoDoc
+    ? await guardarProvCamposSoloDatos(nombre, { [campoDoc]: d.docs[di] ? 'VERDADERO' : 'FALSO' })
+    : await guardarProvEnSheets(nombre);
   if(!ok){
     showToast('⚠ No se pudo guardar en Sheets, reintenta','err');
     d.docs[di]=prev; PD[nombre]=d; savePD();
@@ -4854,6 +4939,34 @@ async function leerReporte(){
 
 // Guarda en Sheets, de forma automática, los cambios que trajo el reporte diario
 // (Centro, Proveedor, Categoría, Modalidad de Unidad; Centro, Proveedor, Nombre de Conductor)
+// Guarda los datos BASE de un proveedor (nombre, estado, contacto, zona, categoría, etc.)
+// SIN tocar ninguna columna de documentos. Se usa para proveedores nuevos que se
+// auto-crean al subir el reporte, y para cualquier sync automático de datos.
+async function guardarProvEnSheetsSoloDatos(nombreProv){
+  if(!GS_URL) return false;
+  const prov = PROVEEDORES.find(p=>normProvName(p.nombre)===normProvName(nombreProv));
+  if(!prov) return false;
+  const pd  = getPD(nombreProv);
+  const valores = {
+    'Proveedor':prov.nombre, 'Estado':prov.estado||'', 'RUC':prov.ruc||'', 'Contacto':prov.contacto||'',
+    'Celular':prov.celular||'', 'Correo':prov.correo||'', 'Zona':prov.zona||'', 'Tipo de Razon Social':prov.tipo||'',
+    'Actividad Economica Principal':prov.actividad||'', 'Responsable':pd.resp||prov.responsable||'',
+    'Categoria':prov.tipoServicio||''
+  };
+  const row = PROV_COLS.map(h => (h in valores) ? String(valores[h]??'') : null);
+  try{
+    const r = await fetch(GS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ hoja:'PROVEEDORES', rowOrdenada: row, headers: PROV_COLS, keyColIndex: PROV_COLS.indexOf('Proveedor') })
+    });
+    if(!r.ok) return false;
+    const txt = await r.text().catch(()=> '');
+    if(txt){ try{ const j=JSON.parse(txt); if(j && j.ok===false) return false; }catch(e){} }
+    return true;
+  } catch(e){ console.error('guardarProvEnSheetsSoloDatos error:', e); return false; }
+}
+
 async function sincronizarReporteADB(){
   if(!GS_URL) return; // sin Sheets conectado no hay nada que sincronizar
   const placasSync = new Set();
@@ -4866,20 +4979,22 @@ async function sincronizarReporteADB(){
   if(!placasSync.size && !dnisSync.size && !provsSync.length) return;
   showToast(`⏳ Sincronizando ${placasSync.size} unidad(es), ${dnisSync.size} conductor(es) y ${provsSync.length} proveedor(es)...`,'ok');
   let okU=0, okC=0, okP=0;
+  // Guardado SEGURO: solo se escriben los campos de datos (nunca los de documentos,
+  // que pueden tener links reales adjuntos en el Sheet).
   for(const placa of placasSync){
     const idx = UNIDADES.findIndex(u=>normPlaca(u.placa)===normPlaca(placa));
     if(idx<0) continue;
-    const ok = await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
+    const ok = await guardarFilaOrdenadaSoloDatos('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, DOC_FIELDS_UNID);
     if(ok) okU++;
   }
   for(const dni of dnisSync){
     const idx = CONDUCTORES.findIndex(c=>c.dni===dni);
     if(idx<0) continue;
-    const ok = await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
+    const ok = await guardarFilaOrdenadaSoloDatos('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, DOC_FIELDS_COND, COLORDER_COND.indexOf('conductor'));
     if(ok) okC++;
   }
   for(const nom of provsSync){
-    const ok = await guardarProvEnSheets(nom);
+    const ok = await guardarProvEnSheetsSoloDatos(nom);
     if(ok){
       okP++;
       const p = PROVEEDORES.find(x=>x.nombre===nom);
@@ -5085,8 +5200,8 @@ async function guardarEdit(){
   // Guardar y esperar confirmación real antes de avisar al usuario
   if(GS_URL){
     const ok = tipo==='conductor'
-      ? await guardarFilaOrdenada('CONDUCTORES', reg, COLORDER_COND, 0)
-      : await guardarFilaOrdenada('UNIDADES', reg, COLORDER_UNID, 0);
+      ? await guardarFilaOrdenadaSoloDatos('CONDUCTORES', reg, COLORDER_COND, 0, DOC_FIELDS_COND, COLORDER_COND.indexOf('conductor'))
+      : await guardarFilaOrdenadaSoloDatos('UNIDADES', reg, COLORDER_UNID, 0, DOC_FIELDS_UNID);
     if(ok) showToast('✓ Fecha actualizada y guardada','ok');
     else showToast('⚠ No se pudo guardar en Sheets, reintenta','err');
   } else {
@@ -5354,7 +5469,7 @@ async function guardarConductor(){
     });
   }
   renderConductores();
-  const ok=await guardarFilaOrdenada('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0);
+  const ok=await guardarFilaOrdenadaSoloDatos('CONDUCTORES', CONDUCTORES[idx], COLORDER_COND, 0, ['carpeta'], COLORDER_COND.indexOf('conductor'));
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
   const cm=document.getElementById('c-msg'); if(cm) cm.textContent=new Date().toLocaleTimeString('es-PE');
 }
@@ -5416,7 +5531,7 @@ async function guardarUnidad(){
     });
   }
   renderUnidades();
-  const ok=await guardarFilaOrdenada('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0);
+  const ok=await guardarFilaOrdenadaSoloDatos('UNIDADES', UNIDADES[idx], COLORDER_UNID, 0, ['tarjetaLink']);
   showToast(ok?'✓ Guardado en Google Sheets':'✓ Guardado localmente'+(GS_URL?' (Sheets falló)':''),ok?'ok':'');
   const um=document.getElementById('u-msg'); if(um) um.textContent=new Date().toLocaleTimeString('es-PE');
 }
@@ -5720,7 +5835,10 @@ function refrescarFilaClProv(nombre){
 async function toggleRepProvDoc(nombre,di){
   const pd=getPD(nombre); const prev=pd.docs[di]; pd.docs[di]=!pd.docs[di]; PD[nombre]=pd; savePD();
   if(!refrescarFilaClProv(nombre)) renderReporteProveedores();
-  const ok = await guardarProvEnSheets(nombre);
+  const campoDoc = DOC_FIELDS_PROV[di];
+  const ok = campoDoc
+    ? await guardarProvCamposSoloDatos(nombre, { [campoDoc]: pd.docs[di] ? 'VERDADERO' : 'FALSO' })
+    : await guardarProvEnSheets(nombre);
   if(!ok){
     showToast('⚠ No se pudo guardar en Sheets, reintenta','err');
     pd.docs[di]=prev; PD[nombre]=pd; savePD();
@@ -6041,7 +6159,7 @@ async function propagarCategoriasDelReporte(){
     const nueva=catProv[nom];
     if(nueva && clasifServicio(p.tipoServicio||'')!==nueva){
       p.tipoServicio=nueva;
-      await guardarProvEnSheets(p.nombre);   // escribe la columna Categoria en el Sheet
+      await guardarProvCamposSoloDatos(p.nombre, {'Categoria':nueva});   // escribe solo la columna Categoria
       nProv++;
     }
   }
