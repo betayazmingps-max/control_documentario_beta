@@ -3482,7 +3482,12 @@ function renderTarjetasUnidades(f){
     if(f.search && !JSON.stringify(u).toLowerCase().includes(f.search)) return false;
     if(f.zona && zonaDeProveedor(u.proveedor)!==f.zona) return false;
     if(f.tipoServ && clasifServicio(u.tipoServicio||provServicioDeUnidad(u))!==f.tipoServ) return false;
-    if(f.grupoF){ const pn=normPlaca(u.placa); if(!(placaGrupos[pn]&&placaGrupos[pn].has(f.grupoF))) return false; }
+    if(f.grupoF){
+      const pn=normPlaca(u.placa);
+      const porReporte = placaGrupos[pn]&&placaGrupos[pn].has(f.grupoF);
+      const porTipo = (u.tipo||'').trim()===f.grupoF;
+      if(!porReporte && !porTipo) return false;
+    }
     if(f.respF && !matchResponsable(responsableDeUnidad(u), f.respF)) return false;
     if(f.cumplF==='completo'   && u._pct<80) return false;
     if(f.cumplF==='proceso'    && (u._pct<50||u._pct>=80)) return false;
@@ -3575,7 +3580,9 @@ function renderTarjetasConductores(f){
     if(f.grupoF){
       const dn=String(c.dni||'').trim(); const nm=_normNomG(c.conductor);
       const grps=(dn&&dniGrupos[dn])||nomGrupos[nm];
-      if(!(grps&&grps.has(f.grupoF))) return false;
+      const porReporte = grps&&grps.has(f.grupoF);
+      const porTipo = (c.tipoUnidad||'').trim()===f.grupoF;
+      if(!porReporte && !porTipo) return false;
     }
     if(f.respF && !matchResponsable(responsableDeProveedor(c.proveedor), f.respF)) return false;
     if(f.cumplF==='completo'   && c._pct<80) return false;
@@ -3660,13 +3667,20 @@ function renderProveedores(){
   if(PV_METRICA==='unidad'){ renderTarjetasUnidades({search,zona,cumplF,tipoServ,grupoF,respF}); return; }
   if(PV_METRICA==='conductor'){ renderTarjetasConductores({search,zona,cumplF,tipoServ,grupoF,respF}); return; }
 
-  // Grupo de vehículo por proveedor, según el reporte del día
+  // Grupo de vehículo por proveedor: se combina el reporte del día (si hay) con
+  // el 'Tipo de Unidad' de sus unidades activas en la base (siempre disponible).
   const provGruposPv={};
   (typeof REP_ROWS!=='undefined'?REP_ROWS:[]).forEach(r=>{
     if(!r.grupo) return;
     const nUp=(r.proveedor||'').trim().toUpperCase(); if(!nUp) return;
     if(!provGruposPv[nUp]) provGruposPv[nUp]=new Set();
     provGruposPv[nUp].add(String(r.grupo).trim());
+  });
+  (typeof UNIDADES!=='undefined'?UNIDADES:[]).forEach(u=>{
+    if(!u.tipo || (u.estado||'ACTIVO').toUpperCase()!=='ACTIVO') return;
+    const nUp=(u.proveedor||'').trim().toUpperCase(); if(!nUp) return;
+    if(!provGruposPv[nUp]) provGruposPv[nUp]=new Set();
+    provGruposPv[nUp].add(String(u.tipo).trim());
   });
 
   let activos = provValidos();
@@ -5862,7 +5876,14 @@ function clTab(tab){
 // Puebla CUALQUIER <select> de Grupo de Vehículo con los valores únicos que trae el reporte diario
 function poblarSelectGrupo(selId, etiquetaVacia){
   const sel=document.getElementById(selId); if(!sel) return;
-  const grupos=[...new Set((REP_ROWS||[]).map(r=>(r.grupo||'').trim()).filter(Boolean))].sort();
+  // Se toma de dos fuentes para que funcione con o sin reporte cargado:
+  // 1) 'Tipo de Unidad' de la base de UNIDADES (permanente, siempre disponible).
+  // 2) 'Grupo de Vehículo' del reporte del día (si está cargado), por si trae categorías extra.
+  const gruposBase = (typeof UNIDADES!=='undefined'?UNIDADES:[])
+    .filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO')
+    .map(u=>(u.tipo||'').trim());
+  const gruposRep = (REP_ROWS||[]).map(r=>(r.grupo||'').trim());
+  const grupos=[...new Set([...gruposBase,...gruposRep])].filter(Boolean).sort();
   const actual=sel.value;
   sel.innerHTML=`<option value="">${etiquetaVacia||'Todos los grupos'}</option>`+grupos.map(g=>`<option value="${g}">${g}</option>`).join('');
   if(grupos.includes(actual)) sel.value=actual;
