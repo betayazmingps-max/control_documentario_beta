@@ -5887,6 +5887,12 @@ function poblarSelectGrupo(selId, etiquetaVacia){
   const actual=sel.value;
   sel.innerHTML=`<option value="">${etiquetaVacia||'Todos los grupos'}</option>`+grupos.map(g=>`<option value="${g}">${g}</option>`).join('');
   if(grupos.includes(actual)) sel.value=actual;
+  if(selId==='pv-grupo'){
+    let dbg=document.getElementById('grupo-debug');
+    if(!dbg && sel.parentNode){ dbg=document.createElement('div'); dbg.id='grupo-debug'; dbg.style.cssText='font-size:10px;color:#c026d3;width:100%;order:99'; sel.parentNode.appendChild(dbg); }
+    const conTipo = (typeof UNIDADES!=='undefined'?UNIDADES:[]).filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO' && (u.tipo||'').trim()).length;
+    if(dbg) dbg.textContent = `[debug grupo] UNIDADES=${(typeof UNIDADES!=='undefined'?UNIDADES.length:'?')} · activas con tipo=${conTipo} · REP_ROWS=${(REP_ROWS||[]).length} · grupos encontrados=${grupos.length} (${grupos.join(', ')||'ninguno'})`;
+  }
 }
 // Puebla el select de Grupo de Vehículo con los valores únicos que trae el reporte diario
 function poblarFiltroGrupoCl(){ poblarSelectGrupo('cl-grupo-filtro'); }
