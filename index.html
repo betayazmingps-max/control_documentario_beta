@@ -4378,6 +4378,23 @@ function calcularAlertasProveedores(){
   out.sort((a,b)=>a.pct-b.pct);
   return out;
 }
+// Aviso automático al abrir la app: si hay reporte del día cargado y hay documentos
+// vencidos, se muestra un banner apenas termina de cargar (una sola vez por sesión).
+function mostrarAvisoVencidosInicio(){
+  if(window._avisoVencidosMostrado) return;
+  window._avisoVencidosMostrado = true;
+  if(!REP_ROWS || !REP_ROWS.length) return; // sin reporte cargado no hay nada que avisar
+  const alertas = calcularAlertasDelDia();
+  const vencidos = alertas.filter(a=>a.estado==='VENCIDO').length;
+  const porVencer = alertas.filter(a=>a.estado==='POR VENCER').length;
+  if(!vencidos && !porVencer) return;
+  const banner=document.createElement('div');
+  banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:'+(vencidos?'#ef4444':'#f59e0b')+';color:#fff;font-size:14px;font-weight:700;padding:12px 18px;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:0 4px 12px rgba(0,0,0,.3)';
+  banner.innerHTML = `⚠️ ${vencidos?`<b>${vencidos} documento(s) VENCIDO(S)</b>`:''}${vencidos&&porVencer?' · ':''}${porVencer?`${porVencer} por vencer`:''}
+    <button onclick="goPage('alertas'); this.parentNode.remove();" style="background:#fff;color:#111;border:none;border-radius:6px;padding:5px 12px;font-weight:700;cursor:pointer">Ver detalle</button>
+    <button onclick="this.parentNode.remove()" style="background:rgba(255,255,255,.25);color:#fff;border:none;border-radius:6px;padding:5px 10px;cursor:pointer">✕</button>`;
+  document.body.appendChild(banner);
+}
 function renderAlertas(){
   const sinRep=document.getElementById('alertas-sin-reporte');
   const cont  =document.getElementById('alertas-contenido');
@@ -5887,11 +5904,16 @@ function poblarSelectGrupo(selId, etiquetaVacia){
   const actual=sel.value;
   sel.innerHTML=`<option value="">${etiquetaVacia||'Todos los grupos'}</option>`+grupos.map(g=>`<option value="${g}">${g}</option>`).join('');
   if(grupos.includes(actual)) sel.value=actual;
-  if(selId==='pv-grupo'){
-    let dbg=document.getElementById('grupo-debug');
-    if(!dbg && sel.parentNode){ dbg=document.createElement('div'); dbg.id='grupo-debug'; dbg.style.cssText='font-size:10px;color:#c026d3;width:100%;order:99'; sel.parentNode.appendChild(dbg); }
-    const conTipo = (typeof UNIDADES!=='undefined'?UNIDADES:[]).filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO' && (u.tipo||'').trim()).length;
-    if(dbg) dbg.textContent = `[debug grupo] UNIDADES=${(typeof UNIDADES!=='undefined'?UNIDADES.length:'?')} · activas con tipo=${conTipo} · REP_ROWS=${(REP_ROWS||[]).length} · grupos encontrados=${grupos.length} (${grupos.join(', ')||'ninguno'})`;
+  if(selId==='pv-grupo' && !window._grupoDebugShown){
+    window._grupoDebugShown = true;
+    const totalUnid = (typeof UNIDADES!=='undefined'?UNIDADES.length:0);
+    const activasTotal = (typeof UNIDADES!=='undefined'?UNIDADES:[]).filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO').length;
+    const activasConTipo = (typeof UNIDADES!=='undefined'?UNIDADES:[]).filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO' && (u.tipo||'').trim()).length;
+    const banner=document.createElement('div');
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#facc15;color:#111;font-size:15px;font-weight:700;padding:14px 18px;border-bottom:4px solid #a16207;box-shadow:0 4px 12px rgba(0,0,0,.3);font-family:monospace';
+    banner.innerHTML = `📊 DIAGNÓSTICO — Total en UNIDADES: ${totalUnid} · Marcadas ACTIVO: ${activasTotal} · ACTIVO con "Tipo" lleno: ${activasConTipo} · Filas reporte hoy: ${(REP_ROWS||[]).length} · Grupos encontrados: ${grupos.length} (${grupos.join(', ')||'ninguno'})
+      <button onclick="this.parentNode.remove()" style="margin-left:12px;background:#111;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer">Cerrar</button>`;
+    document.body.appendChild(banner);
   }
 }
 // Puebla el select de Grupo de Vehículo con los valores únicos que trae el reporte diario
@@ -6938,7 +6960,7 @@ if(GS_URL){
   if(lsEl) lsEl.style.display='';
   mostrarCargando(true);
   syncFromSheets()
-    .then(()=>{ sincPDdesdeSheet(); recalcular(); render(); restaurarRepActivo(); })
+    .then(async ()=>{ sincPDdesdeSheet(); recalcular(); render(); await restaurarRepActivo(); mostrarAvisoVencidosInicio(); })
     .catch(e=>{ console.error(e); renderDashboard(); })
     .finally(()=>mostrarCargando(false));
 } else {
