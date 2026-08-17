@@ -3498,15 +3498,15 @@ function renderTarjetasUnidades(f){
   const sk=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   sk('pvk-total',unids.length); sk('pvk-completos',kc); sk('pvk-incompletos',ki); sk('pvk-criticos',kx);
   document.getElementById('prov-count').textContent=unids.length+' unidades';
-  if(!window._unidDebugShown){
-    window._unidDebugShown = true;
+  {
     const placasHoySize = (typeof REP_ROWS!=='undefined'?new Set(REP_ROWS.map(r=>normPlaca(r.placa)).filter(Boolean)).size:'?');
-    const banner=document.createElement('div');
-    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#22d3ee;color:#111;font-size:15px;font-weight:700;padding:14px 18px;border-bottom:4px solid #0e7490;box-shadow:0 4px 12px rgba(0,0,0,.3);font-family:monospace';
-    banner.innerHTML = `📊 UNIDADES — origen filtro: "${origenU}" · REP_ROWS: ${(typeof REP_ROWS!=='undefined'?REP_ROWS.length:'?')} · placas únicas en reporte: ${placasHoySize} · UNIDADES en base: ${UNIDADES.length} · unidades ACTIVAS en base: ${UNIDADES.filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO').length} · mostradas ahora: ${unids.length}
-      <button onclick="this.parentNode.remove()" style="margin-left:12px;background:#111;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer">Cerrar</button>`;
-    document.body.appendChild(banner);
+    const activasBase = UNIDADES.filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO').length;
+    const info = `origen=${origenU} | REP_ROWS=${(typeof REP_ROWS!=='undefined'?REP_ROWS.length:'?')} | placasReporte=${placasHoySize} | UNIDADES_total=${UNIDADES.length} | UNIDADES_activas=${activasBase} | mostradas=${unids.length}`;
+    document.title = info; // se ve arriba en la pestaña del navegador, no puede fallar por diseño
+    const cEl=document.getElementById('prov-count');
+    if(cEl) cEl.textContent = unids.length+' unidades  —  [DEBUG: '+info+']';
   }
+
   if(!unids.length){
     const msg = sinReporteHoy ? 'No hay reporte del día cargado — sube el reporte para ver las unidades de hoy' : 'Sin unidades para los filtros aplicados';
     cont.innerHTML=`<div class="empty-state" style="grid-column:1/-1">${msg}</div>`; return;
@@ -5910,16 +5910,12 @@ function poblarSelectGrupo(selId, etiquetaVacia){
   const actual=sel.value;
   sel.innerHTML=`<option value="">${etiquetaVacia||'Todos los grupos'}</option>`+grupos.map(g=>`<option value="${g}">${g}</option>`).join('');
   if(grupos.includes(actual)) sel.value=actual;
-  if(selId==='pv-grupo' && !window._grupoDebugShown){
-    window._grupoDebugShown = true;
+  if(selId==='pv-grupo'){
     const totalUnid = (typeof UNIDADES!=='undefined'?UNIDADES.length:0);
     const activasTotal = (typeof UNIDADES!=='undefined'?UNIDADES:[]).filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO').length;
     const activasConTipo = (typeof UNIDADES!=='undefined'?UNIDADES:[]).filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO' && (u.tipo||'').trim()).length;
-    const banner=document.createElement('div');
-    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#facc15;color:#111;font-size:15px;font-weight:700;padding:14px 18px;border-bottom:4px solid #a16207;box-shadow:0 4px 12px rgba(0,0,0,.3);font-family:monospace';
-    banner.innerHTML = `📊 DIAGNÓSTICO — Total en UNIDADES: ${totalUnid} · Marcadas ACTIVO: ${activasTotal} · ACTIVO con "Tipo" lleno: ${activasConTipo} · Filas reporte hoy: ${(REP_ROWS||[]).length} · Grupos encontrados: ${grupos.length} (${grupos.join(', ')||'ninguno'})
-      <button onclick="this.parentNode.remove()" style="margin-left:12px;background:#111;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer">Cerrar</button>`;
-    document.body.appendChild(banner);
+    const cEl=document.getElementById('prov-count');
+    if(cEl && PV_METRICA!=='unidad') cEl.textContent += `  —  [DEBUG grupo: UNIDADES_total=${totalUnid} | ACTIVAS=${activasTotal} | ACTIVAS_con_tipo=${activasConTipo} | grupos=${grupos.length}(${grupos.join(',')||'ninguno'})]`;
   }
 }
 // Puebla el select de Grupo de Vehículo con los valores únicos que trae el reporte diario
