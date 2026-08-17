@@ -3498,14 +3498,6 @@ function renderTarjetasUnidades(f){
   const sk=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   sk('pvk-total',unids.length); sk('pvk-completos',kc); sk('pvk-incompletos',ki); sk('pvk-criticos',kx);
   document.getElementById('prov-count').textContent=unids.length+' unidades';
-  {
-    const placasHoySize = (typeof REP_ROWS!=='undefined'?new Set(REP_ROWS.map(r=>normPlaca(r.placa)).filter(Boolean)).size:'?');
-    const activasBase = UNIDADES.filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO').length;
-    const info = `origen=${origenU} | REP_ROWS=${(typeof REP_ROWS!=='undefined'?REP_ROWS.length:'?')} | placasReporte=${placasHoySize} | UNIDADES_total=${UNIDADES.length} | UNIDADES_activas=${activasBase} | mostradas=${unids.length}`;
-    document.title = info; // se ve arriba en la pestaña del navegador, no puede fallar por diseño
-    const cEl=document.getElementById('prov-count');
-    if(cEl) cEl.textContent = unids.length+' unidades  —  [DEBUG: '+info+']';
-  }
 
   if(!unids.length){
     const msg = sinReporteHoy ? 'No hay reporte del día cargado — sube el reporte para ver las unidades de hoy' : 'Sin unidades para los filtros aplicados';
@@ -5910,13 +5902,6 @@ function poblarSelectGrupo(selId, etiquetaVacia){
   const actual=sel.value;
   sel.innerHTML=`<option value="">${etiquetaVacia||'Todos los grupos'}</option>`+grupos.map(g=>`<option value="${g}">${g}</option>`).join('');
   if(grupos.includes(actual)) sel.value=actual;
-  if(selId==='pv-grupo'){
-    const totalUnid = (typeof UNIDADES!=='undefined'?UNIDADES.length:0);
-    const activasTotal = (typeof UNIDADES!=='undefined'?UNIDADES:[]).filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO').length;
-    const activasConTipo = (typeof UNIDADES!=='undefined'?UNIDADES:[]).filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO' && (u.tipo||'').trim()).length;
-    const cEl=document.getElementById('prov-count');
-    if(cEl && PV_METRICA!=='unidad') cEl.textContent += `  —  [DEBUG grupo: UNIDADES_total=${totalUnid} | ACTIVAS=${activasTotal} | ACTIVAS_con_tipo=${activasConTipo} | grupos=${grupos.length}(${grupos.join(',')||'ninguno'})]`;
-  }
 }
 // Puebla el select de Grupo de Vehículo con los valores únicos que trae el reporte diario
 function poblarFiltroGrupoCl(){ poblarSelectGrupo('cl-grupo-filtro'); }
