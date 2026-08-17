@@ -3498,8 +3498,14 @@ function renderTarjetasUnidades(f){
   const sk=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   sk('pvk-total',unids.length); sk('pvk-completos',kc); sk('pvk-incompletos',ki); sk('pvk-criticos',kx);
   document.getElementById('prov-count').textContent=unids.length+' unidades';
-  { const dbg=document.getElementById('prov-debug')||(()=>{const d=document.createElement('div');d.id='prov-debug';d.style.cssText='font-size:10px;color:#c026d3;margin:-4px 0 8px 0';cont.parentNode.insertBefore(d,cont);return d;})();
-    dbg.textContent = `[debug] origen=${origenU} · REP_ROWS=${(typeof REP_ROWS!=='undefined'?REP_ROWS.length:'?')} · placas únicas en reporte=${(typeof REP_ROWS!=='undefined'?new Set(REP_ROWS.map(r=>normPlaca(r.placa)).filter(Boolean)).size:'?')} · unidades mostradas=${unids.length}`;
+  if(!window._unidDebugShown){
+    window._unidDebugShown = true;
+    const placasHoySize = (typeof REP_ROWS!=='undefined'?new Set(REP_ROWS.map(r=>normPlaca(r.placa)).filter(Boolean)).size:'?');
+    const banner=document.createElement('div');
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#22d3ee;color:#111;font-size:15px;font-weight:700;padding:14px 18px;border-bottom:4px solid #0e7490;box-shadow:0 4px 12px rgba(0,0,0,.3);font-family:monospace';
+    banner.innerHTML = `📊 UNIDADES — origen filtro: "${origenU}" · REP_ROWS: ${(typeof REP_ROWS!=='undefined'?REP_ROWS.length:'?')} · placas únicas en reporte: ${placasHoySize} · UNIDADES en base: ${UNIDADES.length} · unidades ACTIVAS en base: ${UNIDADES.filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO').length} · mostradas ahora: ${unids.length}
+      <button onclick="this.parentNode.remove()" style="margin-left:12px;background:#111;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer">Cerrar</button>`;
+    document.body.appendChild(banner);
   }
   if(!unids.length){
     const msg = sinReporteHoy ? 'No hay reporte del día cargado — sube el reporte para ver las unidades de hoy' : 'Sin unidades para los filtros aplicados';
