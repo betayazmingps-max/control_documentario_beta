@@ -368,6 +368,10 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <svg class="nav-ico" viewBox="0 0 18 18"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.6" fill="none" opacity=".8"/><path d="M12 12l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".8"/></svg>
       Auditorías
     </div>
+    <div class="nav-item" onclick="goPage('buscador',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.6" fill="none" opacity=".8"/><path d="M12 12l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".8"/></svg>
+      Buscar RUC / DNI
+    </div>
     <div class="nav-section">Configuración</div>
     <div class="nav-item" onclick="openGSModal()">
       <svg class="nav-ico" viewBox="0 0 18 18"><circle cx="9" cy="9" r="3" fill="currentColor" opacity=".8"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>
@@ -730,8 +734,12 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Tipo</label>
             <select class="form-select" id="rp-tipo"><option value="Z.PER">Z.PER</option><option value="PIURA">PIURA</option><option value="">Otro</option></select></div>
           <div class="form-group"><label class="form-label">RUC</label>
-            <input class="form-input" id="rp-ruc" placeholder="20123456789" maxlength="11"></div>
+            <div style="display:flex;gap:6px">
+              <input class="form-input" id="rp-ruc" placeholder="20123456789" maxlength="11" style="flex:1">
+              <button type="button" onclick="buscarRucSunat()" title="Buscar en SUNAT" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:13px">🔍</button>
+            </div></div>
         </div>
+        <div id="rp-ruc-info" style="display:none;margin-top:8px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:11.5px;color:#166534;line-height:1.6"></div>
         <!-- Fila 3: 4 campos -->
         <div class="form-grid g4">
           <div class="form-group"><label class="form-label">Categoría <span class="req">*</span></label>
@@ -1258,6 +1266,21 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
     </div>
   </div>
 
+  <!-- ======== BUSCADOR RUC / DNI ======== -->
+  <div class="page" id="page-buscador">
+    <div style="max-width:640px">
+      <div class="form-sec">
+        <div class="form-sec-title">🔍 Buscar RUC o DNI</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Escribe un RUC (11 dígitos) o un DNI (8 dígitos) y busca — no hace falta que esté guardado en tu base, es una consulta libre a SUNAT/RENIEC.</div>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" id="bq-numero" placeholder="Ej: 20123456789 o 12345678" maxlength="11" style="flex:1" onkeydown="if(event.key==='Enter') buscarGeneral()">
+          <button class="btn-primary" onclick="buscarGeneral()" style="white-space:nowrap">🔍 Buscar</button>
+        </div>
+      </div>
+      <div id="bq-resultado"></div>
+    </div>
+  </div>
+
   <!-- ======== REG CONDUCTOR ======== -->
   <div class="page" id="page-reg-conductor">
     <div style="max-width:1100px;">
@@ -1265,7 +1288,11 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div class="form-sec">
         <div class="form-sec-title">👤 Datos del Conductor</div>
         <div class="form-grid g4">
-          <div class="form-group"><label class="form-label">DNI <span class="req">*</span></label><input class="form-input" type="text" id="c-dni" placeholder="12345678" oninput="buscarConductor(this.value)"></div>
+          <div class="form-group"><label class="form-label">DNI <span class="req">*</span></label>
+            <div style="display:flex;gap:6px">
+              <input class="form-input" type="text" id="c-dni" placeholder="12345678" oninput="buscarConductor(this.value)" style="flex:1">
+              <button type="button" onclick="buscarDniReniec()" title="Buscar en RENIEC" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:13px">🔍</button>
+            </div></div>
           <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="c-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
           <div class="form-group"><label class="form-label">Proveedor</label><input class="form-input" type="text" id="c-proveedor" placeholder="Nombre del proveedor" list="prov-list-cond" style="text-transform:uppercase"><datalist id="prov-list-cond"></datalist></div>
           <div class="form-group"><label class="form-label">Placa</label><input class="form-input" type="text" id="c-placa" placeholder="A1B234" style="text-transform:uppercase"></div>
@@ -1278,6 +1305,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group full"><label class="form-label">📁 Link Carpeta SharePoint</label><input class="form-input" type="text" id="c-carpeta" placeholder="https://..."></div>
         </div>
         <div class="form-group full"><label class="form-label">Conductor <span class="req">*</span></label><input class="form-input" type="text" id="c-nombre" placeholder="Apellidos y nombres completos" style="text-transform:uppercase"></div>
+        <div id="c-dni-info" style="display:none;margin-top:8px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:11.5px;color:#166534"></div>
       </div>
       <div class="form-sec">
         <div class="form-sec-title">🪪 Licencia de Conducir</div>
@@ -2121,7 +2149,7 @@ const pageTitles = {
   conductores:'Conductores',unidades:'Unidades',proveedores:'Proveedores',
   alertas:'Alertas Críticas',reporte:'Reporte Diario',
   checklist:'Checklist Documentario',
-  historial:'Historial de Reportes',auditorias:'Auditorías'
+  historial:'Historial de Reportes',auditorias:'Auditorías',buscador:'Buscar RUC / DNI'
 };
 const showSearch = ['conductores','unidades','proveedores'];
 function goPage(name, el) {
@@ -3106,6 +3134,111 @@ const PROV_COLS = [
 ];
 
 // Guarda el proveedor en Sheets con docs como VERDADERO/FALSO
+// ── Búsqueda RUC (SUNAT) / DNI (RENIEC) vía Perú API, a través del Apps Script ──
+// ── Buscador libre de RUC/DNI (módulo aparte, sin ligar a ningún formulario) ──
+async function buscarGeneral(){
+  const raw = (document.getElementById('bq-numero')||{}).value?.trim()||'';
+  const cont = document.getElementById('bq-resultado');
+  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
+  if(!/^\d{8}$/.test(raw) && !/^\d{11}$/.test(raw)){
+    showToast('Escribe un RUC (11 dígitos) o un DNI (8 dígitos) válido','err'); return;
+  }
+  cont.innerHTML = `<div class="form-sec" style="text-align:center;color:var(--text3)">🔎 Buscando...</div>`;
+  try{
+    if(raw.length===11){
+      const [r,r2] = await Promise.all([
+        fetch(GS_URL+'?action=ruc&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null),
+        fetch(GS_URL+'?action=representante&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null)
+      ]);
+      if(!r || !(r.razon_social||r.ruc)){
+        cont.innerHTML = `<div class="form-sec">⚠ No se encontró información para ese RUC.</div>`; return;
+      }
+      const reps = (r2 && r2.success && Array.isArray(r2.data) && r2.data.length)
+        ? r2.data.map(rep=>`<div style="padding:6px 0;border-top:1px solid var(--border)">👤 <b>${rep.nombre||'—'}</b> — ${rep.cargo||'—'} <span style="color:var(--text3)">(desde ${rep.fecha_desde||'—'})</span></div>`).join('')
+        : `<div style="padding:6px 0;color:var(--text3)">Sin representantes registrados o no disponibles en el plan actual.</div>`;
+      cont.innerHTML = `
+        <div class="form-sec">
+          <div class="form-sec-title">🏢 ${r.razon_social||'—'}</div>
+          <div style="font-size:12.5px;line-height:1.9">
+            <div>RUC: <b>${r.ruc||raw}</b></div>
+            <div>Estado SUNAT: <b style="color:${r.estado==='ACTIVO'?'#16a34a':'#dc2626'}">${r.estado||'—'}</b> · Condición: <b>${r.condicion||'—'}</b></div>
+            <div>📍 ${r.direccion||'—'}${r.distrito?', '+r.distrito:''}${r.provincia?', '+r.provincia:''}${r.departamento?', '+r.departamento:''}</div>
+          </div>
+          <div style="margin-top:10px;font-weight:700;font-size:12px">Representante(s) legal(es):</div>
+          ${reps}
+        </div>`;
+    } else {
+      const d = await fetch(GS_URL+'?action=dni&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null);
+      const nombreCompleto = d && (d.cliente || [d.nombres,d.apellido_paterno,d.apellido_materno].filter(Boolean).join(' '));
+      if(!nombreCompleto){
+        cont.innerHTML = `<div class="form-sec">⚠ No se encontró información para ese DNI.</div>`; return;
+      }
+      cont.innerHTML = `
+        <div class="form-sec">
+          <div class="form-sec-title">👤 ${nombreCompleto.toUpperCase()}</div>
+          <div style="font-size:12.5px">DNI: <b>${raw}</b></div>
+        </div>`;
+    }
+  }catch(e){
+    console.error(e);
+    cont.innerHTML = `<div class="form-sec">⚠ Error al consultar, intenta de nuevo.</div>`;
+  }
+}
+async function buscarRucSunat(){
+  const ruc = (document.getElementById('rp-ruc')||{}).value?.trim();
+  const info = document.getElementById('rp-ruc-info');
+  if(!ruc || ruc.length!==11){ showToast('Ingresa un RUC válido (11 dígitos)','err'); return; }
+  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
+  info.style.display='block'; info.textContent='🔎 Buscando...';
+  try{
+    const r = await fetch(GS_URL+'?action=ruc&numero='+encodeURIComponent(ruc));
+    const d = await r.json();
+    let repLegalTxt = '';
+    try{
+      const r2 = await fetch(GS_URL+'?action=representante&numero='+encodeURIComponent(ruc));
+      const d2 = await r2.json();
+      if(d2 && d2.success && Array.isArray(d2.data) && d2.data.length){
+        repLegalTxt = d2.data.map(rep=>`${rep.nombre||'—'} (${rep.cargo||'—'})`).join('<br>');
+      }
+    }catch(e2){ console.warn('No se pudo obtener representante legal:', e2); }
+    if(d && (d.razon_social || d.ruc)){
+      const nombreEl=document.getElementById('rp-nombre');
+      if(nombreEl && !nombreEl.value.trim()) nombreEl.value = d.razon_social || '';
+      const contactoEl=document.getElementById('rp-contacto');
+      if(contactoEl && !contactoEl.value.trim() && repLegalTxt) contactoEl.value = repLegalTxt.replace(/<br>.*$/,'').replace(/\s*\([^)]*\)$/,'');
+      info.innerHTML = `<b>${d.razon_social||'—'}</b><br>Estado SUNAT: <b>${d.estado||'—'}</b> · Condición: <b>${d.condicion||'—'}</b><br>📍 ${d.direccion||'—'}${d.distrito?', '+d.distrito:''}${d.provincia?', '+d.provincia:''}${d.departamento?', '+d.departamento:''}${repLegalTxt?'<br>👤 Representante(s): '+repLegalTxt:''}`;
+      showToast('✓ Datos de SUNAT cargados','ok');
+    } else {
+      info.textContent = '⚠ No se encontró información para ese RUC.';
+    }
+  }catch(e){
+    console.error(e);
+    info.textContent = '⚠ Error al consultar SUNAT, intenta de nuevo.';
+  }
+}
+async function buscarDniReniec(){
+  const dni = (document.getElementById('c-dni')||{}).value?.trim();
+  const info = document.getElementById('c-dni-info');
+  if(!dni || dni.length!==8){ showToast('Ingresa un DNI válido (8 dígitos)','err'); return; }
+  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
+  info.style.display='block'; info.textContent='🔎 Buscando...';
+  try{
+    const r = await fetch(GS_URL+'?action=dni&numero='+encodeURIComponent(dni));
+    const d = await r.json();
+    const nombreCompleto = d && (d.cliente || [d.nombres,d.apellido_paterno,d.apellido_materno].filter(Boolean).join(' '));
+    if(nombreCompleto){
+      const nombreEl=document.getElementById('c-nombre');
+      if(nombreEl) nombreEl.value = nombreCompleto.toUpperCase();
+      info.textContent = `✓ RENIEC: ${nombreCompleto.toUpperCase()}`;
+      showToast('✓ Nombre de RENIEC cargado','ok');
+    } else {
+      info.textContent = '⚠ No se encontró información para ese DNI.';
+    }
+  }catch(e){
+    console.error(e);
+    info.textContent = '⚠ Error al consultar RENIEC, intenta de nuevo.';
+  }
+}
 async function guardarProvEnSheets(nombreProv){
   if(!GS_URL) return false;
   const prov = PROVEEDORES.find(p=>normProvName(p.nombre)===normProvName(nombreProv));
