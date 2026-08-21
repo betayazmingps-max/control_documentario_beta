@@ -1270,10 +1270,10 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   <div class="page" id="page-buscador">
     <div style="max-width:640px">
       <div class="form-sec">
-        <div class="form-sec-title">🔍 Buscar RUC o DNI</div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Escribe un RUC (11 dígitos) o un DNI (8 dígitos) y busca — no hace falta que esté guardado en tu base, es una consulta libre a SUNAT/RENIEC.</div>
+        <div class="form-sec-title">🔍 Buscar RUC, DNI o Placa</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Escribe un RUC (11 dígitos), un DNI (8 dígitos) o una placa (6-7 caracteres) y busca — no hace falta que esté guardado en tu base, es una consulta libre a SUNAT/RENIEC/MTC/SOAT.</div>
         <div style="display:flex;gap:8px">
-          <input class="form-input" id="bq-numero" placeholder="Ej: 20123456789 o 12345678" maxlength="11" style="flex:1" onkeydown="if(event.key==='Enter') buscarGeneral()">
+          <input class="form-input" id="bq-numero" placeholder="Ej: 20123456789, 12345678 o ABC123" maxlength="11" style="flex:1" onkeydown="if(event.key==='Enter') buscarGeneral()">
           <button class="btn-primary" onclick="buscarGeneral()" style="white-space:nowrap">🔍 Buscar</button>
         </div>
       </div>
@@ -3135,17 +3135,20 @@ const PROV_COLS = [
 
 // Guarda el proveedor en Sheets con docs como VERDADERO/FALSO
 // ── Búsqueda RUC (SUNAT) / DNI (RENIEC) vía Perú API, a través del Apps Script ──
-// ── Buscador libre de RUC/DNI (módulo aparte, sin ligar a ningún formulario) ──
+// ── Buscador libre de RUC/DNI/Placa (módulo aparte, sin ligar a ningún formulario) ──
 async function buscarGeneral(){
-  const raw = (document.getElementById('bq-numero')||{}).value?.trim()||'';
+  const raw = (document.getElementById('bq-numero')||{}).value?.trim().toUpperCase().replace(/[\s\-]/g,'')||'';
   const cont = document.getElementById('bq-resultado');
   if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
-  if(!/^\d{8}$/.test(raw) && !/^\d{11}$/.test(raw)){
-    showToast('Escribe un RUC (11 dígitos) o un DNI (8 dígitos) válido','err'); return;
+  const esDni = /^\d{8}$/.test(raw);
+  const esRuc = /^\d{11}$/.test(raw);
+  const esPlaca = /^[A-Z0-9]{6,7}$/.test(raw) && !esDni && !esRuc;
+  if(!esDni && !esRuc && !esPlaca){
+    showToast('Escribe un RUC (11 dígitos), un DNI (8 dígitos) o una placa válida','err'); return;
   }
   cont.innerHTML = `<div class="form-sec" style="text-align:center;color:var(--text3)">🔎 Buscando...</div>`;
   try{
-    if(raw.length===11){
+    if(esRuc){
       const [r,r2] = await Promise.all([
         fetch(GS_URL+'?action=ruc&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null),
         fetch(GS_URL+'?action=representante&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null)
@@ -3167,16 +3170,59 @@ async function buscarGeneral(){
           <div style="margin-top:10px;font-weight:700;font-size:12px">Representante(s) legal(es):</div>
           ${reps}
         </div>`;
-    } else {
-      const d = await fetch(GS_URL+'?action=dni&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null);
+    } else if(esDni){
+      const [d,dl] = await Promise.all([
+        fetch(GS_URL+'?action=dni&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null),
+        fetch(GS_URL+'?action=licencia&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null)
+      ]);
       const nombreCompleto = d && (d.cliente || [d.nombres,d.apellido_paterno,d.apellido_materno].filter(Boolean).join(' '));
       if(!nombreCompleto){
         cont.innerHTML = `<div class="form-sec">⚠ No se encontró información para ese DNI.</div>`; return;
       }
+      const lic = dl && dl.data && dl.data.licencia;
+      const licHtml = lic
+        ? `<div style="margin-top:10px;font-weight:700;font-size:12px">Licencia de conducir:</div>
+           <div style="font-size:12.5px;line-height:1.9">
+             <div>N°: <b>${lic.numero||'—'}</b> · Categoría: <b>${lic.categoria||'—'}</b></div>
+             <div>Estado: <b style="color:${lic.estado==='VIGENTE'?'#16a34a':'#dc2626'}">${lic.estado||'—'}</b> · Vence: <b>${lic.fecha_vencimiento||'—'}</b></div>
+             <div>Restricciones: ${lic.restricciones||'—'}</div>
+           </div>`
+        : `<div style="margin-top:10px;color:var(--text3);font-size:12px">Sin licencia de conducir registrada.</div>`;
       cont.innerHTML = `
         <div class="form-sec">
           <div class="form-sec-title">👤 ${nombreCompleto.toUpperCase()}</div>
           <div style="font-size:12.5px">DNI: <b>${raw}</b></div>
+          ${licHtml}
+        </div>`;
+    } else {
+      const [s,rt] = await Promise.all([
+        fetch(GS_URL+'?action=soat&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null),
+        fetch(GS_URL+'?action=revision-tecnica&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null)
+      ]);
+      const soatOk = s && s.success && s.data;
+      const soatHtml = soatOk
+        ? `<div style="font-size:12.5px;line-height:1.9">
+             <div>Compañía: <b>${s.data.nombre_compania||'—'}</b></div>
+             <div>Estado: <b style="color:${s.data.estado==='VIGENTE'?'#16a34a':'#dc2626'}">${s.data.estado||'—'}</b> · Vigencia: ${s.data.fecha_inicio||'—'} al ${s.data.fecha_fin||'—'}</div>
+             <div>N° Póliza: ${s.data.numero_poliza||'—'}</div>
+           </div>`
+        : `<div style="color:var(--text3);font-size:12px">No se encontró SOAT registrado para esta placa.</div>`;
+      const rtItems = (rt && rt.success && Array.isArray(rt.data)) ? rt.data : [];
+      const rtUltima = rtItems.find(x=>x.orden==='ULTIMO') || rtItems[0];
+      const rtHtml = rtUltima
+        ? `<div style="font-size:12.5px;line-height:1.9">
+             <div>Resultado: <b style="color:${rtUltima.resultado_inspeccion==='APROBADO'?'#16a34a':'#dc2626'}">${rtUltima.resultado_inspeccion||'—'}</b> · Estado: <b style="color:${rtUltima.estado==='VIGENTE'?'#16a34a':'#dc2626'}">${rtUltima.estado||'—'}</b></div>
+             <div>Vigente: ${rtUltima.vigente_desde||'—'} al ${rtUltima.vigente_hasta||'—'}</div>
+             <div>Certificadora: ${rtUltima.empresa_certificadora||'—'}</div>
+           </div>`
+        : `<div style="color:var(--text3);font-size:12px">No se encontró revisión técnica registrada para esta placa.</div>`;
+      cont.innerHTML = `
+        <div class="form-sec">
+          <div class="form-sec-title">🚛 Placa ${raw}</div>
+          <div style="margin-top:6px;font-weight:700;font-size:12px">SOAT:</div>
+          ${soatHtml}
+          <div style="margin-top:10px;font-weight:700;font-size:12px">Revisión Técnica (última):</div>
+          ${rtHtml}
         </div>`;
     }
   }catch(e){
