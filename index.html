@@ -1268,13 +1268,31 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 
   <!-- ======== BUSCADOR RUC / DNI ======== -->
   <div class="page" id="page-buscador">
-    <div style="max-width:640px">
-      <div class="form-sec">
-        <div class="form-sec-title">🔍 Buscar RUC, DNI o Placa</div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Escribe un RUC (11 dígitos), un DNI (8 dígitos) o una placa (6-7 caracteres) y busca — no hace falta que esté guardado en tu base, es una consulta libre a SUNAT/RENIEC/MTC/SOAT.</div>
-        <div style="display:flex;gap:8px">
-          <input class="form-input" id="bq-numero" placeholder="Ej: 20123456789, 12345678 o ABC123" maxlength="11" style="flex:1" onkeydown="if(event.key==='Enter') buscarGeneral()">
-          <button class="btn-primary" onclick="buscarGeneral()" style="white-space:nowrap">🔍 Buscar</button>
+    <div style="max-width:1000px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px">
+        <div class="form-sec" style="margin:0">
+          <div class="form-sec-title">🏢 RUC</div>
+          <div style="font-size:11.5px;color:var(--text3);margin-bottom:10px">Razón social, estado SUNAT y representante legal</div>
+          <div style="display:flex;gap:6px">
+            <input class="form-input" id="bq-ruc" placeholder="20123456789" maxlength="11" style="flex:1" onkeydown="if(event.key==='Enter') buscarRucBox()">
+            <button class="btn-primary" onclick="buscarRucBox()">🔍</button>
+          </div>
+        </div>
+        <div class="form-sec" style="margin:0">
+          <div class="form-sec-title">👤 DNI</div>
+          <div style="font-size:11.5px;color:var(--text3);margin-bottom:10px">Nombre completo y licencia de conducir</div>
+          <div style="display:flex;gap:6px">
+            <input class="form-input" id="bq-dni" placeholder="12345678" maxlength="8" style="flex:1" onkeydown="if(event.key==='Enter') buscarDniBox()">
+            <button class="btn-primary" onclick="buscarDniBox()">🔍</button>
+          </div>
+        </div>
+        <div class="form-sec" style="margin:0">
+          <div class="form-sec-title">🚛 Placa</div>
+          <div style="font-size:11.5px;color:var(--text3);margin-bottom:10px">SOAT y Revisión Técnica vigente</div>
+          <div style="display:flex;gap:6px">
+            <input class="form-input" id="bq-placa" placeholder="ABC123" maxlength="7" style="flex:1;text-transform:uppercase" onkeydown="if(event.key==='Enter') buscarPlacaBox()">
+            <button class="btn-primary" onclick="buscarPlacaBox()">🔍</button>
+          </div>
         </div>
       </div>
       <div id="bq-resultado"></div>
@@ -3136,100 +3154,111 @@ const PROV_COLS = [
 // Guarda el proveedor en Sheets con docs como VERDADERO/FALSO
 // ── Búsqueda RUC (SUNAT) / DNI (RENIEC) vía Perú API, a través del Apps Script ──
 // ── Buscador libre de RUC/DNI/Placa (módulo aparte, sin ligar a ningún formulario) ──
-async function buscarGeneral(){
-  const raw = (document.getElementById('bq-numero')||{}).value?.trim().toUpperCase().replace(/[\s\-]/g,'')||'';
-  const cont = document.getElementById('bq-resultado');
-  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
-  const esDni = /^\d{8}$/.test(raw);
-  const esRuc = /^\d{11}$/.test(raw);
-  const esPlaca = /^[A-Z0-9]{6,7}$/.test(raw) && !esDni && !esRuc;
-  if(!esDni && !esRuc && !esPlaca){
-    showToast('Escribe un RUC (11 dígitos), un DNI (8 dígitos) o una placa válida','err'); return;
-  }
-  cont.innerHTML = `<div class="form-sec" style="text-align:center;color:var(--text3)">🔎 Buscando...</div>`;
+// ── Helper: pide JSON al Apps Script y siempre devuelve un objeto con la data
+// o el detalle del error (para poder mostrarlo en pantalla y diagnosticar). ──
+async function bqFetch(action, numero){
   try{
-    if(esRuc){
-      const [r,r2] = await Promise.all([
-        fetch(GS_URL+'?action=ruc&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null),
-        fetch(GS_URL+'?action=representante&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null)
-      ]);
-      if(!r || !(r.razon_social||r.ruc)){
-        cont.innerHTML = `<div class="form-sec">⚠ No se encontró información para ese RUC.</div>`; return;
-      }
-      const reps = (r2 && r2.success && Array.isArray(r2.data) && r2.data.length)
-        ? r2.data.map(rep=>`<div style="padding:6px 0;border-top:1px solid var(--border)">👤 <b>${rep.nombre||'—'}</b> — ${rep.cargo||'—'} <span style="color:var(--text3)">(desde ${rep.fecha_desde||'—'})</span></div>`).join('')
-        : `<div style="padding:6px 0;color:var(--text3)">Sin representantes registrados o no disponibles en el plan actual.</div>`;
-      cont.innerHTML = `
-        <div class="form-sec">
-          <div class="form-sec-title">🏢 ${r.razon_social||'—'}</div>
-          <div style="font-size:12.5px;line-height:1.9">
-            <div>RUC: <b>${r.ruc||raw}</b></div>
-            <div>Estado SUNAT: <b style="color:${r.estado==='ACTIVO'?'#16a34a':'#dc2626'}">${r.estado||'—'}</b> · Condición: <b>${r.condicion||'—'}</b></div>
-            <div>📍 ${r.direccion||'—'}${r.distrito?', '+r.distrito:''}${r.provincia?', '+r.provincia:''}${r.departamento?', '+r.departamento:''}</div>
-          </div>
-          <div style="margin-top:10px;font-weight:700;font-size:12px">Representante(s) legal(es):</div>
-          ${reps}
-        </div>`;
-    } else if(esDni){
-      const [d,dl] = await Promise.all([
-        fetch(GS_URL+'?action=dni&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null),
-        fetch(GS_URL+'?action=licencia&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null)
-      ]);
-      const nombreCompleto = d && (d.cliente || [d.nombres,d.apellido_paterno,d.apellido_materno].filter(Boolean).join(' '));
-      if(!nombreCompleto){
-        cont.innerHTML = `<div class="form-sec">⚠ No se encontró información para ese DNI.</div>`; return;
-      }
-      const lic = dl && dl.data && dl.data.licencia;
-      const licHtml = lic
-        ? `<div style="margin-top:10px;font-weight:700;font-size:12px">Licencia de conducir:</div>
-           <div style="font-size:12.5px;line-height:1.9">
-             <div>N°: <b>${lic.numero||'—'}</b> · Categoría: <b>${lic.categoria||'—'}</b></div>
-             <div>Estado: <b style="color:${lic.estado==='VIGENTE'?'#16a34a':'#dc2626'}">${lic.estado||'—'}</b> · Vence: <b>${lic.fecha_vencimiento||'—'}</b></div>
-             <div>Restricciones: ${lic.restricciones||'—'}</div>
-           </div>`
-        : `<div style="margin-top:10px;color:var(--text3);font-size:12px">Sin licencia de conducir registrada.</div>`;
-      cont.innerHTML = `
-        <div class="form-sec">
-          <div class="form-sec-title">👤 ${nombreCompleto.toUpperCase()}</div>
-          <div style="font-size:12.5px">DNI: <b>${raw}</b></div>
-          ${licHtml}
-        </div>`;
-    } else {
-      const [s,rt] = await Promise.all([
-        fetch(GS_URL+'?action=soat&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null),
-        fetch(GS_URL+'?action=revision-tecnica&numero='+encodeURIComponent(raw)).then(x=>x.json()).catch(()=>null)
-      ]);
-      const soatOk = s && s.success && s.data;
-      const soatHtml = soatOk
-        ? `<div style="font-size:12.5px;line-height:1.9">
-             <div>Compañía: <b>${s.data.nombre_compania||'—'}</b></div>
-             <div>Estado: <b style="color:${s.data.estado==='VIGENTE'?'#16a34a':'#dc2626'}">${s.data.estado||'—'}</b> · Vigencia: ${s.data.fecha_inicio||'—'} al ${s.data.fecha_fin||'—'}</div>
-             <div>N° Póliza: ${s.data.numero_poliza||'—'}</div>
-           </div>`
-        : `<div style="color:var(--text3);font-size:12px">No se encontró SOAT registrado para esta placa.</div>`;
-      const rtItems = (rt && rt.success && Array.isArray(rt.data)) ? rt.data : [];
-      const rtUltima = rtItems.find(x=>x.orden==='ULTIMO') || rtItems[0];
-      const rtHtml = rtUltima
-        ? `<div style="font-size:12.5px;line-height:1.9">
-             <div>Resultado: <b style="color:${rtUltima.resultado_inspeccion==='APROBADO'?'#16a34a':'#dc2626'}">${rtUltima.resultado_inspeccion||'—'}</b> · Estado: <b style="color:${rtUltima.estado==='VIGENTE'?'#16a34a':'#dc2626'}">${rtUltima.estado||'—'}</b></div>
-             <div>Vigente: ${rtUltima.vigente_desde||'—'} al ${rtUltima.vigente_hasta||'—'}</div>
-             <div>Certificadora: ${rtUltima.empresa_certificadora||'—'}</div>
-           </div>`
-        : `<div style="color:var(--text3);font-size:12px">No se encontró revisión técnica registrada para esta placa.</div>`;
-      cont.innerHTML = `
-        <div class="form-sec">
-          <div class="form-sec-title">🚛 Placa ${raw}</div>
-          <div style="margin-top:6px;font-weight:700;font-size:12px">SOAT:</div>
-          ${soatHtml}
-          <div style="margin-top:10px;font-weight:700;font-size:12px">Revisión Técnica (última):</div>
-          ${rtHtml}
-        </div>`;
-    }
+    const r = await fetch(GS_URL+'?action='+action+'&numero='+encodeURIComponent(numero));
+    const txt = await r.text();
+    let data;
+    try{ data = JSON.parse(txt); }
+    catch(e){ return { _error: 'Respuesta no es JSON válido: '+txt.slice(0,200) }; }
+    if(data && data.ok===false) return { _error: data.error||'Error desconocido' };
+    return data;
   }catch(e){
-    console.error(e);
-    cont.innerHTML = `<div class="form-sec">⚠ Error al consultar, intenta de nuevo.</div>`;
+    return { _error: 'No se pudo conectar: '+e.message };
   }
 }
+function bqErrorBox(titulo, res){
+  return `<div class="form-sec"><b>⚠ ${titulo}</b><div style="margin-top:6px;font-size:12px;color:#dc2626;font-family:monospace;white-space:pre-wrap">${res._error}</div></div>`;
+}
+
+async function buscarRucBox(){
+  const raw = (document.getElementById('bq-ruc')||{}).value?.trim()||'';
+  const cont = document.getElementById('bq-resultado');
+  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
+  if(!/^\d{11}$/.test(raw)){ showToast('El RUC debe tener 11 dígitos','err'); return; }
+  cont.innerHTML = `<div class="form-sec" style="text-align:center;color:var(--text3)">🔎 Buscando RUC...</div>`;
+  const [r,r2] = await Promise.all([ bqFetch('ruc',raw), bqFetch('representante',raw) ]);
+  if(r._error){ cont.innerHTML = bqErrorBox('No se pudo consultar el RUC', r); return; }
+  if(!(r.razon_social||r.ruc)){ cont.innerHTML = `<div class="form-sec">No se encontró información para ese RUC.</div>`; return; }
+  const reps = (!r2._error && r2.success && Array.isArray(r2.data) && r2.data.length)
+    ? r2.data.map(rep=>`<div style="padding:6px 0;border-top:1px solid var(--border)">👤 <b>${rep.nombre||'—'}</b> — ${rep.cargo||'—'} <span style="color:var(--text3)">(desde ${rep.fecha_desde||'—'})</span></div>`).join('')
+    : `<div style="padding:6px 0;color:var(--text3)">${r2._error||'Sin representantes registrados o no disponibles en el plan actual.'}</div>`;
+  cont.innerHTML = `
+    <div class="form-sec">
+      <div class="form-sec-title">🏢 ${r.razon_social||'—'}</div>
+      <div style="font-size:12.5px;line-height:1.9">
+        <div>RUC: <b>${r.ruc||raw}</b></div>
+        <div>Estado SUNAT: <b style="color:${r.estado==='ACTIVO'?'#16a34a':'#dc2626'}">${r.estado||'—'}</b> · Condición: <b>${r.condicion||'—'}</b></div>
+        <div>📍 ${r.direccion||'—'}${r.distrito?', '+r.distrito:''}${r.provincia?', '+r.provincia:''}${r.departamento?', '+r.departamento:''}</div>
+      </div>
+      <div style="margin-top:10px;font-weight:700;font-size:12px">Representante(s) legal(es):</div>
+      ${reps}
+    </div>`;
+}
+
+async function buscarDniBox(){
+  const raw = (document.getElementById('bq-dni')||{}).value?.trim()||'';
+  const cont = document.getElementById('bq-resultado');
+  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
+  if(!/^\d{8}$/.test(raw)){ showToast('El DNI debe tener 8 dígitos','err'); return; }
+  cont.innerHTML = `<div class="form-sec" style="text-align:center;color:var(--text3)">🔎 Buscando DNI...</div>`;
+  const [d,dl] = await Promise.all([ bqFetch('dni',raw), bqFetch('licencia',raw) ]);
+  if(d._error){ cont.innerHTML = bqErrorBox('No se pudo consultar el DNI', d); return; }
+  const nombreCompleto = d.cliente || [d.nombres,d.apellido_paterno,d.apellido_materno].filter(Boolean).join(' ');
+  if(!nombreCompleto){ cont.innerHTML = `<div class="form-sec">No se encontró información para ese DNI.</div>`; return; }
+  const lic = !dl._error && dl.data && dl.data.licencia;
+  const licHtml = lic
+    ? `<div style="margin-top:10px;font-weight:700;font-size:12px">Licencia de conducir:</div>
+       <div style="font-size:12.5px;line-height:1.9">
+         <div>N°: <b>${lic.numero||'—'}</b> · Categoría: <b>${lic.categoria||'—'}</b></div>
+         <div>Estado: <b style="color:${lic.estado==='VIGENTE'?'#16a34a':'#dc2626'}">${lic.estado||'—'}</b> · Vence: <b>${lic.fecha_vencimiento||'—'}</b></div>
+         <div>Restricciones: ${lic.restricciones||'—'}</div>
+       </div>`
+    : `<div style="margin-top:10px;color:var(--text3);font-size:12px">${dl._error||'Sin licencia de conducir registrada.'}</div>`;
+  cont.innerHTML = `
+    <div class="form-sec">
+      <div class="form-sec-title">👤 ${nombreCompleto.toUpperCase()}</div>
+      <div style="font-size:12.5px">DNI: <b>${raw}</b></div>
+      ${licHtml}
+    </div>`;
+}
+
+async function buscarPlacaBox(){
+  const raw = (document.getElementById('bq-placa')||{}).value?.trim().toUpperCase().replace(/[\s\-]/g,'')||'';
+  const cont = document.getElementById('bq-resultado');
+  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
+  if(!/^[A-Z0-9]{6,7}$/.test(raw)){ showToast('Escribe una placa válida','err'); return; }
+  cont.innerHTML = `<div class="form-sec" style="text-align:center;color:var(--text3)">🔎 Buscando placa...</div>`;
+  const [s,rt] = await Promise.all([ bqFetch('soat',raw), bqFetch('revision-tecnica',raw) ]);
+  if(s._error && rt._error){ cont.innerHTML = bqErrorBox('No se pudo consultar la placa', s); return; }
+  const soatHtml = (!s._error && s.success && s.data)
+    ? `<div style="font-size:12.5px;line-height:1.9">
+         <div>Compañía: <b>${s.data.nombre_compania||'—'}</b></div>
+         <div>Estado: <b style="color:${s.data.estado==='VIGENTE'?'#16a34a':'#dc2626'}">${s.data.estado||'—'}</b> · Vigencia: ${s.data.fecha_inicio||'—'} al ${s.data.fecha_fin||'—'}</div>
+         <div>N° Póliza: ${s.data.numero_poliza||'—'}</div>
+       </div>`
+    : `<div style="color:var(--text3);font-size:12px">${s._error||'No se encontró SOAT registrado para esta placa.'}</div>`;
+  const rtItems = (!rt._error && rt.success && Array.isArray(rt.data)) ? rt.data : [];
+  const rtUltima = rtItems.find(x=>x.orden==='ULTIMO') || rtItems[0];
+  const rtHtml = rtUltima
+    ? `<div style="font-size:12.5px;line-height:1.9">
+         <div>Resultado: <b style="color:${rtUltima.resultado_inspeccion==='APROBADO'?'#16a34a':'#dc2626'}">${rtUltima.resultado_inspeccion||'—'}</b> · Estado: <b style="color:${rtUltima.estado==='VIGENTE'?'#16a34a':'#dc2626'}">${rtUltima.estado||'—'}</b></div>
+         <div>Vigente: ${rtUltima.vigente_desde||'—'} al ${rtUltima.vigente_hasta||'—'}</div>
+         <div>Certificadora: ${rtUltima.empresa_certificadora||'—'}</div>
+       </div>`
+    : `<div style="color:var(--text3);font-size:12px">${rt._error||'No se encontró revisión técnica registrada para esta placa.'}</div>`;
+  cont.innerHTML = `
+    <div class="form-sec">
+      <div class="form-sec-title">🚛 Placa ${raw}</div>
+      <div style="margin-top:6px;font-weight:700;font-size:12px">SOAT:</div>
+      ${soatHtml}
+      <div style="margin-top:10px;font-weight:700;font-size:12px">Revisión Técnica (última):</div>
+      ${rtHtml}
+    </div>`;
+}
+
 async function buscarRucSunat(){
   const ruc = (document.getElementById('rp-ruc')||{}).value?.trim();
   const info = document.getElementById('rp-ruc-info');
