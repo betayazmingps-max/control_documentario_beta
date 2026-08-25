@@ -5737,6 +5737,28 @@ function buscarUnidad(placa){
     showToast('Unidad encontrada: '+u.placa,'ok');
   }
 }
+// Convierte fecha DD/MM/AAAA (u otros formatos comunes) a AAAA-MM-DD para <input type="date">
+function normFechaISO(v){
+  if(!v) return '';
+  v=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0,10);
+  let m=v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  m=v.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if(m) return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+  return '';
+}
+// Selecciona en un <select> la opción más parecida a un texto libre de la API; si no existe, la agrega
+function setSelectFuzzy(id, valorApi){
+  const el=document.getElementById(id);
+  if(!el||!valorApi) return;
+  const target=String(valorApi).toUpperCase();
+  let opt=[...el.options].find(o=>o.value.toUpperCase()===target);
+  if(!opt) opt=[...el.options].find(o=>target.includes(o.value.toUpperCase())||o.value.toUpperCase().includes(target.split(' ')[0]));
+  if(opt){ el.value=opt.value; return; }
+  const nueva=document.createElement('option'); nueva.value=target; nueva.textContent=target;
+  el.appendChild(nueva); el.value=target;
+}
 // Consulta SOAT + Revisión Técnica por placa (API en vivo) y rellena el formulario de Unidad
 async function autoRellenarSoatRtv(placaRaw){
   const placa=(placaRaw||'').trim().toUpperCase().replace(/[\s\-]/g,'');
@@ -5748,11 +5770,12 @@ async function autoRellenarSoatRtv(placaRaw){
   const partes=[];
   if(!s._error && s.success && s.data){
     const su=(id,v)=>{const e=document.getElementById(id);if(e&&v)e.value=v;};
-    su('u-aseg-soat', s.data.nombre_compania);
-    su('u-fecha-soat', s.data.fecha_fin);
+    setSelectFuzzy('u-aseg-soat', s.data.nombre_compania);
+    const fSoat=normFechaISO(s.data.fecha_fin);
+    if(fSoat) su('u-fecha-soat', fSoat);
     su('u-uso-soat', s.data.uso);
     su('u-tipo-soat', s.data.tipo);
-    if(s.data.fecha_fin) calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat');
+    if(fSoat) calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat');
     partes.push('📄 SOAT: <b>'+(s.data.estado||'—')+'</b> hasta '+(s.data.fecha_fin||'—'));
   } else {
     partes.push('📄 SOAT: no encontrado'+(s._error?' ('+s._error+')':''));
@@ -5761,8 +5784,9 @@ async function autoRellenarSoatRtv(placaRaw){
   const rtUltima=rtItems.find(x=>x.orden==='ULTIMO')||rtItems[0];
   if(rtUltima){
     const su=(id,v)=>{const e=document.getElementById(id);if(e&&v)e.value=v;};
-    su('u-fecha-rtv', rtUltima.vigente_hasta);
-    if(rtUltima.vigente_hasta) calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv');
+    const fRtv=normFechaISO(rtUltima.vigente_hasta);
+    if(fRtv) su('u-fecha-rtv', fRtv);
+    if(fRtv) calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv');
     partes.push('🔧 RTV: <b>'+(rtUltima.resultado_inspeccion||'—')+'</b> vigente hasta '+(rtUltima.vigente_hasta||'—'));
   } else {
     partes.push('🔧 RTV: no encontrada'+(rt._error?' ('+rt._error+')':''));
