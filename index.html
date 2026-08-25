@@ -1576,8 +1576,8 @@ async function workerFetch(path, body){
       method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
     });
     const d = await r.json().catch(()=>null);
-    if(!r.ok) return { _error: (d&&d.error) || ('HTTP '+r.status) };
-    if(d && d.error) return { _error: d.error };
+    if(!r.ok) return { _error: (d&&(d.error+(d.detalle?' — '+d.detalle.join(' | '):''))) || ('HTTP '+r.status) };
+    if(d && d.error) return { _error: d.error+(d.detalle?' — '+d.detalle.join(' | '):'') };
     return d || { _error:'Respuesta vacía del Worker' };
   }catch(e){
     return { _error: 'No se pudo conectar al Worker: '+e.message };
