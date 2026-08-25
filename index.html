@@ -1422,7 +1422,13 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div class="form-sec">
         <div class="form-sec-title">🚛 Datos de la Unidad</div>
         <div class="form-grid g4">
-          <div class="form-group"><label class="form-label">Placa <span class="req">*</span></label><input class="form-input" type="text" id="u-placa" placeholder="A1B234" style="text-transform:uppercase" oninput="buscarUnidad(this.value)"></div>
+          <div class="form-group"><label class="form-label">Placa <span class="req">*</span></label>
+            <div style="display:flex;gap:6px">
+              <input class="form-input" type="text" id="u-placa" placeholder="A1B234" style="flex:1;text-transform:uppercase" oninput="buscarUnidad(this.value)" onblur="autoRellenarSoatRtv(this.value)">
+              <button type="button" class="bq-search-btn" style="--bq-accent:var(--accent);width:38px;flex:0 0 38px" onclick="autoRellenarSoatRtv(document.getElementById('u-placa').value)" title="Consultar SOAT / Rev. Técnica">🔍</button>
+            </div>
+            <div id="u-placa-info" style="display:none;font-size:11px;margin-top:5px;padding:6px 9px;border-radius:8px;background:var(--bg3);color:var(--text2);line-height:1.6"></div>
+          </div>
           <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="u-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
           <div class="form-group"><label class="form-label">Proveedor</label><input class="form-input" type="text" id="u-proveedor" placeholder="Nombre del proveedor" list="prov-list-unid" style="text-transform:uppercase"><datalist id="prov-list-unid"></datalist></div>
           <div class="form-group"><label class="form-label">Centro</label><select class="form-select" id="u-centro"><option value="">— Seleccionar —</option><option value="4101">4101 — PLANTA CHINCHA</option><option value="4202">4202 — FUNDO ICA</option><option value="4208">4208 — OLMOS I</option><option value="4210">4210 — OLMOS II</option><option value="4205">4205 — FUNDO JAYANCA</option><option value="4109">4109 — PLANTA OLMOS</option><option value="4104">4104 — PLANTA JAYANCA</option><option value="4206">4206 — FUNDO PIURA</option></select></div>
@@ -1492,7 +1498,22 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <label class="check-item"><input type="checkbox" id="uch-seguro-rc" onchange="actualizarCumplUnid()"><label for="uch-seguro-rc">Seguro RC</label></label>
           <label class="check-item"><input type="checkbox" id="uch-seguro-carga" onchange="actualizarCumplUnid()"><label for="uch-seguro-carga">Seguro de Carga</label></label>
         </div>
-        <div class="form-group" style="max-width:120px;"><label class="form-label">% Cumpl. <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-cumpl" readonly></div>
+        <div class="form-grid g4">
+          <div class="form-group" style="max-width:120px;"><label class="form-label">% Cumpl. <span class="auto">AUTO</span></label><input class="form-input auto-field" type="text" id="u-cumpl" readonly></div>
+          <div class="form-group full" style="max-width:none;grid-column:span 3">
+            <label class="form-label">📝 Observaciones</label>
+            <input class="form-input" type="text" id="u-observaciones" list="dl-obs-unidad" placeholder="Ej: Pedir documento actualizado">
+            <datalist id="dl-obs-unidad">
+              <option value="PEDIR DOCUMENTO ACTUALIZADO">
+              <option value="DOCUMENTO VENCIDO - SOLICITAR RENOVACIÓN">
+              <option value="EN TRÁMITE, PENDIENTE DE ENVÍO">
+              <option value="PENDIENTE DE RESPUESTA DEL PROVEEDOR">
+              <option value="DOCUMENTO ILEGIBLE - SOLICITAR NUEVA COPIA">
+              <option value="COORDINADO CON PROVEEDOR, EN ESPERA">
+              <option value="SIN OBSERVACIONES">
+            </datalist>
+          </div>
+        </div>
       </div>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="guardarUnidad()">💾 Guardar en Sheets</button>
@@ -1784,7 +1805,7 @@ function parseCsv(text){
 }
 
 // Orden EXACTO de columnas del Sheet UNIDADES (47 columnas)
-const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','tieneRtv','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','cumpl','carpeta','tarjetaLink'];
+const COLORDER_UNID = ['placa','estado','proveedor','centro','detalleCentro','modalidad','tipo','anio','antiguedad','categoria','marca','carroceria','asientos','pasajeros','ejes','ruedas','pesoBruto','pesoNeto','reacondicionado','tieneTarjProp','fechaSoat','diasSoat','estadoSoat','usoSoat','tipoSeguro','aseguradora','tipoSoat','tieneRtv','fechaRtv','diasRtv','estadoRtv','obsRtv','tieneTc','fechaTc','diasTc','estadoTc','propietario','responsable','docTarjProp','docSoat','docRtv','docTc','docMnto','docBoletin','docPoliza','docSeguroRc','docSeguroCarga','cumpl','carpeta','tarjetaLink','observaciones'];
 
 // Documentos de UNIDAD (10) con su etiqueta y a qué categorías aplican
 const DOCS_UNID = [
@@ -5707,6 +5728,7 @@ function buscarUnidad(placa){
     su('u-tipo-soat',u.tipoSoat);su('u-propietario',u.propietario);su('u-responsable',u.responsable);
     su('u-carpeta',u.carpeta);su('u-tarjeta-link',u.tarjetaLink);
     su('u-tiene-tc',u.tieneTc);su('u-tiene-rtv',u.tieneRtv||'SI');su('u-obs-rtv',u.obsRtv);
+    su('u-observaciones',u.observaciones);
     if(u.anio)calcAntig();
     if(u.fechaSoat)calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat');
     if(u.fechaRtv)calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv');
@@ -5714,6 +5736,39 @@ function buscarUnidad(placa){
     if(typeof aplicarReglasTipoUnidad==='function') aplicarReglasTipoUnidad();
     showToast('Unidad encontrada: '+u.placa,'ok');
   }
+}
+// Consulta SOAT + Revisión Técnica por placa (API en vivo) y rellena el formulario de Unidad
+async function autoRellenarSoatRtv(placaRaw){
+  const placa=(placaRaw||'').trim().toUpperCase().replace(/[\s\-]/g,'');
+  const info=document.getElementById('u-placa-info');
+  if(!/^[A-Z0-9]{6,7}$/.test(placa)) return;
+  if(!GS_URL){ if(info){info.style.display='block';info.textContent='⚠ Conecta Google Sheets primero para consultar SOAT/RTV.';} return; }
+  if(info){ info.style.display='block'; info.textContent='🔎 Consultando SOAT y Revisión Técnica...'; }
+  const [s,rt]=await Promise.all([ bqFetch('soat',placa), bqFetch('revision-tecnica',placa) ]);
+  const partes=[];
+  if(!s._error && s.success && s.data){
+    const su=(id,v)=>{const e=document.getElementById(id);if(e&&v)e.value=v;};
+    su('u-aseg-soat', s.data.nombre_compania);
+    su('u-fecha-soat', s.data.fecha_fin);
+    su('u-uso-soat', s.data.uso);
+    su('u-tipo-soat', s.data.tipo);
+    if(s.data.fecha_fin) calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat');
+    partes.push('📄 SOAT: <b>'+(s.data.estado||'—')+'</b> hasta '+(s.data.fecha_fin||'—'));
+  } else {
+    partes.push('📄 SOAT: no encontrado'+(s._error?' ('+s._error+')':''));
+  }
+  const rtItems=(!rt._error && rt.success && Array.isArray(rt.data))?rt.data:[];
+  const rtUltima=rtItems.find(x=>x.orden==='ULTIMO')||rtItems[0];
+  if(rtUltima){
+    const su=(id,v)=>{const e=document.getElementById(id);if(e&&v)e.value=v;};
+    su('u-fecha-rtv', rtUltima.vigente_hasta);
+    if(rtUltima.vigente_hasta) calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv');
+    partes.push('🔧 RTV: <b>'+(rtUltima.resultado_inspeccion||'—')+'</b> vigente hasta '+(rtUltima.vigente_hasta||'—'));
+  } else {
+    partes.push('🔧 RTV: no encontrada'+(rt._error?' ('+rt._error+')':''));
+  }
+  if(info){ info.innerHTML = partes.join(' · '); }
+  if(!(s._error&&rt._error)) showToast('✓ SOAT/RTV consultados y rellenados','ok');
 }
 // Abre el formulario de UNIDAD con todos los datos cargados (editar)
 function editarUnidad(placa){
@@ -5849,6 +5904,7 @@ async function guardarUnidad(){
     docSeguroRc:document.getElementById('uch-seguro-rc')?.checked?'✓':'✗',
     docSeguroCarga:document.getElementById('uch-seguro-carga')?.checked?'✓':'✗',
     tipoServicio:document.getElementById('u-tiposervicio')?.value||'',
+    observaciones:gv('u-observaciones'),
     cumpl:document.getElementById('u-cumpl')?.value||''};
   recalcular();
   let idx=UNIDADES.findIndex(u=>normPlaca(u.placa)===normPlaca(placa));
