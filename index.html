@@ -1806,6 +1806,37 @@ async function cdConsultar(tipo){
   }
 }
 
+// ═══════ Helpers: mostrar TODOS los campos que devuelve la API, sin curar ═══════
+function cdLabelize(k){ return k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
+function cdPick(d, ...keys){ for(const k of keys){ if(d[k]!==undefined && d[k]!==null && d[k]!=='') return d[k]; } return ''; }
+function cdRenderAll(d, skip=['ok','http']){
+  let rows='';
+  for(const [k,v] of Object.entries(d||{})){
+    if(skip.includes(k)) continue;
+    if(v===null||v===undefined||v==='') continue;
+    if(Array.isArray(v)){
+      if(!v.length) continue;
+      if(typeof v[0]==='object'){
+        rows += `<div style="margin-top:10px;font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px">${cdLabelize(k)}</div>`;
+        v.forEach(item=>{
+          const sub = Object.entries(item).filter(([,vv])=>vv!==null&&vv!==undefined&&vv!=='').map(([kk,vv])=>cdLabelize(kk)+': '+vv).join(' · ');
+          rows += cdRow('•', sub);
+        });
+      } else {
+        rows += cdRow(cdLabelize(k), v.join(', '));
+      }
+      continue;
+    }
+    if(typeof v==='object'){
+      const sub = Object.entries(v).filter(([,vv])=>vv!==null&&vv!==undefined&&vv!=='').map(([kk,vv])=>cdLabelize(kk)+': '+vv).join(' · ');
+      rows += cdRow(cdLabelize(k), sub);
+      continue;
+    }
+    rows += cdRow(cdLabelize(k), v);
+  }
+  return rows || '<div style="color:var(--text3);font-size:11.5px;padding:6px 0">Sin campos adicionales en la respuesta.</div>';
+}
+
 // ═══════ Mini-búsquedas 🧪 CD embebidas en los formularios de edición ═══════
 async function cdMiniLookup(boxId, path, body, render){
   const box = document.getElementById(boxId);
@@ -1816,62 +1847,92 @@ async function cdMiniLookup(boxId, path, body, render){
   box.innerHTML = render(d);
 }
 
-// Proveedores → RUC
+// Proveedores → RUC (ConsultaDatos) — autocompleta + muestra TODO
 async function buscarRucCD(){
   const ruc=(document.getElementById('rp-ruc')||{}).value?.replace(/\D/g,'');
   if(!ruc||ruc.length!==11){ showToast('Ingresa un RUC válido (11 dígitos)','err'); return; }
   await cdMiniLookup('rp-ruc-cd-info','consulta_ruc_cd',{ruc},d=>{
-    let repsHtml='';
-    if(Array.isArray(d.representantes)&&d.representantes.length){
-      repsHtml='<div style="margin-top:8px;font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase">Representantes</div>'+
-        d.representantes.map(r=>cdRow(r.cargo, r.nombre)).join('');
-    }
-    return cdCardWrap('🧪🏢','ConsultaDatos — SUNAT', cdEstadoBadge(d.estado),
-      cdRow('Razón social', d.razon_social)+cdRow('Condición', d.condicion)+
-      cdRow('Domicilio fiscal', d.domicilio_fiscal)+cdRow('Actividad económica', d.actividad_economica)+repsHtml);
+    const razonSocial = cdPick(d,'razon_social','razonSocial','nombre');
+    const nombreEl=document.getElementById('rp-nombre');
+    if(nombreEl && !nombreEl.value.trim() && razonSocial) nombreEl.value = razonSocial.toUpperCase();
+    let repNombre='';
+    if(Array.isArray(d.representantes) && d.representantes.length) repNombre = cdPick(d.representantes[0],'nombre');
+    const contactoEl=document.getElementById('rp-contacto');
+    if(contactoEl && !contactoEl.value.trim() && repNombre) contactoEl.value = repNombre;
+    showToast('✓ Campos autocompletados desde ConsultaDatos','ok');
+    return cdCardWrap('🧪🏢','ConsultaDatos — SUNAT (todos los campos)', cdEstadoBadge(d.estado||d.condicion), cdRenderAll(d));
   });
 }
 
-// Conductores → DNI
+// Conductores → DNI (ConsultaDatos) — autocompleta + muestra TODO
 async function buscarDniCD(){
   const dni=(document.getElementById('c-dni')||{}).value?.replace(/\D/g,'');
   if(!dni||dni.length!==8){ showToast('Ingresa un DNI válido (8 dígitos)','err'); return; }
   await cdMiniLookup('c-dni-cd-info','consulta_dni_cd',{dni},d=>{
-    const nombre=[d.NOMBRES,d.AP_PAT,d.AP_MAT].filter(Boolean).join(' ');
-    return cdCardWrap('🧪🆔','ConsultaDatos — RENIEC','',
-      cdRow('Nombre completo', nombre)+cdRow('Fecha nacimiento', d.FECHA_NAC)+cdRow('Dirección', d.DIRECCION));
+    const nombreCompleto = cdPick(d,'nombre_completo','nombreCompleto') ||
+      [cdPick(d,'nombres','NOMBRES'), cdPick(d,'apellido_paterno','AP_PAT','apellidoPaterno'), cdPick(d,'apellido_materno','AP_MAT','apellidoMaterno')].filter(Boolean).join(' ');
+    const nombreEl=document.getElementById('c-nombre');
+    if(nombreEl && nombreCompleto) nombreEl.value = nombreCompleto.toUpperCase();
+    showToast('✓ Nombre autocompletado desde ConsultaDatos','ok');
+    return cdCardWrap('🧪🆔','ConsultaDatos — RENIEC (todos los campos)','', cdRenderAll(d));
   });
 }
 
-// Conductores → Licencia (usa el DNI del mismo formulario)
+// Conductores → Licencia (ConsultaDatos, usa el DNI del mismo form) — autocompleta + muestra TODO
 async function buscarLicenciaCD(){
   const dni=(document.getElementById('c-dni')||{}).value?.replace(/\D/g,'');
   if(!dni||dni.length!==8){ showToast('Ingresa primero el DNI del conductor (8 dígitos)','err'); return; }
   await cdMiniLookup('c-lic-cd-info','consulta_licencia',{dni},d=>{
-    return cdCardWrap('🧪🪪','ConsultaDatos — Licencia', cdEstadoBadge(d.estado),
-      cdRow('N° licencia', d.num_licencia)+cdRow('Categoría', d.clase_categoria)+
-      cdRow('Vigente hasta', d.vigente_hasta)+cdRow('Puntos acumulados', d.puntos_acumulados));
+    const numLic = cdPick(d,'num_licencia','numero_licencia','nro_licencia');
+    const categoria = cdPick(d,'clase_categoria','categoria');
+    const vigeHasta = normFechaISO(cdPick(d,'vigente_hasta','fecha_vencimiento','vigencia_hasta'));
+    const numLicEl=document.getElementById('c-num-lic'); if(numLicEl && numLic) numLicEl.value = numLic;
+    if(categoria) setSelectFuzzy('c-cat-lic', categoria);
+    const fLicEl=document.getElementById('c-fecha-lic');
+    if(fLicEl && vigeHasta){ fLicEl.value = vigeHasta; calcDocDias('c-fecha-lic','c-dias-lic','c-est-lic'); }
+    showToast('✓ Licencia autocompletada desde ConsultaDatos','ok');
+    return cdCardWrap('🧪🪪','ConsultaDatos — Licencia (todos los campos)', cdEstadoBadge(d.estado), cdRenderAll(d));
   });
 }
 
-// Unidades → SOAT + Revisión Técnica (misma placa, ambos endpoints en paralelo)
+// Unidades → SOAT (ConsultaDatos, prueba) + Revisión Técnica (JSON.pe, el que ya usas y sí funciona)
 async function buscarSoatRtvCD(){
   const placa=(document.getElementById('u-placa')||{}).value?.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(!placa||placa.length<6){ showToast('Ingresa una placa válida','err'); return; }
   const box=document.getElementById('u-placa-cd-info');
   box.style.display='block'; box.innerHTML=cdLoading();
-  const [s,rt]=await Promise.all([
-    workerFetch('consulta_soat',{placa}),
-    workerFetch('consulta_citv',{placa}),
+
+  const [s, rt] = await Promise.all([
+    workerFetch('consulta_soat',{placa}),      // 🧪 prueba: ConsultaDatos
+    bqFetch('revision-tecnica', placa),         // ✅ el que ya usas: JSON.pe vía tu backend
   ]);
+
   let html='';
-  if(s._error||s.ok===false){ html+=cdError('SOAT: '+(s._error||s.error), s.http); }
-  else html+=cdCardWrap('🧪🛡️','ConsultaDatos — SOAT', cdEstadoBadge(s.estado),
-    cdRow('Compañía', s.nombre_compania)+cdRow('Vigente hasta', s.fecha_fin));
-  if(rt._error||rt.ok===false){ html+=cdError('Rev. Técnica: '+(rt._error||rt.error), rt.http); }
-  else html+=cdCardWrap('🧪🔧','ConsultaDatos — Revisión Técnica', cdEstadoBadge(rt.estado),
-    cdRow('Certificado', rt.certificado)+cdRow('Resultado', rt.resultado)+cdRow('Vigente hasta', rt.vigencia_hasta));
-  box.innerHTML=html;
+
+  // — SOAT vía ConsultaDatos —
+  if(s._error||s.ok===false){
+    html += cdError('SOAT (ConsultaDatos): '+(s._error||s.error), s.http);
+  } else {
+    const compania = cdPick(s,'nombre_compania','compania','aseguradora');
+    const fechaFin = normFechaISO(cdPick(s,'fecha_fin','vigencia_hasta'));
+    if(compania) setSelectFuzzy('u-aseg-soat', compania);
+    if(fechaFin){ const el=document.getElementById('u-fecha-soat'); if(el){ el.value=fechaFin; calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat'); } }
+    html += cdCardWrap('🧪🛡️','ConsultaDatos — SOAT (todos los campos)', cdEstadoBadge(s.estado), cdRenderAll(s));
+  }
+
+  // — Revisión Técnica vía JSON.pe (backend actual, más confiable que ConsultaDatos para esto) —
+  const rtItems = (!rt._error && rt.success && Array.isArray(rt.data)) ? rt.data : [];
+  const rtUltima = rtItems.find(x=>x.orden==='ULTIMO') || rtItems[0];
+  if(rtUltima){
+    const fRtv = normFechaISO(rtUltima.vigente_hasta);
+    if(fRtv){ const el=document.getElementById('u-fecha-rtv'); if(el){ el.value=fRtv; calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv'); } }
+    html += cdCardWrap('✅🔧','JSON.pe — Revisión Técnica (todos los campos)', cdEstadoBadge(rtUltima.resultado_inspeccion), cdRenderAll(rtUltima));
+  } else {
+    html += cdError('Revisión Técnica (JSON.pe): '+(rt._error||'no se encontró información para esta placa'));
+  }
+
+  box.innerHTML = html;
+  showToast('✓ SOAT/RTV consultados y campos autocompletados','ok');
 }
 
 localStorage.setItem('gs_url', GS_URL);
