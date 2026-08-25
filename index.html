@@ -113,6 +113,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .kpi-grid.cols-6{grid-template-columns:repeat(6,1fr);}
 .kpi-grid.cols-5{grid-template-columns:repeat(5,1fr);}
 .kpi-grid.cols-4{grid-template-columns:repeat(4,1fr);}
+.kpi-grid.cols-3{grid-template-columns:repeat(3,1fr);}
 .kpi-card{
   background:#fff;border:1px solid #ebebeb;
   border-radius:14px;padding:20px 22px;
@@ -435,19 +436,62 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
     <!-- ── ENCABEZADO ── -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
       <div style="width:4px;height:18px;background:linear-gradient(var(--green),var(--accent));border-radius:2px"></div>
-      <span style="font-size:14px;font-weight:700;color:#111">Resumen del Reporte Diario</span>
-      <span id="kd-fecha-rep" style="font-size:11px;color:var(--text3)"></span>
+      <span style="font-size:14px;font-weight:700;color:#111">Dashboard General</span>
+      <span id="kd-fecha-rep" style="font-weight:400;font-size:11px;color:var(--text3)"></span>
       <span id="kd-rep-badge" style="display:none;font-size:10px;padding:2px 8px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700">● EN VIVO</span>
     </div>
 
-    <!-- Aviso si no hay reporte cargado -->
-    <div id="kd-sin-rep" style="background:var(--bg2);border:1.5px dashed var(--border);border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+    <!-- Aviso si no hay reporte cargado — todo el dashboard depende de esto -->
+    <div id="kd-sin-rep" style="background:var(--bg2);border:1.5px dashed var(--border);border-radius:8px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px">
       <span style="font-size:20px">📋</span>
       <div>
         <div style="font-size:12.5px;font-weight:600;color:var(--text2)">Sin reporte diario cargado</div>
-        <div style="font-size:11.5px;color:var(--text3)">Ve a <b>Reporte Diario</b> y sube el Excel del día para ver el resumen</div>
+        <div style="font-size:11.5px;color:var(--text3)">Ve a <b>Reporte Diario</b> y sube el Excel del día para ver el resumen de hoy</div>
       </div>
       <button class="btn-primary" style="margin-left:auto;padding:6px 14px;font-size:12px" onclick="goPage('reporte',document.querySelector('.nav-item[onclick*=reporte]'))">→ Ir a Reporte</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         📊 CUMPLIMIENTO DOCUMENTARIO — solo los del reporte de hoy
+         ══════════════════════════════════════════════════════ -->
+    <div style="font-size:12.5px;font-weight:700;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      <div style="width:4px;height:16px;background:#0891b2;border-radius:2px"></div>
+      📊 % Documentación Completa — solo los del reporte de hoy
+      <span style="font-weight:400;color:var(--text3);font-size:11px">(proveedores/unidades/conductores que trabajaron hoy, no toda la base)</span>
+    </div>
+    <div class="kpi-grid cols-3" style="margin-bottom:22px">
+      <div class="kpi-card blue" style="position:relative">
+        <div class="kpi-label">🏢 Proveedores</div>
+        <div class="kpi-value" id="kd-glob-prov-pct">—</div>
+        <div class="bar-bg" style="height:6px;margin:6px 0"><div class="bar-fill" id="kd-glob-prov-bar" style="width:0%;background:#0891b2"></div></div>
+        <div class="kpi-sub" id="kd-glob-prov-sub">—</div>
+      </div>
+      <div class="kpi-card blue" style="position:relative">
+        <div class="kpi-label">🚛 Unidades</div>
+        <div class="kpi-value" id="kd-glob-unid-pct">—</div>
+        <div class="bar-bg" style="height:6px;margin:6px 0"><div class="bar-fill" id="kd-glob-unid-bar" style="width:0%;background:#0891b2"></div></div>
+        <div class="kpi-sub" id="kd-glob-unid-sub">—</div>
+      </div>
+      <div class="kpi-card blue" style="position:relative">
+        <div class="kpi-label">👤 Conductores</div>
+        <div class="kpi-value" id="kd-glob-cond-pct">—</div>
+        <div class="bar-bg" style="height:6px;margin:6px 0"><div class="bar-fill" id="kd-glob-cond-bar" style="width:0%;background:#0891b2"></div></div>
+        <div class="kpi-sub" id="kd-glob-cond-sub">—</div>
+      </div>
+    </div>
+
+    <!-- Top 8 con menor cumplimiento — acceso directo a lo más urgente -->
+    <div id="kd-glob-urgentes-wrap" style="margin-bottom:26px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">🔴 Más urgentes hoy (menor % de documentación)</div>
+      <div id="kd-glob-urgentes" class="alert-cards"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         📅 RESUMEN DEL REPORTE DEL DÍA — depende del Excel subido
+         ══════════════════════════════════════════════════════ -->
+    <div style="font-size:12.5px;font-weight:700;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="width:4px;height:16px;background:var(--accent);border-radius:2px"></div>
+      📅 Resumen del Reporte del Día
     </div>
 
     <!-- ── KPIs GENERALES (del reporte) ── -->
@@ -689,7 +733,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <select class="filter-sel" id="pv-resp" onchange="renderProveedores()">
           <option value="">👤 Todos los responsables</option>
         </select>
-        <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="goPage('reg-proveedor',document.querySelector('.nav-item[onclick*=reg-proveedor]'))">+ Nuevo</button>
+        <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="nuevoProveedorBtn()">+ Nuevo</button>
         <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="expCSVProv()">⬇ CSV</button>
       </div>
     </div>
@@ -2719,6 +2763,79 @@ function renderDashDiaTabla(){
   document.getElementById('kd-rep-cnt').textContent = `${rows.length} de ${REP_ROWS.length} unidades`;
 }
 
+// ── Extrae el % de un string tipo "4/6 (67%)" ──
+function pctDeCumpl(str){
+  const m = /\((\d+)\s*%\)/.exec(str||'');
+  return m ? parseInt(m[1],10) : null;
+}
+// ── KPI global de cumplimiento documentario — usa TODA la base, no el reporte del día ──
+function renderDashboardGlobal(hayrep, provsHoy, condsHoy, unidsHoy){
+  const s=id=>document.getElementById(id);
+
+  if(!hayrep){
+    ['kd-glob-prov','kd-glob-unid','kd-glob-cond'].forEach(pref=>{
+      const val=s(pref+'-pct'), bar=s(pref+'-bar'), sub=s(pref+'-sub');
+      if(val){ val.textContent='—'; val.style.color=''; }
+      if(bar){ bar.style.width='0%'; }
+      if(sub){ sub.textContent='Sube el reporte del día para ver este dato'; }
+    });
+    const wrap=s('kd-glob-urgentes-wrap'); if(wrap) wrap.style.display='none';
+    return;
+  }
+
+  // Solo los proveedores/unidades/conductores que están HOY en el reporte subido
+  const provObjsHoy = provsHoy.map(nUp=>PROVEEDORES.find(x=>(x.nombre||'').trim().toUpperCase()===nUp)).filter(Boolean);
+  const unidObjsHoy = unidsHoy.map(r=>r.unidBD).filter(Boolean);
+  const condObjsHoy = condsHoy.map(r=>r.condBD).filter(Boolean);
+
+  const provPcts = provObjsHoy.map(p=>cumplProv(p).pct);
+  const unidPcts = unidObjsHoy.map(u=>pctDeCumpl(u.cumpl)).filter(v=>v!==null);
+  const condPcts = condObjsHoy.map(c=>pctDeCumpl(c.cumpl)).filter(v=>v!==null);
+
+  const resumen=(pcts)=>{
+    if(!pcts.length) return {avg:0,completo:0,proceso:0,incompleto:0,total:0};
+    const avg = Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length);
+    const completo   = pcts.filter(p=>p>=80).length;
+    const proceso    = pcts.filter(p=>p>=50&&p<80).length;
+    const incompleto = pcts.filter(p=>p<50).length;
+    return {avg,completo,proceso,incompleto,total:pcts.length};
+  };
+  const pintar=(pref, r)=>{
+    const col = r.avg>=80?'#16a34a':r.avg>=50?'#d97706':'#dc2626';
+    const val=s(pref+'-pct'), bar=s(pref+'-bar'), sub=s(pref+'-sub');
+    if(val){ val.textContent = r.total? r.avg+'%' : '—'; val.style.color=col; }
+    if(bar){ bar.style.width = r.avg+'%'; bar.style.background=col; }
+    if(sub){ sub.innerHTML = r.total
+      ? `✅ ${r.completo} completos · ⏳ ${r.proceso} en proceso · 🔴 ${r.incompleto} incompletos <span style="color:var(--text3)">(${r.total} en el reporte de hoy)</span>`
+      : 'Sin datos en el reporte de hoy'; }
+  };
+  const rProv=resumen(provPcts), rUnid=resumen(unidPcts), rCond=resumen(condPcts);
+  pintar('kd-glob-prov', rProv);
+  pintar('kd-glob-unid', rUnid);
+  pintar('kd-glob-cond', rCond);
+
+  // ── Top urgentes: los de menor % SOLO entre los que trabajaron hoy ──
+  const urgentes = [
+    ...provObjsHoy.map(p=>({tipo:'🏢 Proveedor',nombre:p.nombre,pct:cumplProv(p).pct})),
+    ...unidObjsHoy.map(u=>({tipo:'🚛 Unidad',nombre:u.placa,pct:pctDeCumpl(u.cumpl)})).filter(x=>x.pct!==null),
+    ...condObjsHoy.map(c=>({tipo:'👤 Conductor',nombre:c.conductor,pct:pctDeCumpl(c.cumpl)})).filter(x=>x.pct!==null),
+  ].filter(x=>x.nombre && x.pct<80).sort((a,b)=>a.pct-b.pct).slice(0,8);
+
+  const wrap=s('kd-glob-urgentes-wrap'), cont=s('kd-glob-urgentes');
+  if(cont){
+    cont.innerHTML = urgentes.length ? urgentes.map(u=>{
+      const col = u.pct<50?'#dc2626':'#d97706';
+      return `<div class="alert-card" style="padding:10px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><span style="font-size:11px;color:var(--text3)">${u.tipo}</span><br><span style="font-size:12.5px;font-weight:700;color:#0f172a">${u.nombre}</span></div>
+          <span style="font-size:13px;font-weight:800;color:${col}">${u.pct}%</span>
+        </div>
+      </div>`;
+    }).join('') : '<div class="empty-state">✓ Todos los que trabajaron hoy están ≥80% completos</div>';
+  }
+  if(wrap) wrap.style.display = 'block';
+}
+
 function renderDashboard(){
   const s=id=>document.getElementById(id);
 
@@ -2735,6 +2852,7 @@ function renderDashboard(){
 
   if(!hayrep){
     ['kd-dia-unid','kd-dia-cond','kd-dia-prov','kd-doc-ok','kd-dia-warn','kd-dia-bad'].forEach(id=>{const e=s(id);if(e)e.textContent='—';});
+    renderDashboardGlobal(false);
     return;
   }
 
@@ -2745,6 +2863,8 @@ function renderDashboard(){
   const provsHoy=[...new Set(REP_ROWS.map(r=>(r.proveedor||'').trim().toUpperCase()).filter(Boolean))];
   const condsHoy=[...new Map(REP_ROWS.filter(r=>(r.conductor||r.dni) && !(r.conductor||'').toUpperCase().includes('BETA')).map(r=>[(r.dni||r.conductor||'').toUpperCase(),r])).values()];
   const unidsHoy=[...new Map(REP_ROWS.filter(r=>r.placa).map(r=>[normPlaca(r.placa),r])).values()];
+
+  renderDashboardGlobal(true, provsHoy, condsHoy, unidsHoy);
 
   s('kd-dia-prov').textContent=provsHoy.length;
   s('kd-dia-cond').textContent=condsHoy.length;
@@ -4769,6 +4889,7 @@ function editarProveedor(nombre){
   const p = PROVEEDORES.find(x=>normProvName(x.nombre)===normProvName(nombre)); if(!p) return;
   goPage('reg-proveedor', document.querySelector('.nav-item[onclick*="reg-proveedor"]'));
   setTimeout(()=>{
+    cdResetBox('rp-ruc-info'); cdResetBox('rp-ruc-cd-info');
     const sv=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
     sv('rp-nombre',p.nombre); sv('rp-estado',p.estado||'ACTIVO'); sv('rp-zona',p.zona);
     sv('rp-tipo',p.tipo); sv('rp-ruc',p.ruc); sv('rp-codigo',p.codigo);
@@ -4919,11 +5040,18 @@ async function guardarProv(){
     showToast('⚠ Error al guardar en Sheets, reintenta','err');
   }
 }
+function cdResetBox(id){ const el=document.getElementById(id); if(el){ el.style.display='none'; el.innerHTML=''; } }
+function nuevoProveedorBtn(){
+  goPage('reg-proveedor', document.querySelector('.nav-item[onclick*="reg-proveedor"]'));
+  setTimeout(()=>{ if(typeof limpiarProv==='function') limpiarProv(); }, 130);
+}
+
 function limpiarProv(){
   ['rp-nombre','rp-ruc','rp-codigo','rp-contacto','rp-celular','rp-correo','rp-resp','rp-carpeta'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['rp-estado','rp-zona','rp-tipo','rp-tiposervicio'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
   RP_DOCS_STATE=new Array(N_DOCS_PROV).fill(false);
   renderRPChecklist();
+  cdResetBox('rp-ruc-info'); cdResetBox('rp-ruc-cd-info');
   const m=document.getElementById('rp-msg'); if(m) m.textContent='';
 }
 
@@ -6288,6 +6416,7 @@ function limpiarFormCond(){
     cont.querySelectorAll('select').forEach(el=>el.selectedIndex=0);
     cont.querySelectorAll('input[type="checkbox"]').forEach(el=>el.checked=false);
   }
+  cdResetBox('c-dni-info'); cdResetBox('c-dni-cd-info'); cdResetBox('c-lic-cd-info');
   const cm=document.getElementById('c-msg'); if(cm) cm.textContent='';
 }
 function limpiarFormUnid(){
@@ -6297,6 +6426,7 @@ function limpiarFormUnid(){
     cont.querySelectorAll('select').forEach(el=>el.selectedIndex=0);
     cont.querySelectorAll('input[type="checkbox"]').forEach(el=>el.checked=false);
   }
+  cdResetBox('u-placa-info'); cdResetBox('u-placa-cd-info');
   const hint=document.getElementById('u-tipo-hint'); if(hint) hint.style.display='none';
   const um=document.getElementById('u-msg'); if(um) um.textContent='';
 }
