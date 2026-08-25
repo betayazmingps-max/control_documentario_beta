@@ -741,9 +741,11 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <div style="display:flex;gap:6px">
               <input class="form-input" id="rp-ruc" placeholder="20123456789" maxlength="11" style="flex:1">
               <button type="button" onclick="buscarRucSunat()" title="Buscar en SUNAT" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:13px">🔍</button>
+              <button type="button" onclick="buscarRucCD()" title="Probar con API ConsultaDatos" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🧪 CD</button>
             </div></div>
         </div>
         <div id="rp-ruc-info" style="display:none;margin-top:8px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:11.5px;color:#166534;line-height:1.6"></div>
+        <div id="rp-ruc-cd-info" style="display:none;margin-top:8px"></div>
         <!-- Fila 3: 4 campos -->
         <div class="form-grid g4">
           <div class="form-group"><label class="form-label">Categoría <span class="req">*</span></label>
@@ -1354,6 +1356,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <div style="display:flex;gap:6px">
               <input class="form-input" type="text" id="c-dni" placeholder="12345678" oninput="buscarConductor(this.value)" style="flex:1">
               <button type="button" onclick="buscarDniReniec()" title="Buscar en RENIEC" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:13px">🔍</button>
+              <button type="button" onclick="buscarDniCD()" title="Probar con API ConsultaDatos" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🧪 CD</button>
             </div></div>
           <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="c-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
           <div class="form-group"><label class="form-label">Proveedor</label><input class="form-input" type="text" id="c-proveedor" placeholder="Nombre del proveedor" list="prov-list-cond" style="text-transform:uppercase"><datalist id="prov-list-cond"></datalist></div>
@@ -1363,11 +1366,17 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">Ruta</label><input class="form-input" type="text" id="c-ruta" placeholder="Ej: fundo Tomasita"></div>
           <div class="form-group"><label class="form-label">Turno</label><select class="form-select" id="c-turno"><option value="">— Seleccionar —</option><option>DÍA</option><option>NOCHE</option><option>MIXTO</option></select></div>
           <div class="form-group"><label class="form-label">Celular</label><input class="form-input" type="text" id="c-celular" placeholder="987654321" maxlength="9"></div>
-          <div class="form-group"><label class="form-label">N° Licencia</label><input class="form-input" type="text" id="c-num-lic" placeholder="N° licencia"></div>
+          <div class="form-group"><label class="form-label">N° Licencia</label>
+            <div style="display:flex;gap:6px">
+              <input class="form-input" type="text" id="c-num-lic" placeholder="N° licencia" style="flex:1">
+              <button type="button" onclick="buscarLicenciaCD()" title="Probar licencia con API ConsultaDatos (usa el DNI de arriba)" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🧪 CD</button>
+            </div></div>
           <div class="form-group full"><label class="form-label">📁 Link Carpeta SharePoint</label><input class="form-input" type="text" id="c-carpeta" placeholder="https://..."></div>
         </div>
         <div class="form-group full"><label class="form-label">Conductor <span class="req">*</span></label><input class="form-input" type="text" id="c-nombre" placeholder="Apellidos y nombres completos" style="text-transform:uppercase"></div>
         <div id="c-dni-info" style="display:none;margin-top:8px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:11.5px;color:#166534"></div>
+        <div id="c-dni-cd-info" style="display:none;margin-top:8px"></div>
+        <div id="c-lic-cd-info" style="display:none;margin-top:8px"></div>
       </div>
       <div class="form-sec">
         <div class="form-sec-title">🪪 Licencia de Conducir</div>
@@ -1430,8 +1439,10 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <div style="display:flex;gap:6px">
               <input class="form-input" type="text" id="u-placa" placeholder="A1B234" style="flex:1;text-transform:uppercase" oninput="buscarUnidad(this.value)" onblur="autoRellenarSoatRtv(this.value)">
               <button type="button" class="bq-search-btn" style="--bq-accent:var(--accent);width:38px;flex:0 0 38px" onclick="autoRellenarSoatRtv(document.getElementById('u-placa').value)" title="Consultar SOAT / Rev. Técnica">🔍</button>
+              <button type="button" onclick="buscarSoatRtvCD()" title="Probar SOAT/Rev.Técnica con API ConsultaDatos" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🧪 CD</button>
             </div>
             <div id="u-placa-info" style="display:none;font-size:11px;margin-top:5px;padding:6px 9px;border-radius:8px;background:var(--bg3);color:var(--text2);line-height:1.6"></div>
+            <div id="u-placa-cd-info" style="display:none;margin-top:8px"></div>
           </div>
           <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="u-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
           <div class="form-group"><label class="form-label">Proveedor</label><input class="form-input" type="text" id="u-proveedor" placeholder="Nombre del proveedor" list="prov-list-unid" style="text-transform:uppercase"><datalist id="prov-list-unid"></datalist></div>
@@ -1793,6 +1804,74 @@ async function cdConsultar(tipo){
       histHtml
     );
   }
+}
+
+// ═══════ Mini-búsquedas 🧪 CD embebidas en los formularios de edición ═══════
+async function cdMiniLookup(boxId, path, body, render){
+  const box = document.getElementById(boxId);
+  box.style.display='block';
+  box.innerHTML = cdLoading();
+  const d = await workerFetch(path, body);
+  if(d._error || d.ok===false){ box.innerHTML = cdError(d._error||d.error, d.http); return; }
+  box.innerHTML = render(d);
+}
+
+// Proveedores → RUC
+async function buscarRucCD(){
+  const ruc=(document.getElementById('rp-ruc')||{}).value?.replace(/\D/g,'');
+  if(!ruc||ruc.length!==11){ showToast('Ingresa un RUC válido (11 dígitos)','err'); return; }
+  await cdMiniLookup('rp-ruc-cd-info','consulta_ruc_cd',{ruc},d=>{
+    let repsHtml='';
+    if(Array.isArray(d.representantes)&&d.representantes.length){
+      repsHtml='<div style="margin-top:8px;font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase">Representantes</div>'+
+        d.representantes.map(r=>cdRow(r.cargo, r.nombre)).join('');
+    }
+    return cdCardWrap('🧪🏢','ConsultaDatos — SUNAT', cdEstadoBadge(d.estado),
+      cdRow('Razón social', d.razon_social)+cdRow('Condición', d.condicion)+
+      cdRow('Domicilio fiscal', d.domicilio_fiscal)+cdRow('Actividad económica', d.actividad_economica)+repsHtml);
+  });
+}
+
+// Conductores → DNI
+async function buscarDniCD(){
+  const dni=(document.getElementById('c-dni')||{}).value?.replace(/\D/g,'');
+  if(!dni||dni.length!==8){ showToast('Ingresa un DNI válido (8 dígitos)','err'); return; }
+  await cdMiniLookup('c-dni-cd-info','consulta_dni_cd',{dni},d=>{
+    const nombre=[d.NOMBRES,d.AP_PAT,d.AP_MAT].filter(Boolean).join(' ');
+    return cdCardWrap('🧪🆔','ConsultaDatos — RENIEC','',
+      cdRow('Nombre completo', nombre)+cdRow('Fecha nacimiento', d.FECHA_NAC)+cdRow('Dirección', d.DIRECCION));
+  });
+}
+
+// Conductores → Licencia (usa el DNI del mismo formulario)
+async function buscarLicenciaCD(){
+  const dni=(document.getElementById('c-dni')||{}).value?.replace(/\D/g,'');
+  if(!dni||dni.length!==8){ showToast('Ingresa primero el DNI del conductor (8 dígitos)','err'); return; }
+  await cdMiniLookup('c-lic-cd-info','consulta_licencia',{dni},d=>{
+    return cdCardWrap('🧪🪪','ConsultaDatos — Licencia', cdEstadoBadge(d.estado),
+      cdRow('N° licencia', d.num_licencia)+cdRow('Categoría', d.clase_categoria)+
+      cdRow('Vigente hasta', d.vigente_hasta)+cdRow('Puntos acumulados', d.puntos_acumulados));
+  });
+}
+
+// Unidades → SOAT + Revisión Técnica (misma placa, ambos endpoints en paralelo)
+async function buscarSoatRtvCD(){
+  const placa=(document.getElementById('u-placa')||{}).value?.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!placa||placa.length<6){ showToast('Ingresa una placa válida','err'); return; }
+  const box=document.getElementById('u-placa-cd-info');
+  box.style.display='block'; box.innerHTML=cdLoading();
+  const [s,rt]=await Promise.all([
+    workerFetch('consulta_soat',{placa}),
+    workerFetch('consulta_citv',{placa}),
+  ]);
+  let html='';
+  if(s._error||s.ok===false){ html+=cdError('SOAT: '+(s._error||s.error), s.http); }
+  else html+=cdCardWrap('🧪🛡️','ConsultaDatos — SOAT', cdEstadoBadge(s.estado),
+    cdRow('Compañía', s.nombre_compania)+cdRow('Vigente hasta', s.fecha_fin));
+  if(rt._error||rt.ok===false){ html+=cdError('Rev. Técnica: '+(rt._error||rt.error), rt.http); }
+  else html+=cdCardWrap('🧪🔧','ConsultaDatos — Revisión Técnica', cdEstadoBadge(rt.estado),
+    cdRow('Certificado', rt.certificado)+cdRow('Resultado', rt.resultado)+cdRow('Vigente hasta', rt.vigencia_hasta));
+  box.innerHTML=html;
 }
 
 localStorage.setItem('gs_url', GS_URL);
