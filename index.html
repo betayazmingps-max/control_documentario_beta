@@ -7,22 +7,22 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f3f4f6;--bg2:#ffffff;--bg3:#f9fafb;--bg4:#e5e7eb;
-  --border:#e5e7eb;--border2:#d1d5db;
-  --accent:#7c3aed;--accent2:#6d28d9;--accent3:rgba(124,58,237,0.10);
-  --green:#10b981;--green2:rgba(16,185,129,0.12);
+  --bg:#F0EDF8;--bg2:#ffffff;--bg3:#F7F4FC;--bg4:#D4CBE8;
+  --border:#D4CBE8;--border2:#C2B4DD;
+  --accent:#5212A0;--accent2:#3C0C79;--accent3:rgba(82,18,160,0.10);
+  --green:#5BAD1E;--green2:rgba(91,173,30,0.12);
   --warn:#f59e0b;--warn2:rgba(245,158,11,0.12);
-  --danger:#ef4444;--danger2:rgba(239,68,68,0.12);
-  --purple:#7c3aed;--purple2:rgba(124,58,237,0.12);
-  --text:#111827;--text2:#4b5563;--text3:#9ca3af;
+  --danger:#E02020;--danger2:rgba(224,32,32,0.12);
+  --purple:#5212A0;--purple2:rgba(82,18,160,0.12);
+  --text:#1C0840;--text2:#5C4880;--text3:#9B89B8;
   --radius:12px;--radius-sm:8px;
   --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
-  --success:#10b981;--success-bg:rgba(16,185,129,0.12);
+  --success:#5BAD1E;--success-bg:rgba(91,173,30,0.12);
   --warning:#f59e0b;--warning-bg:rgba(245,158,11,0.12);
-  --danger-bg:rgba(239,68,68,0.12);
-  --shadow-sm:0 1px 3px rgba(0,0,0,0.08);
-  --shadow:0 4px 12px rgba(0,0,0,0.08);
-  --shadow-md:0 8px 24px rgba(124,58,237,0.15);
+  --danger-bg:rgba(224,32,32,0.12);
+  --shadow-sm:0 1px 3px rgba(28,8,64,0.08);
+  --shadow:0 4px 12px rgba(28,8,64,0.08);
+  --shadow-md:0 8px 24px rgba(82,18,160,0.15);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px;-webkit-font-smoothing:antialiased;}
@@ -30,7 +30,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 /* ══ SIDEBAR ══ */
 .sidebar{
   width:256px;min-height:100vh;
-  background:#6d28d9;
+  background:var(--accent);
+  border-right:3px solid var(--green);
   position:fixed;top:0;left:0;bottom:0;z-index:100;
   display:flex;flex-direction:column;
 }
@@ -39,7 +40,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   display:flex;align-items:center;gap:12px;
 }
 .logo-icon{flex-shrink:0;}
-.logo-title{font-size:14px;font-weight:700;color:#fff;line-height:1.3;letter-spacing:-0.2px;}
+.logo-wordmark{font-size:26px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.5px;}
+.logo-wordmark .a{color:var(--green);}
+.logo-title{font-size:12.5px;font-weight:700;color:#fff;line-height:1.3;letter-spacing:-0.2px;margin-top:6px;}
 .logo-sub{font-size:10.5px;color:rgba(255,255,255,0.5);margin-top:2px;font-weight:400;}
 .sidebar-nav{padding:8px 12px;flex:1;overflow-y:auto;}
 .nav-section{
@@ -54,37 +57,37 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   border:none;
 }
 .nav-item:hover{color:#fff;background:rgba(255,255,255,0.10);}
-.nav-item.active{color:#fff;font-weight:600;background:rgba(255,255,255,0.15);}
+.nav-item.active{color:#fff;font-weight:600;background:rgba(255,255,255,0.15);border-left:3px solid var(--green);}
 .nav-ico{width:16px;height:16px;flex-shrink:0;opacity:.9;}
 .sidebar-footer{
   padding:16px 22px;border-top:1px solid rgba(255,255,255,0.10);
   font-size:10px;color:rgba(255,255,255,0.3);font-family:var(--mono);
 }
 .gs-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;margin-bottom:3px;}
-.gs-dot{width:6px;height:6px;border-radius:50%;background:#34d399;}
+.gs-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
 .gs-dot.off{background:#f87171;}
 
 /* ══ MAIN ══ */
-.main{margin-left:256px;flex:1;display:flex;flex-direction:column;min-height:100vh;background:#f5f5f5;}
+.main{margin-left:256px;flex:1;display:flex;flex-direction:column;min-height:100vh;background:var(--bg);}
 
 .topbar{
-  background:#fff;border-bottom:1px solid #ebebeb;
+  background:#fff;border-bottom:1px solid var(--border);
   padding:0 32px;height:62px;
   display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:50;
 }
 .topbar-left{display:flex;align-items:center;gap:12px;}
-.topbar-title{font-size:18px;font-weight:700;color:#111;letter-spacing:-0.3px;}
+.topbar-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
 .topbar-right{display:flex;align-items:center;gap:8px;}
 
 .tb-btn{
-  border:1px solid #e5e5e5;background:#fff;
+  border:1px solid var(--border);background:#fff;
   border-radius:8px;padding:7px 14px;
-  font-size:12.5px;font-weight:500;color:#444;
+  font-size:12.5px;font-weight:500;color:var(--text2);
   cursor:pointer;font-family:var(--font);
   transition:all 0.12s;display:flex;align-items:center;gap:6px;
 }
-.tb-btn:hover{border-color:#bbb;color:#111;background:#fafafa;}
+.tb-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--bg3);}
 .tb-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
 .tb-btn.primary:hover{background:var(--accent2);}
 
@@ -101,6 +104,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   font-size:12.5px;font-family:var(--font);outline:none;
   color:var(--text);cursor:pointer;
 }
+.resp-pills{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:2px 0 14px;}
+.resp-pill{
+  border:1.5px solid var(--border);background:#fff;color:var(--text2);
+  border-radius:20px;padding:6px 15px;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:var(--font);transition:all 0.12s;
+}
+.resp-pill:hover{border-color:var(--accent);color:var(--accent);}
+.resp-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
 .content{padding:28px 32px;flex:1;}
 
 /* ── PAGES ── */
@@ -115,7 +126,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .kpi-grid.cols-4{grid-template-columns:repeat(4,1fr);}
 .kpi-grid.cols-3{grid-template-columns:repeat(3,1fr);}
 .kpi-card{
-  background:#fff;border:1px solid #ebebeb;
+  background:#fff;border:1px solid #D4CBE8;
   border-radius:14px;padding:20px 22px;
   position:relative;overflow:hidden;
   transition:box-shadow 0.15s,transform 0.15s;
@@ -125,14 +136,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   border-radius:14px 0 0 14px;
 }
 .kpi-card.blue::before{background:#3b82f6;}
-.kpi-card.green::before{background:#10b981;}
+.kpi-card.green::before{background:#5BAD1E;}
 .kpi-card.warn::before{background:#f59e0b;}
 .kpi-card.danger::before{background:#ef4444;}
 .kpi-card.purple::before{background:#8b5cf6;}
 .kpi-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.08);transform:translateY(-2px);}
-.kpi-label{font-size:11px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;color:#9ca3af;margin-bottom:10px;}
-.kpi-value{font-size:32px;font-weight:800;color:#111;line-height:1;margin-bottom:6px;font-family:var(--mono);}
-.kpi-sub{font-size:12px;color:#6b7280;}
+.kpi-label{font-size:11px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;color:#9B89B8;margin-bottom:10px;}
+.kpi-value{font-size:32px;font-weight:800;color:#1C0840;line-height:1;margin-bottom:6px;font-family:var(--mono);}
+.kpi-sub{font-size:12px;color:#5C4880;}
 .kpi-sub .hi{color:var(--accent);}
 .kpi-sub .ok{color:var(--green);}
 .kpi-sub .bad{color:var(--danger);}
@@ -140,12 +151,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 /* ── SECTION HEADERS ── */
 .section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.section-title{font-size:16px;font-weight:700;color:#111;display:flex;align-items:center;gap:10px;}
+.section-title{font-size:16px;font-weight:700;color:#1C0840;display:flex;align-items:center;gap:10px;}
 .section-title::before{content:'';display:inline-block;width:4px;height:18px;background:var(--accent);border-radius:2px;}
-.count-tag{background:#f3f0ff;border:1px solid #ddd6fe;border-radius:20px;padding:3px 11px;font-size:11px;color:#7c3aed;font-family:var(--mono);font-weight:600;}
+.count-tag{background:#EDE5FF;border:1px solid #D4CBE8;border-radius:20px;padding:3px 11px;font-size:11px;color:#5212A0;font-family:var(--mono);font-weight:600;}
 
 /* ── TABLES ── */
-.tbl-wrap{background:#fff;border:1px solid #ebebeb;border-radius:14px;overflow:hidden;margin-bottom:20px;}
+.tbl-wrap{background:#fff;border:1px solid #D4CBE8;border-radius:14px;overflow:hidden;margin-bottom:20px;}
 .tbl-scroll{overflow-x:auto;overflow-y:auto;max-height:65vh;}
 /* En Checklist se quiere ver la tabla completa (sin scroll interno) para poder
    capturar pantalla de todo de una vez — que sea la página la que se desplace. */
@@ -154,18 +165,18 @@ table{width:100%;border-collapse:collapse;font-size:13px;}
 thead th{
   text-align:left;padding:12px 14px;
   font-size:10.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;
-  color:#374151;background:#f3f4f6;
-  border-bottom:2px solid #e5e7eb;white-space:nowrap;
+  color:#5C4880;background:#F0EDF8;
+  border-bottom:2px solid #D4CBE8;white-space:nowrap;
   position:sticky;top:0;z-index:10;
 }
 tbody tr{border-bottom:1px solid #f5f5f5;transition:background 0.1s;}
 tbody tr:hover{background:#faf8ff;}
 tbody tr:last-child{border-bottom:none;}
-td{padding:11px 14px;color:#111;font-size:12.5px;vertical-align:middle;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
+td{padding:11px 14px;color:#1C0840;font-size:12.5px;vertical-align:middle;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
 td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 .tbl-footer{
-  padding:11px 16px;font-size:11.5px;color:#9ca3af;
-  border-top:1px solid #ebebeb;background:#fafafa;
+  padding:11px 16px;font-size:11.5px;color:#9B89B8;
+  border-top:1px solid #D4CBE8;background:#F7F4FC;
   display:flex;align-items:center;justify-content:space-between;
 }
 .pag-btns{display:flex;gap:4px;}
@@ -185,141 +196,141 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   font-size:10.5px;font-weight:600;white-space:nowrap;
 }
 .badge::before{content:'●';font-size:6px;}
-.badge.ok{background:#d1fae5;color:#065f46;}
+.badge.ok{background:#E6F4D9;color:#2F5C0F;}
 .badge.warn{background:#fef3c7;color:#92400e;}
 .badge.danger{background:#fee2e2;color:#991b1b;}
-.badge.inactive{background:#f3f4f6;color:#9ca3af;}
+.badge.inactive{background:#F0EDF8;color:#9B89B8;}
 .badge.blue{background:#dbeafe;color:#1e40af;}
-.badge.purple{background:#ede9fe;color:#6d28d9;}
+.badge.purple{background:#EDE5FF;color:#3C0C79;}
 
 /* ── DÍAS ── */
-.d-ok{color:#059669;font-family:var(--mono);font-size:12px;font-weight:700;}
+.d-ok{color:#4A8F18;font-family:var(--mono);font-size:12px;font-weight:700;}
 .d-warn{color:#d97706;font-family:var(--mono);font-size:12px;font-weight:700;}
 .d-danger{color:#dc2626;font-family:var(--mono);font-size:12px;font-weight:700;}
 
 /* ── BARRAS ── */
 .bar-wrap{display:flex;align-items:center;gap:8px;}
-.bar-bg{flex:1;height:6px;background:#f3f4f6;border-radius:6px;overflow:hidden;min-width:40px;}
+.bar-bg{flex:1;height:6px;background:#F0EDF8;border-radius:6px;overflow:hidden;min-width:40px;}
 .bar-fill{height:100%;border-radius:6px;}
-.bar-fill.hi{background:#10b981;}
+.bar-fill.hi{background:#5BAD1E;}
 .bar-fill.md{background:#f59e0b;}
 .bar-fill.lo{background:#ef4444;}
-.bar-pct{font-family:var(--mono);font-size:11px;color:#6b7280;min-width:32px;text-align:right;font-weight:600;}
+.bar-pct{font-family:var(--mono);font-size:11px;color:#5C4880;min-width:32px;text-align:right;font-weight:600;}
 
 /* ── DOC PILLS ── */
 .doc-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;margin:1px;}
-.doc-pill.ok{background:#d1fae5;color:#065f46;}
+.doc-pill.ok{background:#E6F4D9;color:#2F5C0F;}
 .doc-pill.fail{background:#fee2e2;color:#991b1b;}
-.doc-pill.na{background:#f3f4f6;color:#9ca3af;}
+.doc-pill.na{background:#F0EDF8;color:#9B89B8;}
 
 /* ── EDITABLE ── */
 .editable-cell{cursor:pointer;border-radius:6px;transition:background 0.1s;}
-.editable-cell:hover{background:#f3f0ff;}
+.editable-cell:hover{background:#EDE5FF;}
 .editable-cell:hover::after{content:'✏️';font-size:9px;margin-left:3px;}
 
 /* ── MODALS ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
 .modal-overlay.open{display:flex;}
-.modal{background:#fff;border:1px solid #ebebeb;border-radius:18px;padding:30px;width:500px;max-width:92vw;box-shadow:0 24px 48px rgba(0,0,0,0.12);}
-.modal-title{font-size:18px;font-weight:700;color:#111;margin-bottom:6px;}
-.modal-sub{font-size:13px;color:#6b7280;margin-bottom:22px;line-height:1.6;}
-.modal-label{font-size:11px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;display:block;}
-.modal-input{width:100%;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 14px;font-size:13px;font-family:var(--mono);outline:none;color:#111;margin-bottom:14px;transition:border-color 0.12s;}
+.modal{background:#fff;border:1px solid #D4CBE8;border-radius:18px;padding:30px;width:500px;max-width:92vw;box-shadow:0 24px 48px rgba(0,0,0,0.12);}
+.modal-title{font-size:18px;font-weight:700;color:#1C0840;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:#5C4880;margin-bottom:22px;line-height:1.6;}
+.modal-label{font-size:11px;font-weight:600;color:#5C4880;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;display:block;}
+.modal-input{width:100%;background:#F7F4FC;border:1.5px solid #D4CBE8;border-radius:10px;padding:10px 14px;font-size:13px;font-family:var(--mono);outline:none;color:#1C0840;margin-bottom:14px;transition:border-color 0.12s;}
 .modal-input:focus{border-color:var(--accent);background:#fff;}
 .modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
-.modal-info{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px;font-size:12px;color:#6b7280;line-height:1.7;margin-bottom:14px;}
-.modal-info code{background:#ede9fe;padding:2px 7px;border-radius:5px;font-family:var(--mono);color:#7c3aed;}
+.modal-info{background:#F7F4FC;border:1px solid #D4CBE8;border-radius:10px;padding:14px;font-size:12px;color:#5C4880;line-height:1.7;margin-bottom:14px;}
+.modal-info code{background:#EDE5FF;padding:2px 7px;border-radius:5px;font-family:var(--mono);color:#5212A0;}
 .script-box{background:#1e1e2e;color:#a5b4fc;padding:14px;border-radius:10px;font-size:10.5px;font-family:var(--mono);white-space:pre-wrap;margin-bottom:12px;max-height:160px;overflow-y:auto;}
 
 /* ── EDIT MODAL ── */
-.edit-modal{background:#fff;border:1px solid #ebebeb;border-radius:18px;padding:28px;width:390px;max-width:92vw;box-shadow:0 24px 48px rgba(0,0,0,0.12);}
-.dias-preview{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;font-size:13px;color:#6b7280;margin-bottom:12px;min-height:40px;}
+.edit-modal{background:#fff;border:1px solid #D4CBE8;border-radius:18px;padding:28px;width:390px;max-width:92vw;box-shadow:0 24px 48px rgba(0,0,0,0.12);}
+.dias-preview{background:#F7F4FC;border:1px solid #D4CBE8;border-radius:10px;padding:12px 16px;font-size:13px;color:#5C4880;margin-bottom:12px;min-height:40px;}
 
 /* ── FORMS ── */
-.form-sec{background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:22px;margin-bottom:16px;}
-.form-sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9ca3af;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:8px;}
+.form-sec{background:#fff;border:1px solid #D4CBE8;border-radius:14px;padding:22px;margin-bottom:16px;}
+.form-sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9B89B8;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDF8;display:flex;align-items:center;gap:8px;}
 .form-grid{display:grid;gap:14px;margin-bottom:14px;}
 .form-grid.g2{grid-template-columns:1fr 1fr;}
 .form-grid.g3{grid-template-columns:1fr 1fr 1fr;}
 .form-grid.g4{grid-template-columns:1fr 1fr 1fr 1fr;}
 .form-group{display:flex;flex-direction:column;gap:6px;}
 .form-group.full{grid-column:1/-1;}
-.form-label{font-size:11px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:0.5px;}
+.form-label{font-size:11px;font-weight:600;color:#5C4880;text-transform:uppercase;letter-spacing:0.5px;}
 .form-label .req{color:#ef4444;margin-left:2px;}
-.form-label .auto{color:#10b981;font-size:9px;margin-left:4px;background:#d1fae5;padding:1px 5px;border-radius:4px;}
-.form-input,.form-select,.form-textarea{background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 13px;font-size:13px;font-family:var(--font);color:#111;outline:none;transition:all 0.12s;}
+.form-label .auto{color:#5BAD1E;font-size:9px;margin-left:4px;background:#E6F4D9;padding:1px 5px;border-radius:4px;}
+.form-input,.form-select,.form-textarea{background:#F7F4FC;border:1.5px solid #D4CBE8;border-radius:10px;padding:10px 13px;font-size:13px;font-family:var(--font);color:#1C0840;outline:none;transition:all 0.12s;}
 .form-input:focus,.form-select:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(124,58,237,0.08);}
-.form-input[readonly]{background:#f3f4f6;color:#6b7280;font-family:var(--mono);}
+.form-input[readonly]{background:#F0EDF8;color:#5C4880;font-family:var(--mono);}
 .form-input.auto-field{border-style:dashed;color:var(--accent);font-family:var(--mono);}
 .form-textarea{resize:vertical;min-height:70px;}
 .check-group{display:flex;flex-wrap:wrap;gap:8px;}
 .check-item{display:flex;align-items:center;gap:6px;cursor:pointer;}
 .check-item input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;}
-.check-item label{font-size:13px;color:#4b5563;cursor:pointer;}
+.check-item label{font-size:13px;color:#5C4880;cursor:pointer;}
 .btn-row{display:flex;gap:8px;align-items:center;margin-top:8px;}
 .btn{border:none;border-radius:10px;padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.12s;display:inline-flex;align-items:center;gap:6px;}
 .btn-primary{background:var(--accent);color:#fff;}
 .btn-primary:hover{background:var(--accent2);}
-.btn-secondary{background:#f9fafb;color:#374151;border:1.5px solid #e5e7eb;}
+.btn-secondary{background:#F7F4FC;color:#5C4880;border:1.5px solid #D4CBE8;}
 .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
-.btn-green{background:#10b981;color:#fff;}
-.btn-green:hover{background:#059669;}
+.btn-green{background:#5BAD1E;color:#fff;}
+.btn-green:hover{background:#4A8F18;}
 
 /* ── REPORTE BTNS ── */
 .rep-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-.rep-btn{background:#fff;border:1.5px solid #e5e7eb;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:500;color:#6b7280;cursor:pointer;font-family:var(--font);transition:all 0.12s;}
+.rep-btn{background:#fff;border:1.5px solid #D4CBE8;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:500;color:#5C4880;cursor:pointer;font-family:var(--font);transition:all 0.12s;}
 .rep-btn:hover{border-color:var(--accent);color:var(--accent);}
-.rep-btn.active{background:#f3f0ff;border-color:var(--accent);color:var(--accent);font-weight:700;}
+.rep-btn.active{background:#EDE5FF;border-color:var(--accent);color:var(--accent);font-weight:700;}
 
 /* ── ALERTAS ── */
 .alert-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
-.alert-card{background:#fff;border:1px solid #ebebeb;border-radius:14px;overflow:hidden;}
-.alert-card-hd{padding:13px 16px;background:#fafafa;border-bottom:1px solid #ebebeb;font-size:12.5px;font-weight:700;color:#111;display:flex;align-items:center;justify-content:space-between;}
+.alert-card{background:#fff;border:1px solid #D4CBE8;border-radius:14px;overflow:hidden;}
+.alert-card-hd{padding:13px 16px;background:#F7F4FC;border-bottom:1px solid #D4CBE8;font-size:12.5px;font-weight:700;color:#1C0840;display:flex;align-items:center;justify-content:space-between;}
 .alert-card-body{max-height:220px;overflow-y:auto;}
 .alert-item{padding:10px 16px;border-bottom:1px solid #f5f5f5;transition:background 0.1s;}
 .alert-item:hover{background:#faf8ff;}
 .alert-item:last-child{border-bottom:none;}
-.alert-name{font-size:13px;color:#111;font-weight:600;}
-.alert-meta{font-size:11.5px;color:#9ca3af;display:flex;gap:8px;margin-top:3px;}
+.alert-name{font-size:13px;color:#1C0840;font-weight:600;}
+.alert-meta{font-size:11.5px;color:#9B89B8;display:flex;gap:8px;margin-top:3px;}
 
 /* ── TOAST ── */
-.toast{position:fixed;bottom:24px;right:24px;background:#fff;border:1px solid #ebebeb;color:#111;padding:13px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;display:none;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,0.10);}
+.toast{position:fixed;bottom:24px;right:24px;background:#fff;border:1px solid #D4CBE8;color:#1C0840;padding:13px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;display:none;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,0.10);}
 .toast.show{display:flex;animation:slideIn 0.22s ease;}
-.toast.ok{border-left:4px solid #10b981;color:#065f46;}
+.toast.ok{border-left:4px solid #5BAD1E;color:#2F5C0F;}
 .toast.err{border-left:4px solid #ef4444;color:#991b1b;}
 .toast.warn{border-left:4px solid #f59e0b;color:#92400e;}
 @keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── GS BANNER ── */
-.gs-banner{background:#f3f0ff;border:1px solid #ddd6fe;border-radius:14px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:14px;}
+.gs-banner{background:#EDE5FF;border:1px solid #D4CBE8;border-radius:14px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:14px;}
 .gs-banner-ico{font-size:26px;}
 .gs-banner-text{flex:1;}
-.gs-banner-title{font-size:14px;font-weight:700;color:#111;margin-bottom:3px;}
-.gs-banner-sub{font-size:12px;color:#6b7280;}
+.gs-banner-title{font-size:14px;font-weight:700;color:#1C0840;margin-bottom:3px;}
+.gs-banner-sub{font-size:12px;color:#5C4880;}
 
 /* ── DASH PANELS ── */
 .dash-panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
-.dash-panel{background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:20px;}
-.dash-panel-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;margin-bottom:16px;}
+.dash-panel{background:#fff;border:1px solid #D4CBE8;border-radius:14px;padding:20px;}
+.dash-panel-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B89B8;margin-bottom:16px;}
 .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.bar-label{font-size:12px;color:#6b7280;width:110px;flex-shrink:0;}
-.bar-value{font-family:var(--mono);font-size:11.5px;color:#111;width:36px;text-align:right;font-weight:700;}
+.bar-label{font-size:12px;color:#5C4880;width:110px;flex-shrink:0;}
+.bar-value{font-family:var(--mono);font-size:11.5px;color:#1C0840;width:36px;text-align:right;font-weight:700;}
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:6px;height:10px;}
 ::-webkit-scrollbar-track{background:#f0f0f0;border-radius:10px;}
 ::-webkit-scrollbar-thumb{background:#a78bfa;border-radius:10px;}
-::-webkit-scrollbar-thumb:hover{background:#7c3aed;}
+::-webkit-scrollbar-thumb:hover{background:#5212A0;}
 /* scrollbar horizontal solo en tablas — más gruesa y visible */
 .tbl-scroll::-webkit-scrollbar{height:12px;}
-.tbl-scroll::-webkit-scrollbar-track{background:#ede9fe;border-radius:0 0 14px 14px;}
-.tbl-scroll::-webkit-scrollbar-thumb{background:#7c3aed;border-radius:10px;border:2px solid #ede9fe;}
+.tbl-scroll::-webkit-scrollbar-track{background:#EDE5FF;border-radius:0 0 14px 14px;}
+.tbl-scroll::-webkit-scrollbar-thumb{background:#5212A0;border-radius:10px;border:2px solid #EDE5FF;}
 .tbl-scroll::-webkit-scrollbar-thumb:hover{background:#5b21b6;}
 
-.empty-state{text-align:center;padding:48px 20px;color:#9ca3af;font-size:13px;}
+.empty-state{text-align:center;padding:48px 20px;color:#9B89B8;font-size:13px;}
 .pulse-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);}
 .pulse-dot::after{display:none;}
-.pag-wrap{padding:11px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #ebebeb;background:#fafafa;}
+.pag-wrap{padding:11px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #D4CBE8;background:#F7F4FC;}
 </style>
 </head>
 <body>
@@ -327,10 +338,8 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 <!-- SIDEBAR -->
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <div class="logo-icon">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#4f7ef8" fill-opacity="0.18"/><rect x="6" y="7" width="10" height="2" rx="1" fill="#4f7ef8"/><rect x="6" y="11" width="16" height="2" rx="1" fill="#4f7ef8"/><rect x="6" y="15" width="13" height="2" rx="1" fill="#4f7ef8" opacity=".7"/><rect x="6" y="19" width="8" height="2" rx="1" fill="#4f7ef8" opacity=".4"/></svg>
-    </div>
     <div class="logo-text">
+      <div class="logo-wordmark">bet<span class="a">a</span></div>
       <div class="logo-title">Control Documentario</div>
       <div class="logo-sub">de Servicios Varios</div>
     </div>
@@ -380,7 +389,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
     </div>
     <div class="nav-item" onclick="openCDModal()">
       <svg class="nav-ico" viewBox="0 0 18 18"><path d="M6 2h6l3 4v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.4" fill="none" opacity=".8"/><path d="M7 9l1.5 1.5L11 7.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>
-      🧪 Probar API CD
+      🔎 Consulta ConsultaDatos
     </div>
   </div>
   <div class="sidebar-footer">
@@ -436,7 +445,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
     <!-- ── ENCABEZADO ── -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
       <div style="width:4px;height:18px;background:linear-gradient(var(--green),var(--accent));border-radius:2px"></div>
-      <span style="font-size:14px;font-weight:700;color:#111">Dashboard General</span>
+      <span style="font-size:14px;font-weight:700;color:#1C0840">Dashboard General</span>
       <span id="kd-fecha-rep" style="font-weight:400;font-size:11px;color:var(--text3)"></span>
       <span id="kd-rep-badge" style="display:none;font-size:10px;padding:2px 8px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700">● EN VIVO</span>
     </div>
@@ -518,7 +527,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       </div>
 
       <!-- ── QUIÉNES LES FALTA ── -->
-      <div style="font-size:13px;font-weight:700;color:#111;margin:18px 0 12px;display:flex;align-items:center;gap:8px">
+      <div style="font-size:13px;font-weight:700;color:#1C0840;margin:18px 0 12px;display:flex;align-items:center;gap:8px">
         <div style="width:4px;height:16px;background:var(--danger);border-radius:2px"></div>
         Quiénes les falta documentación
       </div>
@@ -538,26 +547,26 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       </div>
 
       <!-- ── POR DOCUMENTO (colapsables) ── -->
-      <div style="font-size:13px;font-weight:700;color:#111;margin:22px 0 12px;display:flex;align-items:center;gap:8px">
+      <div style="font-size:13px;font-weight:700;color:#1C0840;margin:22px 0 12px;display:flex;align-items:center;gap:8px">
         <div style="width:4px;height:16px;background:var(--accent);border-radius:2px"></div>
         Detalle por documento — quién lo tiene pendiente
       </div>
 
-      <div onclick="toggleDashDoc('kd-por-doc')" style="cursor:pointer;background:#fff;border:1px solid #ebebeb;border-left:4px solid #1e40af;border-radius:10px;padding:11px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:#0f172a">
-        <span>🏢 PROVEEDORES <span id="kd-cnt-doc-prov" style="font-weight:500;color:#94a3b8;font-size:11px"></span></span>
-        <span id="kd-arrow-kd-por-doc" style="color:#94a3b8">▼</span>
+      <div onclick="toggleDashDoc('kd-por-doc')" style="cursor:pointer;background:#fff;border:1px solid #D4CBE8;border-left:4px solid #1e40af;border-radius:10px;padding:11px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:#1C0840">
+        <span>🏢 PROVEEDORES <span id="kd-cnt-doc-prov" style="font-weight:500;color:#9B89B8;font-size:11px"></span></span>
+        <span id="kd-arrow-kd-por-doc" style="color:#9B89B8">▼</span>
       </div>
       <div id="kd-por-doc" style="display:none;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:12px"></div>
 
-      <div onclick="toggleDashDoc('kd-por-doc-unid')" style="cursor:pointer;background:#fff;border:1px solid #ebebeb;border-left:4px solid #0891b2;border-radius:10px;padding:11px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:#0f172a">
-        <span>🚛 UNIDADES <span id="kd-cnt-doc-unid" style="font-weight:500;color:#94a3b8;font-size:11px"></span></span>
-        <span id="kd-arrow-kd-por-doc-unid" style="color:#94a3b8">▼</span>
+      <div onclick="toggleDashDoc('kd-por-doc-unid')" style="cursor:pointer;background:#fff;border:1px solid #D4CBE8;border-left:4px solid #0891b2;border-radius:10px;padding:11px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:#1C0840">
+        <span>🚛 UNIDADES <span id="kd-cnt-doc-unid" style="font-weight:500;color:#9B89B8;font-size:11px"></span></span>
+        <span id="kd-arrow-kd-por-doc-unid" style="color:#9B89B8">▼</span>
       </div>
       <div id="kd-por-doc-unid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:12px"></div>
 
-      <div onclick="toggleDashDoc('kd-por-doc-cond')" style="cursor:pointer;background:#fff;border:1px solid #ebebeb;border-left:4px solid #7c3aed;border-radius:10px;padding:11px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:#0f172a">
-        <span>👤 CONDUCTORES <span id="kd-cnt-doc-cond" style="font-weight:500;color:#94a3b8;font-size:11px"></span></span>
-        <span id="kd-arrow-kd-por-doc-cond" style="color:#94a3b8">▼</span>
+      <div onclick="toggleDashDoc('kd-por-doc-cond')" style="cursor:pointer;background:#fff;border:1px solid #D4CBE8;border-left:4px solid #5212A0;border-radius:10px;padding:11px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:#1C0840">
+        <span>👤 CONDUCTORES <span id="kd-cnt-doc-cond" style="font-weight:500;color:#9B89B8;font-size:11px"></span></span>
+        <span id="kd-arrow-kd-por-doc-cond" style="color:#9B89B8">▼</span>
       </div>
       <div id="kd-por-doc-cond" style="display:none;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:12px"></div>
     </div>
@@ -601,7 +610,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <option value="proceso">⏳ En proceso (50-79%)</option>
           <option value="incompleto">❌ Incompleto (&lt;50%)</option>
         </select>
-        <select id="cond-fil-resp" class="filter-sel" onchange="state.conductores.page=1;renderConductores()">
+        <select id="cond-fil-resp" class="filter-sel" style="display:none" onchange="state.conductores.page=1;renderConductores()">
           <option value="">👤 Todos los responsables</option>
         </select>
         <div id="cond-modo-badge" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;display:none">📋 Reporte del día</div>
@@ -609,6 +618,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <button class="tb-btn" id="btn-cond-modo" onclick="toggleCondModo()" style="font-size:11px">Ver reporte del día</button>
       </div>
     </div>
+    <div class="resp-pills" id="cond-resp-pills"></div>
     <div class="tbl-wrap">
       <div class="tbl-scroll">
         <table>
@@ -659,7 +669,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <option value="proceso">⏳ En proceso (50-79%)</option>
           <option value="incompleto">❌ Incompleto (&lt;50%)</option>
         </select>
-        <select id="unid-fil-resp" class="filter-sel" onchange="state.unidades.page=1;renderUnidades()">
+        <select id="unid-fil-resp" class="filter-sel" style="display:none" onchange="state.unidades.page=1;renderUnidades()">
           <option value="">👤 Todos los responsables</option>
         </select>
         <div id="unid-modo-badge" style="font-size:10.5px;padding:3px 9px;border-radius:10px;background:var(--success-bg);color:var(--success);font-weight:700;display:none">📋 Reporte del día</div>
@@ -667,6 +677,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <button class="tb-btn" id="btn-unid-modo" onclick="toggleUnidModo()" style="font-size:11px">Ver reporte del día</button>
       </div>
     </div>
+    <div class="resp-pills" id="unid-resp-pills"></div>
     <div class="tbl-wrap">
       <div class="tbl-scroll">
         <table>
@@ -730,7 +741,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <select class="filter-sel" id="pv-grupo" onchange="renderProveedores()">
           <option value="">🚛 Todos los grupos</option>
         </select>
-        <select class="filter-sel" id="pv-resp" onchange="renderProveedores()">
+        <select class="filter-sel" id="pv-resp" style="display:none" onchange="renderProveedores()">
           <option value="">👤 Todos los responsables</option>
         </select>
         <button class="btn-secondary" style="padding:5px 11px;font-size:11.5px" onclick="nuevoProveedorBtn()">+ Nuevo</button>
@@ -739,7 +750,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
     </div>
 
     <!-- Selector: qué % de cumplimiento mostrar en las tarjetas -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
       <span style="font-size:11px;color:var(--text2);font-weight:600">Ver cumplimiento de:</span>
       <div id="pv-metrica-btns" style="display:flex;gap:4px">
         <button class="rep-btn active" data-m="proveedor" onclick="setPvMetrica('proveedor',this)">📄 Proveedores</button>
@@ -747,6 +758,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
         <button class="rep-btn" data-m="conductor" onclick="setPvMetrica('conductor',this)">👤 Conductores</button>
       </div>
     </div>
+    <div class="resp-pills" id="pv-resp-pills"></div>
 
     <!-- Grid de tarjetas -->
     <div id="prov-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px"></div>
@@ -764,7 +776,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   <div class="page" id="page-reg-proveedor">
     <div style="max-width:900px">
 
-      <button onclick="goPage('proveedores',document.querySelector('.nav-item[onclick*=proveedores]'))" style="background:#f3f4f6;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;margin-bottom:14px">← Volver a Proveedores</button>
+      <button onclick="volverDesdeEdicion()" style="background:#F0EDF8;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#5C4880;cursor:pointer;margin-bottom:14px">← Volver a Proveedores</button>
 
       <div class="form-sec">
         <div class="form-sec-title">🏢 Datos del Proveedor</div>
@@ -785,10 +797,10 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <div style="display:flex;gap:6px">
               <input class="form-input" id="rp-ruc" placeholder="20123456789" maxlength="11" style="flex:1">
               <button type="button" onclick="buscarRucSunat()" title="Buscar en SUNAT" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:13px">🔍</button>
-              <button type="button" onclick="buscarRucCD()" title="Probar con API ConsultaDatos" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🧪 CD</button>
+              <button type="button" onclick="buscarRucCD()" title="Buscar con ConsultaDatos" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🔎 CD</button>
             </div></div>
         </div>
-        <div id="rp-ruc-info" style="display:none;margin-top:8px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:11.5px;color:#166534;line-height:1.6"></div>
+        <div id="rp-ruc-info" style="display:none;margin-top:8px;padding:10px 12px;background:#F2FAEC;border:1px solid #C9E8AE;border-radius:8px;font-size:11.5px;color:#2F5C0F;line-height:1.6"></div>
         <div id="rp-ruc-cd-info" style="display:none;margin-top:8px"></div>
         <!-- Fila 3: 4 campos -->
         <div class="form-grid g4">
@@ -844,15 +856,16 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 
   <!-- ======== ALERTAS ======== -->
   <div class="page" id="page-alertas">
-    <div id="alertas-sin-reporte" class="empty-state" style="padding:60px 20px;background:#fff;border:1px solid #ebebeb;border-radius:14px;">
+    <div id="alertas-sin-reporte" class="empty-state" style="padding:60px 20px;background:#fff;border:1px solid #D4CBE8;border-radius:14px;">
       📑 Carga el <b>Reporte Diario</b> (pestaña "Reporte Diario") para ver aquí las alertas de vencimiento de hoy.
     </div>
     <div id="alertas-contenido" style="display:none">
-      <div class="kpi-grid cols-4" id="alertas-kpi-row">
+      <div class="kpi-grid cols-5" id="alertas-kpi-row">
         <div class="kpi-card blue"><div class="kpi-label">Reporte del día</div><div class="kpi-value" id="al-fecha" style="font-size:20px">—</div><div class="kpi-sub" id="al-registros">0 registros</div></div>
         <div class="kpi-card danger"><div class="kpi-label">Documentos Vencidos</div><div class="kpi-value" id="al-vencidos">0</div><div class="kpi-sub bad">Renovar urgente</div></div>
         <div class="kpi-card warn"><div class="kpi-label">Por Vencer (≤30d)</div><div class="kpi-value" id="al-porvencer">0</div><div class="kpi-sub wu">Gestionar renovación</div></div>
         <div class="kpi-card purple"><div class="kpi-label">Proveedores a Contactar</div><div class="kpi-value" id="al-proveedores">0</div><div class="kpi-sub">Con docs pendientes</div></div>
+        <div class="kpi-card warn"><div class="kpi-label">Docs. por Confirmar</div><div class="kpi-value" id="al-pedirdoc">0</div><div class="kpi-sub wu">Dato por API, falta el archivo</div></div>
       </div>
 
       <div class="rep-filters" style="margin-bottom:14px;">
@@ -898,6 +911,18 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <th>Rep. Legal</th><th>Celular</th><th>Correo</th><th>Vence en</th><th>Estado</th><th>Acción</th>
           </tr></thead>
           <tbody id="alertas-tbody-unid"><tr><td colspan="10" class="empty-state">Sin alertas</td></tr></tbody>
+        </table></div>
+      </div>
+
+      <!-- ══ POR CONFIRMAR (dato de API, falta el archivo) ══ -->
+      <div class="section-hd"><div class="section-title">📤 Documentos por Confirmar — Pedir al Proveedor/Conductor</div><span class="count-tag" id="alertas-count-pedirdoc">0</span></div>
+      <div class="tbl-wrap" style="margin-bottom:20px">
+        <div class="tbl-scroll"><table>
+          <thead><tr>
+            <th>#</th><th>Documento</th><th>Tipo</th><th>Conductor/Placa</th><th>Proveedor</th>
+            <th>Rep. Legal</th><th>Celular</th><th>Correo</th><th>Acción</th>
+          </tr></thead>
+          <tbody id="alertas-tbody-pedirdoc"><tr><td colspan="9" class="empty-state">Sin pendientes</td></tr></tbody>
         </table></div>
       </div>
 
@@ -985,30 +1010,30 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       <div class="tbl-wrap">
         <div class="tbl-scroll"><table style="min-width:1300px;">
           <thead>
-          <tr style="font-size:9px;color:#9ca3af;background:#fafafa">
-            <th colspan="6" style="text-align:center;border-bottom:1px solid #ebebeb">🚚 DATOS DEL VIAJE</th>
-            <th colspan="2" style="text-align:center;border-bottom:1px solid #ebebeb;border-left:2px solid #e5e7eb">🪪 LICENCIA</th>
-            <th colspan="2" style="text-align:center;border-bottom:1px solid #ebebeb;border-left:2px solid #e5e7eb">🛡️ SCTR</th>
-            <th colspan="2" style="text-align:center;border-bottom:1px solid #ebebeb;border-left:2px solid #e5e7eb">📄 SOAT</th>
-            <th colspan="2" style="text-align:center;border-bottom:1px solid #ebebeb;border-left:2px solid #e5e7eb">🔧 RTV</th>
-            <th style="border-left:2px solid #e5e7eb;border-bottom:1px solid #ebebeb"></th>
+          <tr style="font-size:9px;color:#9B89B8;background:#F7F4FC">
+            <th colspan="6" style="text-align:center;border-bottom:1px solid #D4CBE8">🚚 DATOS DEL VIAJE</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #D4CBE8;border-left:2px solid #D4CBE8">🪪 LICENCIA</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #D4CBE8;border-left:2px solid #D4CBE8">🛡️ SCTR</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #D4CBE8;border-left:2px solid #D4CBE8">📄 SOAT</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #D4CBE8;border-left:2px solid #D4CBE8">🔧 RTV</th>
+            <th style="border-left:2px solid #D4CBE8;border-bottom:1px solid #D4CBE8"></th>
           </tr>
           <tr>
-            <th style="position:sticky;left:0;background:#f3f4f6;z-index:11">#</th>
-            <th style="position:sticky;left:32px;background:#f3f4f6;z-index:11;box-shadow:2px 0 3px -2px rgba(0,0,0,.08)">Placa</th>
+            <th style="position:sticky;left:0;background:#F0EDF8;z-index:11">#</th>
+            <th style="position:sticky;left:32px;background:#F0EDF8;z-index:11;box-shadow:2px 0 3px -2px rgba(0,0,0,.08)">Placa</th>
             <th>Grupo</th>
             <th>Conductor</th>
             <th>Proveedor</th>
             <th>Centro</th>
-            <th style="border-left:2px solid #e5e7eb">Estado</th>
+            <th style="border-left:2px solid #D4CBE8">Estado</th>
             <th>Días</th>
-            <th style="border-left:2px solid #e5e7eb">Estado</th>
+            <th style="border-left:2px solid #D4CBE8">Estado</th>
             <th>Días</th>
-            <th style="border-left:2px solid #e5e7eb">Estado</th>
+            <th style="border-left:2px solid #D4CBE8">Estado</th>
             <th>Días</th>
-            <th style="border-left:2px solid #e5e7eb">Estado</th>
+            <th style="border-left:2px solid #D4CBE8">Estado</th>
             <th>Días</th>
-            <th style="border-left:2px solid #e5e7eb;text-align:center">✅ Resultado</th>
+            <th style="border-left:2px solid #D4CBE8;text-align:center">✅ Resultado</th>
           </tr>
           </thead>
           <tbody id="rep-tbody"><tr><td colspan="15" class="empty-state">Carga el Excel para ver el reporte</td></tr></tbody>
@@ -1040,16 +1065,16 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       </select>
     </div>
     <!-- Tabs -->
-    <div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid #ebebeb">
-      <button class="cl-tab active" data-clt="prov" onclick="clTab('prov')" style="background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:9px 16px;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer">🏢 Proveedores</button>
-      <button class="cl-tab" data-clt="unid" onclick="clTab('unid')" style="background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:9px 16px;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer">🚛 Unidades</button>
-      <button class="cl-tab" data-clt="cond" onclick="clTab('cond')" style="background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:9px 16px;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer">👤 Conductores</button>
+    <div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid #D4CBE8">
+      <button class="cl-tab active" data-clt="prov" onclick="clTab('prov')" style="background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:9px 16px;font-size:13px;font-weight:700;color:#5C4880;cursor:pointer">🏢 Proveedores</button>
+      <button class="cl-tab" data-clt="unid" onclick="clTab('unid')" style="background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:9px 16px;font-size:13px;font-weight:700;color:#5C4880;cursor:pointer">🚛 Unidades</button>
+      <button class="cl-tab" data-clt="cond" onclick="clTab('cond')" style="background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:9px 16px;font-size:13px;font-weight:700;color:#5C4880;cursor:pointer">👤 Conductores</button>
     </div>
 
     <!-- TAB PROVEEDORES -->
     <div id="cl-prov" class="cl-panel">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <span style="font-size:14px;font-weight:700;color:#111">Checklist de Proveedores</span>
+        <span style="font-size:14px;font-weight:700;color:#1C0840">Checklist de Proveedores</span>
         <span class="count-tag" id="rep-prov-count">0</span>
         <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
           <input class="search-box" id="rep-prov-srch" placeholder="🔍 Buscar..." oninput="renderReporteProveedores()" style="width:150px">
@@ -1087,7 +1112,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
     <!-- TAB UNIDADES -->
     <div id="cl-unid" class="cl-panel" style="display:none">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <span style="font-size:14px;font-weight:700;color:#111">Checklist de Unidades</span>
+        <span style="font-size:14px;font-weight:700;color:#1C0840">Checklist de Unidades</span>
         <span class="count-tag" id="cl-unid-count">0</span>
         <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
           <input class="search-box" id="cl-unid-srch" placeholder="🔍 Placa o proveedor..." oninput="renderChecklistUnid()" style="width:170px">
@@ -1123,7 +1148,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
     <!-- TAB CONDUCTORES -->
     <div id="cl-cond" class="cl-panel" style="display:none">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <span style="font-size:14px;font-weight:700;color:#111">Checklist de Conductores</span>
+        <span style="font-size:14px;font-weight:700;color:#1C0840">Checklist de Conductores</span>
         <span class="count-tag" id="cl-cond-count">0</span>
         <div style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap">
           <input class="search-box" id="cl-cond-srch" placeholder="🔍 Nombre, DNI o proveedor..." oninput="renderChecklistCond()" style="width:200px">
@@ -1155,44 +1180,44 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
     <div style="max-width:1200px;margin:0 auto">
 
       <!-- Header -->
-      <div style="background:linear-gradient(135deg,#6d28d9,#7c3aed);color:white;border-radius:14px;padding:22px 28px;margin-bottom:20px">
+      <div style="background:linear-gradient(135deg,#3C0C79,#5212A0);color:white;border-radius:14px;padding:22px 28px;margin-bottom:20px">
         <div style="font-size:20px;font-weight:800;margin-bottom:4px">📋 Historial de Reportes Diarios</div>
         <div style="font-size:13px;opacity:.85">Todos los reportes guardados en Google Sheets — busca y filtra por fecha, placa o proveedor</div>
       </div>
 
       <!-- Controles -->
-      <div style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:18px 20px;margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <div style="background:#fff;border:1px solid #D4CBE8;border-radius:14px;padding:18px 20px;margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <button onclick="cargarHistorial()" id="btn-hist-cargar"
-          style="background:#6d28d9;color:white;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">
+          style="background:#3C0C79;color:white;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">
           🔄 Cargar desde Sheets
         </button>
         <input type="date" id="hist-fecha-desde" class="filter-sel" title="Desde">
-        <span style="color:#9ca3af;font-size:12px">hasta</span>
+        <span style="color:#9B89B8;font-size:12px">hasta</span>
         <input type="date" id="hist-fecha-hasta" class="filter-sel" title="Hasta">
         <input type="text" id="hist-buscar" class="search-box" placeholder="🔍 Buscar placa, conductor, proveedor..." style="width:240px" oninput="filtrarHistorial()">
-        <button onclick="filtrarHistorial()" style="background:#f3f0ff;color:#6d28d9;border:1px solid #ddd6fe;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer">Filtrar</button>
-        <button onclick="limpiarFiltrosHist()" style="background:#f9fafb;color:#6b7280;border:1px solid #e5e7eb;border-radius:8px;padding:9px 14px;font-size:12px;cursor:pointer">✕ Limpiar</button>
-        <span id="hist-stats" style="margin-left:auto;font-size:11.5px;color:#9ca3af;font-weight:600"></span>
+        <button onclick="filtrarHistorial()" style="background:#EDE5FF;color:#3C0C79;border:1px solid #D4CBE8;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer">Filtrar</button>
+        <button onclick="limpiarFiltrosHist()" style="background:#F7F4FC;color:#5C4880;border:1px solid #D4CBE8;border-radius:8px;padding:9px 14px;font-size:12px;cursor:pointer">✕ Limpiar</button>
+        <span id="hist-stats" style="margin-left:auto;font-size:11.5px;color:#9B89B8;font-weight:600"></span>
       </div>
 
       <!-- KPIs rápidos -->
       <div id="hist-kpis" style="display:none;margin-bottom:16px">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-          <div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:16px 18px;border-left:4px solid #6d28d9">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;letter-spacing:.5px">Total Registros</div>
-            <div id="hk-total" style="font-size:28px;font-weight:800;color:#111;font-family:var(--mono)">0</div>
+          <div style="background:#fff;border:1px solid #D4CBE8;border-radius:12px;padding:16px 18px;border-left:4px solid #3C0C79">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9B89B8;margin-bottom:8px;letter-spacing:.5px">Total Registros</div>
+            <div id="hk-total" style="font-size:28px;font-weight:800;color:#1C0840;font-family:var(--mono)">0</div>
           </div>
-          <div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:16px 18px;border-left:4px solid #10b981">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;letter-spacing:.5px">Días con Reporte</div>
-            <div id="hk-dias" style="font-size:28px;font-weight:800;color:#111;font-family:var(--mono)">0</div>
+          <div style="background:#fff;border:1px solid #D4CBE8;border-radius:12px;padding:16px 18px;border-left:4px solid #5BAD1E">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9B89B8;margin-bottom:8px;letter-spacing:.5px">Días con Reporte</div>
+            <div id="hk-dias" style="font-size:28px;font-weight:800;color:#1C0840;font-family:var(--mono)">0</div>
           </div>
-          <div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:16px 18px;border-left:4px solid #3b82f6">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;letter-spacing:.5px">Placas Únicas</div>
-            <div id="hk-placas" style="font-size:28px;font-weight:800;color:#111;font-family:var(--mono)">0</div>
+          <div style="background:#fff;border:1px solid #D4CBE8;border-radius:12px;padding:16px 18px;border-left:4px solid #3b82f6">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9B89B8;margin-bottom:8px;letter-spacing:.5px">Placas Únicas</div>
+            <div id="hk-placas" style="font-size:28px;font-weight:800;color:#1C0840;font-family:var(--mono)">0</div>
           </div>
-          <div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:16px 18px;border-left:4px solid #f59e0b">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;letter-spacing:.5px">Último Reporte</div>
-            <div id="hk-ultimo" style="font-size:16px;font-weight:800;color:#111;font-family:var(--mono);margin-top:4px">—</div>
+          <div style="background:#fff;border:1px solid #D4CBE8;border-radius:12px;padding:16px 18px;border-left:4px solid #f59e0b">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9B89B8;margin-bottom:8px;letter-spacing:.5px">Último Reporte</div>
+            <div id="hk-ultimo" style="font-size:16px;font-weight:800;color:#1C0840;font-family:var(--mono);margin-top:4px">—</div>
           </div>
         </div>
       </div>
@@ -1222,7 +1247,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
       </div>
 
       <!-- Estado vacío -->
-      <div id="hist-empty" style="background:#fff;border:2px dashed #e5e7eb;border-radius:14px;padding:60px 20px;text-align:center;color:#9ca3af">
+      <div id="hist-empty" style="background:#fff;border:2px dashed #D4CBE8;border-radius:14px;padding:60px 20px;text-align:center;color:#9B89B8">
         <div style="font-size:48px;margin-bottom:12px;opacity:.3">📋</div>
         <div style="font-size:14px;font-weight:600;margin-bottom:6px">Sin reportes cargados</div>
         <div style="font-size:12px">Presiona <b>Cargar desde Sheets</b> para ver el historial de reportes diarios guardados</div>
@@ -1367,7 +1392,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
 
   <style>
   .bq-search-card{
-    background:#fff;border:1px solid #ebebeb;border-radius:16px;padding:20px;
+    background:#fff;border:1px solid #D4CBE8;border-radius:16px;padding:20px;
     display:flex;flex-direction:column;min-height:150px;
     transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
   }
@@ -1392,7 +1417,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   <!-- ======== REG CONDUCTOR ======== -->
   <div class="page" id="page-reg-conductor">
     <div style="max-width:1100px;">
-      <button onclick="goPage('proveedores',document.querySelector('.nav-item[onclick*=proveedores]'))" style="background:#f3f4f6;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;margin-bottom:14px">← Volver a Proveedores</button>
+      <button onclick="volverDesdeEdicion()" style="background:#F0EDF8;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#5C4880;cursor:pointer;margin-bottom:14px">← Volver a Proveedores</button>
       <div class="form-sec">
         <div class="form-sec-title">👤 Datos del Conductor</div>
         <div class="form-grid g4">
@@ -1400,7 +1425,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <div style="display:flex;gap:6px">
               <input class="form-input" type="text" id="c-dni" placeholder="12345678" oninput="buscarConductor(this.value)" style="flex:1">
               <button type="button" onclick="buscarDniReniec()" title="Buscar en RENIEC" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:13px">🔍</button>
-              <button type="button" onclick="buscarDniCD()" title="Probar con API ConsultaDatos" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🧪 CD</button>
+              <button type="button" onclick="buscarDniCD()" title="Buscar con ConsultaDatos" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🔎 CD</button>
             </div></div>
           <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="c-estado"><option>ACTIVO</option><option>INACTIVO</option></select></div>
           <div class="form-group"><label class="form-label">Proveedor</label><input class="form-input" type="text" id="c-proveedor" placeholder="Nombre del proveedor" list="prov-list-cond" style="text-transform:uppercase"><datalist id="prov-list-cond"></datalist></div>
@@ -1413,12 +1438,12 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
           <div class="form-group"><label class="form-label">N° Licencia</label>
             <div style="display:flex;gap:6px">
               <input class="form-input" type="text" id="c-num-lic" placeholder="N° licencia" style="flex:1">
-              <button type="button" onclick="buscarLicenciaCD()" title="Probar licencia con API ConsultaDatos (usa el DNI de arriba)" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🧪 CD</button>
+              <button type="button" onclick="buscarLicenciaCD()" title="Buscar licencia con ConsultaDatos (usa el DNI de arriba)" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🔎 CD</button>
             </div></div>
           <div class="form-group full"><label class="form-label">📁 Link Carpeta SharePoint</label><input class="form-input" type="text" id="c-carpeta" placeholder="https://..."></div>
         </div>
         <div class="form-group full"><label class="form-label">Conductor <span class="req">*</span></label><input class="form-input" type="text" id="c-nombre" placeholder="Apellidos y nombres completos" style="text-transform:uppercase"></div>
-        <div id="c-dni-info" style="display:none;margin-top:8px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:11.5px;color:#166534"></div>
+        <div id="c-dni-info" style="display:none;margin-top:8px;padding:10px 12px;background:#F2FAEC;border:1px solid #C9E8AE;border-radius:8px;font-size:11.5px;color:#2F5C0F"></div>
         <div id="c-dni-cd-info" style="display:none;margin-top:8px"></div>
         <div id="c-lic-cd-info" style="display:none;margin-top:8px"></div>
       </div>
@@ -1475,7 +1500,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
   <!-- ======== REG UNIDAD ======== -->
   <div class="page" id="page-reg-unidad">
     <div style="max-width:1100px;">
-      <button onclick="goPage('proveedores',document.querySelector('.nav-item[onclick*=proveedores]'))" style="background:#f3f4f6;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;margin-bottom:14px">← Volver a Proveedores</button>
+      <button onclick="volverDesdeEdicion()" style="background:#F0EDF8;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#5C4880;cursor:pointer;margin-bottom:14px">← Volver a Proveedores</button>
       <div class="form-sec">
         <div class="form-sec-title">🚛 Datos de la Unidad</div>
         <div class="form-grid g4">
@@ -1483,7 +1508,7 @@ td.mono{font-family:var(--mono);font-size:11.5px;color:#555;}
             <div style="display:flex;gap:6px">
               <input class="form-input" type="text" id="u-placa" placeholder="A1B234" style="flex:1;text-transform:uppercase" oninput="buscarUnidad(this.value)" onblur="autoRellenarSoatRtv(this.value)">
               <button type="button" class="bq-search-btn" style="--bq-accent:var(--accent);width:38px;flex:0 0 38px" onclick="autoRellenarSoatRtv(document.getElementById('u-placa').value)" title="Consultar SOAT / Rev. Técnica">🔍</button>
-              <button type="button" onclick="buscarSoatRtvCD()" title="Probar SOAT/Rev.Técnica con API ConsultaDatos" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🧪 CD</button>
+              <button type="button" onclick="buscarSoatRtvCD()" title="Buscar SOAT/Rev.Técnica con ConsultaDatos" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:0 10px;cursor:pointer;font-size:11px;font-weight:700">🔎 CD</button>
             </div>
             <div id="u-placa-info" style="display:none;font-size:11px;margin-top:5px;padding:6px 9px;border-radius:8px;background:var(--bg3);color:var(--text2);line-height:1.6"></div>
             <div id="u-placa-cd-info" style="display:none;margin-top:8px"></div>
@@ -1639,11 +1664,11 @@ function doGet(e) {
   </div>
 </div>
 
-<!-- ═══════ MODAL: PROBAR API CONSULTADATOS (comparación de plan) ═══════ -->
+<!-- ═══════ MODAL: CONSULTA RÁPIDA — CONSULTADATOS.COM ═══════ -->
 <div class="modal-overlay" id="cd-modal" onclick="if(event.target===this)closeCDModal()">
   <div class="modal" style="width:640px;max-width:94vw;max-height:90vh;overflow-y:auto">
-    <div class="modal-title">🧪 Probar API ConsultaDatos.com</div>
-    <div class="modal-sub">Consulta directa a tu token de prueba — para comparar cobertura y datos contra tu plan actual de JSON.pe.</div>
+    <div class="modal-title">🔎 Consulta rápida — ConsultaDatos.com</div>
+    <div class="modal-sub">Consulta directa a tu token de ConsultaDatos.com (plan pagado).</div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
       <div>
@@ -1704,7 +1729,7 @@ async function workerFetch(path, body){
 }
 
 // ═══════════════════════════════════════════════
-// 🧪 PANEL DE PRUEBA — API ConsultaDatos.com (comparación de plan)
+// 🔎 PANEL DE CONSULTA RÁPIDA — API ConsultaDatos.com (plan pagado)
 // ═══════════════════════════════════════════════
 function openCDModal(){ document.getElementById('cd-modal').classList.add('open'); }
 function closeCDModal(){ document.getElementById('cd-modal').classList.remove('open'); }
@@ -1881,7 +1906,12 @@ function cdRenderAll(d, skip=['ok','http']){
   return rows || '<div style="color:var(--text3);font-size:11.5px;padding:6px 0">Sin campos adicionales en la respuesta.</div>';
 }
 
-// ═══════ Mini-búsquedas 🧪 CD embebidas en los formularios de edición ═══════
+// Aviso: los datos de licencia/SOAT/RTV que traen las APIs (fechas, categoría, aseguradora...)
+// NO son el archivo/foto del documento — hay que seguir pidiéndoselo al proveedor o conductor.
+function avisoPedirDoc(nombreDoc){
+  return `<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:11.5px;color:#92400e;font-weight:700;display:flex;align-items:center;gap:6px">📤 Pedir ${nombreDoc} al proveedor/conductor — este dato viene de una consulta API, no reemplaza el archivo.</div>`;
+}
+// ═══════ Mini-búsquedas 🔎 CD embebidas en los formularios de edición ═══════
 async function cdMiniLookup(boxId, path, body, render){
   const box = document.getElementById(boxId);
   box.style.display='block';
@@ -1904,7 +1934,7 @@ async function buscarRucCD(){
     const contactoEl=document.getElementById('rp-contacto');
     if(contactoEl && !contactoEl.value.trim() && repNombre) contactoEl.value = repNombre;
     showToast('✓ Campos autocompletados desde ConsultaDatos','ok');
-    return cdCardWrap('🧪🏢','ConsultaDatos — SUNAT (todos los campos)', cdEstadoBadge(d.estado||d.condicion), cdRenderAll(d));
+    return cdCardWrap('🔎🏢','ConsultaDatos — SUNAT (todos los campos)', cdEstadoBadge(d.estado||d.condicion), cdRenderAll(d));
   });
 }
 
@@ -1918,7 +1948,7 @@ async function buscarDniCD(){
     const nombreEl=document.getElementById('c-nombre');
     if(nombreEl && nombreCompleto) nombreEl.value = nombreCompleto.toUpperCase();
     showToast('✓ Nombre autocompletado desde ConsultaDatos','ok');
-    return cdCardWrap('🧪🆔','ConsultaDatos — RENIEC (todos los campos)','', cdRenderAll(d));
+    return cdCardWrap('🔎🆔','ConsultaDatos — RENIEC (todos los campos)','', cdRenderAll(d));
   });
 }
 
@@ -1935,11 +1965,11 @@ async function buscarLicenciaCD(){
     const fLicEl=document.getElementById('c-fecha-lic');
     if(fLicEl && vigeHasta){ fLicEl.value = vigeHasta; calcDocDias('c-fecha-lic','c-dias-lic','c-est-lic'); }
     showToast('✓ Licencia autocompletada desde ConsultaDatos','ok');
-    return cdCardWrap('🧪🪪','ConsultaDatos — Licencia (todos los campos)', cdEstadoBadge(d.estado), cdRenderAll(d));
+    return avisoPedirDoc('la licencia de conducir (foto/escaneo)') + cdCardWrap('🔎🪪','ConsultaDatos — Licencia (todos los campos)', cdEstadoBadge(d.estado), cdRenderAll(d));
   });
 }
 
-// Unidades → SOAT (ConsultaDatos, prueba) + Revisión Técnica (JSON.pe, el que ya usas y sí funciona)
+// Unidades → SOAT (ConsultaDatos) + Revisión Técnica (json.pe, fuente principal para CITV)
 async function buscarSoatRtvCD(){
   const placa=(document.getElementById('u-placa')||{}).value?.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(!placa||placa.length<6){ showToast('Ingresa una placa válida','err'); return; }
@@ -1947,8 +1977,8 @@ async function buscarSoatRtvCD(){
   box.style.display='block'; box.innerHTML=cdLoading();
 
   const [s, rt] = await Promise.all([
-    workerFetch('consulta_soat',{placa}),      // 🧪 prueba: ConsultaDatos
-    bqFetch('revision-tecnica', placa),         // ✅ el que ya usas: JSON.pe vía tu backend
+    workerFetch('consulta_soat',{placa}),        // ConsultaDatos
+    workerFetch('consulta_citv_json',{placa}),   // json.pe, vía el Worker
   ]);
 
   let html='';
@@ -1961,7 +1991,7 @@ async function buscarSoatRtvCD(){
     const fechaFin = normFechaISO(cdPick(s,'fecha_fin','vigencia_hasta'));
     if(compania) setSelectFuzzy('u-aseg-soat', compania);
     if(fechaFin){ const el=document.getElementById('u-fecha-soat'); if(el){ el.value=fechaFin; calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat'); } }
-    html += cdCardWrap('🧪🛡️','ConsultaDatos — SOAT (todos los campos)', cdEstadoBadge(s.estado), cdRenderAll(s));
+    html += avisoPedirDoc('el SOAT (póliza/certificado)') + cdCardWrap('🔎🛡️','ConsultaDatos — SOAT (todos los campos)', cdEstadoBadge(s.estado), cdRenderAll(s));
   }
 
   // — Revisión Técnica vía JSON.pe (backend actual, más confiable que ConsultaDatos para esto) —
@@ -1970,7 +2000,7 @@ async function buscarSoatRtvCD(){
   if(rtUltima){
     const fRtv = normFechaISO(rtUltima.vigente_hasta);
     if(fRtv){ const el=document.getElementById('u-fecha-rtv'); if(el){ el.value=fRtv; calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv'); } }
-    html += cdCardWrap('✅🔧','JSON.pe — Revisión Técnica (todos los campos)', cdEstadoBadge(rtUltima.resultado_inspeccion), cdRenderAll(rtUltima));
+    html += avisoPedirDoc('el certificado de Revisión Técnica') + cdCardWrap('✅🔧','JSON.pe — Revisión Técnica (todos los campos)', cdEstadoBadge(rtUltima.resultado_inspeccion), cdRenderAll(rtUltima));
   } else {
     html += cdError('Revisión Técnica (JSON.pe): '+(rt._error||'no se encontró información para esta placa'));
   }
@@ -2216,7 +2246,13 @@ function unidDatosFaltantes(u){
   if(!u) return 0;
   const esMoto=esMotoTipo(u.tipo);
   const campos=[u.anio, u.marca, u.fechaSoat, u.aseguradora];
-  if(!esMoto){ campos.push(u.fechaRtv); campos.push(u.tieneTc); }
+  if(!esMoto){
+    // Si el RTV está marcado "NO APLICA" / "AÚN NO LE TOCA" no existe fecha que pedir,
+    // así que no debe contar como dato faltante.
+    const rtvNA = u.tieneRtv==='NO APLICA' || u.tieneRtv==='AÚN NO LE TOCA';
+    if(!rtvNA) campos.push(u.fechaRtv);
+    campos.push(u.tieneTc);
+  }
   return campos.filter(v=>!v || !String(v).trim()).length;
 }
 // Cuenta datos BÁSICOS que aún faltan llenar en un conductor (para marcarlo "⚠ Completar")
@@ -2231,7 +2267,7 @@ function condDatosFaltantes(c){
 function docsUnidAplicables(catServ, tipoVehic, u){
   const cat=clasifServicio(catServ||'');
   let docs = DOCS_UNID.filter(d=> d.cat==='todos' || (cat && d.cat.includes(cat)));
-  if(esMotoTipo(tipoVehic)) docs = docs.filter(d=> d.campo!=='docRtv' && d.campo!=='docTc');
+  if(esMotoTipo(tipoVehic)) docs = docs.filter(d=> d.campo!=='docRtv' && d.campo!=='docTc' && d.campo!=='docPoliza');
   if(u){
     const rtvNA = u.tieneRtv==='NO APLICA' || u.tieneRtv==='AÚN NO LE TOCA';
     const tcNA  = u.tieneTc==='NO APLICA';
@@ -2801,7 +2837,7 @@ function renderDashboardGlobal(hayrep, provsHoy, condsHoy, unidsHoy){
     return {avg,completo,proceso,incompleto,total:pcts.length};
   };
   const pintar=(pref, r)=>{
-    const col = r.avg>=80?'#16a34a':r.avg>=50?'#d97706':'#dc2626';
+    const col = r.avg>=80?'#4A8F18':r.avg>=50?'#d97706':'#dc2626';
     const val=s(pref+'-pct'), bar=s(pref+'-bar'), sub=s(pref+'-sub');
     if(val){ val.textContent = r.total? r.avg+'%' : '—'; val.style.color=col; }
     if(bar){ bar.style.width = r.avg+'%'; bar.style.background=col; }
@@ -2827,7 +2863,7 @@ function renderDashboardGlobal(hayrep, provsHoy, condsHoy, unidsHoy){
       const col = u.pct<50?'#dc2626':'#d97706';
       return `<div class="alert-card" style="padding:10px 14px">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><span style="font-size:11px;color:var(--text3)">${u.tipo}</span><br><span style="font-size:12.5px;font-weight:700;color:#0f172a">${u.nombre}</span></div>
+          <div><span style="font-size:11px;color:var(--text3)">${u.tipo}</span><br><span style="font-size:12.5px;font-weight:700;color:#1C0840">${u.nombre}</span></div>
           <span style="font-size:13px;font-weight:800;color:${col}">${u.pct}%</span>
         </div>
       </div>`;
@@ -2893,7 +2929,7 @@ function renderDashboard(){
 
   // ── Desglose por documento: UNIDADES del reporte ──
   const unidObjs=unidsHoy.map(r=>r.unidBD).filter(Boolean);
-  const bar=(lbl,ok,tot)=>{const pct=tot?Math.round(ok/tot*100):0;const col=pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';return `<div class="bar-row"><div class="bar-label" style="min-width:80px">${lbl}</div><div class="bar-bg" style="flex:1"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div><div class="bar-value">${ok}/${tot}</div></div>`;};
+  const bar=(lbl,ok,tot)=>{const pct=tot?Math.round(ok/tot*100):0;const col=pct>=80?'#5BAD1E':pct>=50?'#f59e0b':'#ef4444';return `<div class="bar-row"><div class="bar-label" style="min-width:80px">${lbl}</div><div class="bar-bg" style="flex:1"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div><div class="bar-value">${ok}/${tot}</div></div>`;};
   const docsUnidGlobal=[{c:'docTarjProp',l:'Tarj. Prop.'},{c:'docSoat',l:'SOAT'},{c:'docRtv',l:'Rev. Tec.'},{c:'docTc',l:'TUC'},{c:'docMnto',l:'MNTO'},{c:'docBoletin',l:'Boletín'},{c:'docPoliza',l:'Póliza'}];
   s('kd-docs-unid').innerHTML = unidObjs.length
     ? docsUnidGlobal.map(d=>bar(d.l, unidObjs.filter(u=>u[d.c]==='✓').length, unidObjs.length)).join('')
@@ -2940,30 +2976,30 @@ function renderDashboard(){
       });
       const tieneCount = provObjs.filter(p=>docsAplicables(p).includes(di) && getPD(p.nombre).docs[di]).length;
       const total = tieneCount + faltan.length;
-      const colHd = faltan.length===0 ? '#16a34a' : faltan.length>=total/2 ? '#dc2626' : '#d97706';
-      return `<div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:14px 16px;border-left:4px solid ${colHd}">
+      const colHd = faltan.length===0 ? '#4A8F18' : faltan.length>=total/2 ? '#dc2626' : '#d97706';
+      return `<div style="background:#fff;border:1px solid #D4CBE8;border-radius:12px;padding:14px 16px;border-left:4px solid ${colHd}">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:12.5px;font-weight:700;color:#0f172a">${di+1}. ${docNombre}</span>
+          <span style="font-size:12.5px;font-weight:700;color:#1C0840">${di+1}. ${docNombre}</span>
           <span style="font-size:11px;font-weight:800;color:${colHd};font-family:var(--mono)">${faltan.length} falta${faltan.length===1?'':'n'}</span>
         </div>
         ${faltan.length
-          ? `<div style="display:flex;flex-direction:column;gap:3px">${faltan.slice(0,12).map(p=>`<div style="font-size:11px;color:#475569;display:flex;align-items:center;gap:5px"><span style="color:#dc2626">✗</span> ${p.nombre}</div>`).join('')}${faltan.length>12?`<div style="font-size:10px;color:#94a3b8;margin-top:2px">+${faltan.length-12} más</div>`:''}</div>`
-          : '<div style="font-size:11px;color:#16a34a">✓ Todos lo tienen</div>'}
+          ? `<div style="display:flex;flex-direction:column;gap:3px">${faltan.slice(0,12).map(p=>`<div style="font-size:11px;color:#475569;display:flex;align-items:center;gap:5px"><span style="color:#dc2626">✗</span> ${p.nombre}</div>`).join('')}${faltan.length>12?`<div style="font-size:10px;color:#9B89B8;margin-top:2px">+${faltan.length-12} más</div>`:''}</div>`
+          : '<div style="font-size:11px;color:#4A8F18">✓ Todos lo tienen</div>'}
       </div>`;
     }).join('');
   }
 
   // Helper genérico para tarjetas "por documento"
   const cardPorDoc=(docNombre,di,faltanLista,total)=>{
-    const colHd = faltanLista.length===0 ? '#16a34a' : faltanLista.length>=total/2 ? '#dc2626' : '#d97706';
-    return `<div style="background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:14px 16px;border-left:4px solid ${colHd}">
+    const colHd = faltanLista.length===0 ? '#4A8F18' : faltanLista.length>=total/2 ? '#dc2626' : '#d97706';
+    return `<div style="background:#fff;border:1px solid #D4CBE8;border-radius:12px;padding:14px 16px;border-left:4px solid ${colHd}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:12.5px;font-weight:700;color:#0f172a">${di+1}. ${docNombre}</span>
+        <span style="font-size:12.5px;font-weight:700;color:#1C0840">${di+1}. ${docNombre}</span>
         <span style="font-size:11px;font-weight:800;color:${colHd};font-family:var(--mono)">${faltanLista.length} falta${faltanLista.length===1?'':'n'}</span>
       </div>
       ${faltanLista.length
-        ? `<div style="display:flex;flex-direction:column;gap:3px">${faltanLista.slice(0,12).map(t=>`<div style="font-size:11px;color:#475569;display:flex;align-items:center;gap:5px"><span style="color:#dc2626">✗</span> ${t}</div>`).join('')}${faltanLista.length>12?`<div style="font-size:10px;color:#94a3b8;margin-top:2px">+${faltanLista.length-12} más</div>`:''}</div>`
-        : '<div style="font-size:11px;color:#16a34a">✓ Todos lo tienen</div>'}
+        ? `<div style="display:flex;flex-direction:column;gap:3px">${faltanLista.slice(0,12).map(t=>`<div style="font-size:11px;color:#475569;display:flex;align-items:center;gap:5px"><span style="color:#dc2626">✗</span> ${t}</div>`).join('')}${faltanLista.length>12?`<div style="font-size:10px;color:#9B89B8;margin-top:2px">+${faltanLista.length-12} más</div>`:''}</div>`
+        : '<div style="font-size:11px;color:#4A8F18">✓ Todos lo tienen</div>'}
     </div>`;
   };
 
@@ -3091,8 +3127,8 @@ function esUnidActivoHoy(u){
 // Badge "🟢 Hoy" / "⚪ Base" para distinguir en la tabla BD completa quién está activo en el reporte de hoy
 function badgeActivoHoy(activo){
   return activo
-    ? '<span style="background:#dcfce7;color:#15803d;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap">🟢 Hoy</span>'
-    : '<span style="background:#f3f4f6;color:#9ca3af;font-size:9px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap">⚪ Base</span>';
+    ? '<span style="background:#E6F4D9;color:#3D7A14;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap">🟢 Hoy</span>'
+    : '<span style="background:#F0EDF8;color:#9B89B8;font-size:9px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap">⚪ Base</span>';
 }
 function renderCondRow(r, num){
   // ensure _enBD is set for rows coming from CONDUCTORES array directly
@@ -3168,8 +3204,8 @@ function renderConductores(){
   (REP_ROWS||[]).forEach(r=>{
     if(!r.grupo) return;
     const dn=String(r.dni||'').trim(); const nm=_normNomG(r.conductor);
-    if(dn){ if(!dniGruposC[dn]) dniGruposC[dn]=new Set(); dniGruposC[dn].add(String(r.grupo).trim()); }
-    if(nm){ if(!nomGruposC[nm]) nomGruposC[nm]=new Set(); nomGruposC[nm].add(String(r.grupo).trim()); }
+    if(dn){ if(!dniGruposC[dn]) dniGruposC[dn]=new Set(); dniGruposC[dn].add(normGrupoVehic(r.grupo)); }
+    if(nm){ if(!nomGruposC[nm]) nomGruposC[nm]=new Set(); nomGruposC[nm].add(normGrupoVehic(r.grupo)); }
   });
   // Si no hay modo día activo y hay datos en BD → mostrar BD completa (sin conductores BETA)
   if(!COND_MODO_DIA && CONDUCTORES.length > 0) {
@@ -3186,6 +3222,7 @@ function renderConductores(){
       selC.style.display='';
     }
     poblarSelectResponsable('cond-fil-resp');
+    renderRespPills('cond-resp-pills','cond-fil-resp');
     const srchProp   = (document.getElementById('cond-srch')||{value:''}).value.toLowerCase();
     const zonaFiltroC = (document.getElementById('cond-fil-zona')||{value:''}).value;
     const cumplFiltroC= (document.getElementById('cond-fil-cumpl')||{value:''}).value;
@@ -3234,6 +3271,7 @@ function renderConductores(){
   const destinoFiltroC = (document.getElementById('cond-fil-destino')||{value:''}).value;
   const grupoFiltroC   = (document.getElementById('cond-fil-grupo')||{value:''}).value;
   poblarSelectResponsable('cond-fil-resp');
+  renderRespPills('cond-resp-pills','cond-fil-resp');
   const srchProp    = (document.getElementById('cond-srch')||{value:''}).value.toLowerCase();
   const zonaFiltroC = (document.getElementById('cond-fil-zona')||{value:''}).value;
   const cumplFiltroC= (document.getElementById('cond-fil-cumpl')||{value:''}).value;
@@ -3245,7 +3283,7 @@ function renderConductores(){
     if(tipoFiltroC    && (r.tipoServicio||'').trim() !== tipoFiltroC) return;
     if(sedeFiltroC    && (r.sede||r.sedeOrigen||'').trim() !== sedeFiltroC) return;
     if(destinoFiltroC && (r.destino||'').trim() !== destinoFiltroC) return;
-    if(grupoFiltroC   && (r.grupo||'').trim() !== grupoFiltroC) return;
+    if(grupoFiltroC   && normGrupoVehic(r.grupo) !== grupoFiltroC) return;
     if(zonaFiltroC    && zonaDeProveedor(r.proveedor) !== zonaFiltroC) return;
     if(cumplFiltroC   && cumplBucketProveedor(r.proveedor) !== cumplFiltroC) return;
     if(respFiltroC    && !matchResponsable(responsableDeProveedor(r.proveedor), respFiltroC)) return;
@@ -3348,7 +3386,7 @@ function renderUnidRow(r, num){
   return `<tr${r._nuevaUnidad ? ' style="background:rgba(16,185,129,0.05)"' : ''}>
     <td class="mono" style="color:var(--text3)">${num}</td>
     <td class="mono" style="font-weight:700;color:var(--accent2);white-space:nowrap">${r._nuevaUnidad?'':`<button onclick="editarUnidad('${placaEsc}')" title="Editar unidad" style="background:var(--accent3);color:var(--accent);border:none;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer;margin-right:5px">✏️</button>`}${r.placa||'—'}</td>
-    <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')+' '+badgeActivoHoy(esUnidActivoHoy(r))}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#10b981;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : (unidDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarUnidad('${placaEsc}')" title="Faltan ${unidDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : '')}</td>
+    <td>${r._nuevaUnidad ? '<span class="badge warn">NUEVA</span>' : badge(r.estado||'ACTIVO')+' '+badgeActivoHoy(esUnidActivoHoy(r))}${r._nuevaUnidad ? '<br><button onclick="abrirRegUnid(this)" data-placa="'+placaEsc+'" data-proveedor="'+(r.proveedor||'').replace(/"/g,'&quot;')+'" data-centro="'+(r.centro||'').replace(/"/g,'&quot;')+'" data-modalidad="'+(r.modalidad||'').replace(/"/g,'&quot;')+'" data-categoria="'+(r.tipoServicio||'').replace(/"/g,'&quot;')+'" data-tipo="'+(r.tipoUnidExc||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;background:#5BAD1E;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>' : (unidDatosFaltantes(r)>0 ? `<br><span class="badge warn" style="cursor:pointer" onclick="editarUnidad('${placaEsc}')" title="Faltan ${unidDatosFaltantes(r)} dato(s) básicos — clic para completar">⚠ Completar</span>` : '')}</td>
     <td data-placa="${placaEsc}" data-campo="proveedor" onclick="editCeldaUnidClick(this)" class="editable-cell" title="Clic para editar" style="font-size:11px;cursor:pointer;max-width:150px">${provCellHtml(r.proveedor,'unid')}</td>
     <td class="mono" style="font-size:11px">${r.centro||'—'}</td>
     <td style="font-size:11px">${r.tipo||'—'}</td>
@@ -3401,7 +3439,7 @@ function renderUnidades(){
     if(!r.grupo) return;
     const pn=normPlaca(r.placa); if(!pn) return;
     if(!placaGruposU[pn]) placaGruposU[pn]=new Set();
-    placaGruposU[pn].add(String(r.grupo).trim());
+    placaGruposU[pn].add(normGrupoVehic(r.grupo));
   });
   // Si no hay modo día activo y hay datos en BD → mostrar BD completa
   if(!UNID_MODO_DIA && UNIDADES.length > 0){
@@ -3418,6 +3456,7 @@ function renderUnidades(){
       selU.style.display='';
     }
     poblarSelectResponsable('unid-fil-resp');
+    renderRespPills('unid-resp-pills','unid-fil-resp');
     const srchProp    = (document.getElementById('unid-srch')||{value:''}).value.toLowerCase();
     const zonaFiltroU = (document.getElementById('unid-fil-zona')||{value:''}).value;
     const cumplFiltroU= (document.getElementById('unid-fil-cumpl')||{value:''}).value;
@@ -3465,6 +3504,7 @@ function renderUnidades(){
   const destinoFiltroU = (document.getElementById('unid-fil-destino')||{value:''}).value;
   const grupoFiltroU   = (document.getElementById('unid-fil-grupo')||{value:''}).value;
   poblarSelectResponsable('unid-fil-resp');
+  renderRespPills('unid-resp-pills','unid-fil-resp');
   const srchProp    = (document.getElementById('unid-srch')||{value:''}).value.toLowerCase();
   const zonaFiltroU = (document.getElementById('unid-fil-zona')||{value:''}).value;
   const cumplFiltroU= (document.getElementById('unid-fil-cumpl')||{value:''}).value;
@@ -3475,7 +3515,7 @@ function renderUnidades(){
       if(tipoFiltroU    && (r.tipoServicio||'').trim() !== tipoFiltroU) return false;
       if(sedeFiltroU    && (r.sede||r.sedeOrigen||'').trim() !== sedeFiltroU) return false;
       if(destinoFiltroU && (r.destino||'').trim() !== destinoFiltroU) return false;
-      if(grupoFiltroU   && (r.grupo||'').trim() !== grupoFiltroU) return false;
+      if(grupoFiltroU   && normGrupoVehic(r.grupo) !== grupoFiltroU) return false;
       if(zonaFiltroU    && zonaDeProveedor(r.proveedor) !== zonaFiltroU) return false;
       if(cumplFiltroU   && cumplBucketProveedor(r.proveedor) !== cumplFiltroU) return false;
       if(respFiltroU    && !matchResponsable(responsableDeProveedor(r.proveedor), respFiltroU)) return false;
@@ -3652,6 +3692,27 @@ function poblarSelectResponsable(selId, etiquetaVacia){
   sel.innerHTML=`<option value="">${etiquetaVacia||'👤 Todos los responsables'}</option>`+vals.map(v=>`<option value="${v}">${v}</option>`).join('');
   if(vals.includes(actual)) sel.value=actual;
 }
+// Pestañas visuales "por analista" (EODAR / WMUÑOZ / el que se agregue) que reflejan
+// las mismas opciones del <select> de responsable y disparan el mismo filtro/render.
+// Como los valores salen de poblarSelectResponsable(), un analista nuevo aparece solo
+// apenas tenga unidades/conductores/proveedores con su nombre en la columna Responsable.
+function renderRespPills(pillsId, selectId){
+  const cont = document.getElementById(pillsId);
+  const sel  = document.getElementById(selectId);
+  if(!cont || !sel) return;
+  const actual = sel.value;
+  cont.innerHTML = [...sel.options].map(o=>{
+    const activo = o.value===actual;
+    const label  = o.value || '👥 Todos';
+    return `<button type="button" class="resp-pill${activo?' active':''}" onclick='setRespFiltro(${JSON.stringify(selectId)},${JSON.stringify(o.value)})'>${label}</button>`;
+  }).join('');
+}
+function setRespFiltro(selectId, valor){
+  const sel = document.getElementById(selectId);
+  if(!sel) return;
+  sel.value = valor;
+  sel.dispatchEvent(new Event('change'));
+}
 // El Sheet es la fuente de verdad: sobrescribe el localStorage con los docs del Sheet
 // (así lo que marca un usuario lo ven todos los demás al sincronizar)
 function sincPDdesdeSheet(){
@@ -3739,27 +3800,24 @@ function bqEmpty(texto){
 // Normaliza distintas formas de respuesta posibles de la API de licencia (json.pe)
 function normLicencia(dl){
   if(!dl || dl._error) return null;
-  const cand = dl.data?.licencia || dl.licencia || (Array.isArray(dl.data)?dl.data[0]:dl.data) || (dl.numero||dl.categoria?dl:null);
-  if(!cand || typeof cand!=='object') return null;
-  if(!(cand.numero||cand.categoria||cand.estado||cand.fecha_vencimiento)) return null;
-  return cand;
+  if(!(dl.num_licencia||dl.clase_categoria||dl.estado)) return null;
+  return { numero: dl.num_licencia||'', categoria: dl.clase_categoria||'', estado: dl.estado||'', fecha_vencimiento: dl.vigente_hasta||'' };
 }
 
 async function buscarRucBox(){
   const raw = (document.getElementById('bq-ruc')||{}).value?.trim()||'';
   const cont = document.getElementById('bq-resultado');
-  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
   if(!/^\d{11}$/.test(raw)){ showToast('El RUC debe tener 11 dígitos','err'); return; }
   cont.innerHTML = bqLoading('Buscando RUC en SUNAT...');
-  const [r,r2] = await Promise.all([ workerFetch('sunat_ruc',{ruc:raw}), bqFetch('representante',raw) ]);
+  const [r,r2] = await Promise.all([ workerFetch('sunat_ruc',{ruc:raw}), workerFetch('consulta_ruc_cd',{ruc:raw}) ]);
   if(r._error){ cont.innerHTML = bqErrorBox('No se pudo consultar el RUC', r); return; }
   const razonSocial = r.razonSocial||r.nombre||r.razon_social||'';
   if(!(razonSocial||r.ruc||r.numeroDocumento)){ cont.innerHTML = `<div class="form-sec">No se encontró información para ese RUC.</div>`; return; }
   const activo = r.estado==='ACTIVO';
-  const reps = (!r2._error && r2.success && Array.isArray(r2.data) && r2.data.length)
-    ? r2.data.map(rep=>`<div style="padding:8px 0;border-bottom:1px solid var(--bg3);display:flex;justify-content:space-between;gap:10px">
+  const reps = (!r2._error && Array.isArray(r2.representantes) && r2.representantes.length)
+    ? r2.representantes.map(rep=>`<div style="padding:8px 0;border-bottom:1px solid var(--bg3);display:flex;justify-content:space-between;gap:10px">
         <span style="font-size:12.5px;font-weight:600">👤 ${rep.nombre||'—'}</span>
-        <span style="font-size:11.5px;color:var(--text3);text-align:right">${rep.cargo||'—'}${rep.fecha_desde?' · desde '+rep.fecha_desde:''}</span>
+        <span style="font-size:11.5px;color:var(--text3);text-align:right">${rep.cargo||'—'}</span>
       </div>`).join('')
     : bqEmpty(r2._error||'Sin representantes registrados o no disponibles en el plan actual.');
   cont.innerHTML = bqCardOpen('🏢', razonSocial||'—', 'RUC '+(r.ruc||r.numeroDocumento||raw), activo?'var(--green)':'var(--danger)')
@@ -3774,10 +3832,9 @@ async function buscarRucBox(){
 async function buscarDniBox(){
   const raw = (document.getElementById('bq-dni')||{}).value?.trim()||'';
   const cont = document.getElementById('bq-resultado');
-  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
   if(!/^\d{8}$/.test(raw)){ showToast('El DNI debe tener 8 dígitos','err'); return; }
   cont.innerHTML = bqLoading('Buscando DNI en RENIEC...');
-  const [d,dl] = await Promise.all([ workerFetch('sunat_dni',{dni:raw}), bqFetch('licencia',raw) ]);
+  const [d,dl] = await Promise.all([ workerFetch('sunat_dni',{dni:raw}), workerFetch('consulta_licencia',{dni:raw}) ]);
   if(d._error){ cont.innerHTML = bqErrorBox('No se pudo consultar el DNI', d); return; }
   const nombreCompleto = d.nombre_completo || d.cliente || [d.nombres,d.apellidoPaterno||d.apellido_paterno,d.apellidoMaterno||d.apellido_materno].filter(Boolean).join(' ');
   if(!nombreCompleto){ cont.innerHTML = `<div class="form-sec">No se encontró información para ese DNI.</div>`; return; }
@@ -3788,7 +3845,6 @@ async function buscarDniBox(){
       + bqRow('Categoría', lic.categoria||'—')
       + bqRow('Estado', bqChip(lic.estado||'—', licVigente))
       + bqRow('Vence', lic.fecha_vencimiento||'—')
-      + (lic.restricciones ? bqRow('Restricciones', lic.restricciones) : '')
     : bqEmpty(dl._error ? '⚠ '+dl._error : 'Sin licencia de conducir registrada para este DNI.');
   cont.innerHTML = bqCardOpen('👤', nombreCompleto.toUpperCase(), 'DNI '+raw, 'var(--accent)')
     + bqSectionTitle('🪪','Licencia de conducir')
@@ -3799,10 +3855,9 @@ async function buscarDniBox(){
 async function buscarPlacaBox(){
   const raw = (document.getElementById('bq-placa')||{}).value?.trim().toUpperCase().replace(/[\s\-]/g,'')||'';
   const cont = document.getElementById('bq-resultado');
-  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
   if(!/^[A-Z0-9]{6,7}$/.test(raw)){ showToast('Escribe una placa válida','err'); return; }
   cont.innerHTML = bqLoading('Buscando placa...');
-  const [s,rt] = await Promise.all([ bqFetch('soat',raw), bqFetch('revision-tecnica',raw) ]);
+  const [s,rt] = await Promise.all([ bqFetch('soat',raw), workerFetch('consulta_citv_json',{placa:raw}) ]);
   if(s._error && rt._error){ cont.innerHTML = bqErrorBox('No se pudo consultar la placa', s); return; }
   const soatOk = !s._error && s.success && s.data;
   const soatVig = soatOk && s.data.estado==='VIGENTE';
@@ -3834,25 +3889,23 @@ async function buscarRucSunat(){
   const ruc = (document.getElementById('rp-ruc')||{}).value?.trim();
   const info = document.getElementById('rp-ruc-info');
   if(!ruc || ruc.length!==11){ showToast('Ingresa un RUC válido (11 dígitos)','err'); return; }
-  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
   info.style.display='block'; info.textContent='🔎 Buscando...';
   try{
-    const d = await workerFetch('sunat_ruc',{ruc});
+    const [d, d2] = await Promise.all([
+      workerFetch('sunat_ruc',{ruc}),
+      workerFetch('consulta_ruc_cd',{ruc}),
+    ]);
     let repLegalTxt = '';
-    try{
-      const r2 = await fetch(GS_URL+'?action=representante&numero='+encodeURIComponent(ruc));
-      const d2 = await r2.json();
-      if(d2 && d2.success && Array.isArray(d2.data) && d2.data.length){
-        repLegalTxt = d2.data.map(rep=>`${rep.nombre||'—'} (${rep.cargo||'—'})`).join('<br>');
-      }
-    }catch(e2){ console.warn('No se pudo obtener representante legal:', e2); }
+    if(d2 && !d2._error && Array.isArray(d2.representantes) && d2.representantes.length){
+      repLegalTxt = d2.representantes.map(rep=>`${rep.nombre||'—'} (${rep.cargo||'—'})`).join('<br>');
+    }
     const razonSocial = d && (d.razonSocial||d.nombre||d.razon_social);
     if(d && !d._error && (razonSocial || d.ruc || d.numeroDocumento)){
       const nombreEl=document.getElementById('rp-nombre');
       if(nombreEl && !nombreEl.value.trim()) nombreEl.value = razonSocial || '';
       const contactoEl=document.getElementById('rp-contacto');
       if(contactoEl && !contactoEl.value.trim() && repLegalTxt) contactoEl.value = repLegalTxt.replace(/<br>.*$/,'').replace(/\s*\([^)]*\)$/,'');
-      info.innerHTML = `<b>${razonSocial||'—'}</b><br>Estado SUNAT: <b>${d.estado||'—'}</b> · Condición: <b>${d.condicion||'—'}</b><br>📍 ${d.direccion||d.domicilioFiscal||'—'}${d.distrito?', '+d.distrito:''}${d.provincia?', '+d.provincia:''}${d.departamento?', '+d.departamento:''}${repLegalTxt?'<br>👤 Representante(s): '+repLegalTxt:''}`;
+      info.innerHTML = `<b>${razonSocial||'—'}</b><br>Estado SUNAT: <b>${d.estado||'—'}</b> · Condición: <b>${d.condicion||'—'}</b><br>📍 ${d.direccion||d.domicilioFiscal||'—'}${d.distrito?', '+d.distrito:''}${d.provincia?', '+d.provincia:''}${d.departamento?', '+d.departamento:''}${repLegalTxt?'<br>👤 Representante(s): '+repLegalTxt:(d2&&d2._error?'<br>⚠ Representante: '+d2._error:'')}`;
       showToast('✓ Datos de SUNAT cargados','ok');
     } else {
       info.textContent = '⚠ '+(d&&d._error ? d._error : 'No se encontró información para ese RUC.');
@@ -3866,22 +3919,37 @@ async function buscarDniReniec(){
   const dni = (document.getElementById('c-dni')||{}).value?.trim();
   const info = document.getElementById('c-dni-info');
   if(!dni || dni.length!==8){ showToast('Ingresa un DNI válido (8 dígitos)','err'); return; }
-  if(!GS_URL){ showToast('Conecta Google Sheets primero','err'); return; }
   info.style.display='block'; info.textContent='🔎 Buscando...';
   try{
-    const d = await workerFetch('sunat_dni',{dni});
+    const [d, dl] = await Promise.all([
+      workerFetch('sunat_dni',{dni}),
+      workerFetch('consulta_licencia',{dni}),
+    ]);
     const nombreCompleto = d && !d._error && (d.nombre_completo || d.cliente || [d.nombres,d.apellidoPaterno||d.apellido_paterno,d.apellidoMaterno||d.apellido_materno].filter(Boolean).join(' '));
+    let partes = [];
     if(nombreCompleto){
       const nombreEl=document.getElementById('c-nombre');
       if(nombreEl) nombreEl.value = nombreCompleto.toUpperCase();
-      info.textContent = `✓ RENIEC: ${nombreCompleto.toUpperCase()}`;
-      showToast('✓ Nombre de RENIEC cargado','ok');
+      partes.push(`✓ RENIEC: ${nombreCompleto.toUpperCase()}`);
     } else {
-      info.textContent = '⚠ '+(d&&d._error ? d._error : 'No se encontró información para ese DNI.');
+      partes.push('⚠ '+(d&&d._error ? d._error : 'No se encontró información para ese DNI.'));
     }
+    const lic = normLicencia(dl);
+    if(lic){
+      const numLicEl=document.getElementById('c-num-lic'); if(numLicEl && lic.numero) numLicEl.value = lic.numero;
+      if(lic.categoria) setSelectFuzzy('c-cat-lic', lic.categoria);
+      const fLicEl=document.getElementById('c-fecha-lic');
+      const fVence = normFechaISO(lic.fecha_vencimiento);
+      if(fLicEl && fVence){ fLicEl.value = fVence; calcDocDias('c-fecha-lic','c-dias-lic','c-est-lic'); }
+      partes.push(`✓ Licencia: ${lic.numero||'—'} (${lic.categoria||'—'})`);
+    } else {
+      partes.push('⚠ '+(dl&&dl._error ? 'Licencia: '+dl._error : 'Sin licencia registrada para este DNI.'));
+    }
+    info.innerHTML = partes.join('<br>');
+    if(nombreCompleto || lic) showToast('✓ Datos cargados desde json.pe','ok');
   }catch(e){
     console.error(e);
-    info.textContent = '⚠ Error al consultar RENIEC, intenta de nuevo.';
+    info.textContent = '⚠ Error al consultar, intenta de nuevo.';
   }
 }
 async function guardarProvEnSheets(nombreProv){
@@ -4205,11 +4273,11 @@ function renderTarjetasAgrupadas(items, campoProveedor, etiquetaPlural, cardHtml
     const its = [...grupos[prov]].sort((a,b)=>(a.conductor||'').toString().trim().localeCompare((b.conductor||'').toString().trim(),'es',{sensitivity:'base'}));
     const pcts = its.map(it=>it._pct||0);
     const avg = pcts.length ? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length) : 0;
-    const col = avg>=80?'#10b981':avg>=50?'#f59e0b':'#ef4444';
+    const col = avg>=80?'#5BAD1E':avg>=50?'#f59e0b':'#ef4444';
     const gid = 'grp-tj-'+gi+'-'+prov.replace(/[^a-zA-Z0-9]/g,'').slice(0,24);
     return `<div style="grid-column:1/-1">
-      <div onclick="toggleGrupoTarjetas('${gid}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f9fafb;border:1px solid #ebebeb;border-left:4px solid ${col};border-radius:10px;cursor:pointer;margin-bottom:8px">
-        <div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;color:#111">
+      <div onclick="toggleGrupoTarjetas('${gid}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#F7F4FC;border:1px solid #D4CBE8;border-left:4px solid ${col};border-radius:10px;cursor:pointer;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;color:#1C0840">
           <span id="${gid}-chev" style="font-size:11px;transition:transform .15s;display:inline-block">▶</span> 🏢 ${escapeHtml(prov)}
         </div>
         <div style="font-size:12px;color:${col};font-weight:700">${its.length} ${etiquetaPlural} · ${avg}%</div>
@@ -4234,7 +4302,7 @@ function renderTarjetasUnidades(f){
   (typeof REP_ROWS!=='undefined'?REP_ROWS:[]).forEach(r=>{
     if(!r.grupo) return; const pn=normPlaca(r.placa); if(!pn) return;
     if(!placaGrupos[pn]) placaGrupos[pn]=new Set();
-    placaGrupos[pn].add(String(r.grupo).trim());
+    placaGrupos[pn].add(normGrupoVehic(r.grupo));
   });
   let unids = UNIDADES.filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO');
   // Igual que en conductores: si el filtro "Origen" está en "Solo del reporte del día",
@@ -4263,7 +4331,7 @@ function renderTarjetasUnidades(f){
     if(f.grupoF){
       const pn=normPlaca(u.placa);
       const porReporte = placaGrupos[pn]&&placaGrupos[pn].has(f.grupoF);
-      const porTipo = (u.tipo||'').trim()===f.grupoF;
+      const porTipo = normGrupoVehic(u.tipo)===f.grupoF;
       if(!porReporte && !porTipo) return false;
     }
     if(f.respF && !matchResponsable(responsableDeUnidad(u), f.respF)) return false;
@@ -4282,32 +4350,32 @@ function renderTarjetasUnidades(f){
     cont.innerHTML=`<div class="empty-state" style="grid-column:1/-1">${msg}</div>`; return;
   }
   const cardUnidHtml = u=>{
-    const col=u._pct>=80?'#10b981':u._pct>=50?'#f59e0b':'#ef4444';
+    const col=u._pct>=80?'#5BAD1E':u._pct>=50?'#f59e0b':'#ef4444';
     const zonaP=zonaDeProveedor(u.proveedor);
     const respU=responsableDeUnidad(u);
     const placaEsc=(u.placa||'').replace(/'/g,"\\'");
     const cat=clasifServicio(u.tipoServicio||provServicioDeUnidad(u));
-    return `<div onclick="abrirDetalleUnidadSola('${placaEsc}')" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
+    return `<div onclick="abrirDetalleUnidadSola('${placaEsc}')" style="background:#fff;border:1px solid #D4CBE8;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
       onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.10)';this.style.transform='translateY(-2px)'"
       onmouseout="this.style.boxShadow='';this.style.transform=''">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px">
-        <div style="font-size:14px;font-weight:700;color:#111;font-family:var(--mono)">🚛 ${u.placa||'—'}</div>
+        <div style="font-size:14px;font-weight:700;color:#1C0840;font-family:var(--mono)">🚛 ${u.placa||'—'}</div>
         <span class="badge ok" style="flex-shrink:0">ACTIVO</span>
       </div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:4px">${u.tipo||u.marca||'—'}</div>
+      <div style="font-size:11px;color:#9B89B8;margin-bottom:4px">${u.tipo||u.marca||'—'}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
         ${zonaP?`<span style="font-size:10px;background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:20px;font-weight:600">${zonaP}</span>`:''}
-        ${cat?`<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:20px;font-weight:600">${cat}</span>`:''}
-        ${respU?`<span style="font-size:10px;background:#f9fafb;color:#6b7280;padding:2px 8px;border-radius:20px;font-weight:600">👤 ${respU}</span>`:''}
+        ${cat?`<span style="font-size:10px;background:#F2FAEC;color:#3D7A14;padding:2px 8px;border-radius:20px;font-weight:600">${cat}</span>`:''}
+        ${respU?`<span style="font-size:10px;background:#F7F4FC;color:#5C4880;padding:2px 8px;border-radius:20px;font-weight:600">👤 ${respU}</span>`:''}
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <div style="flex:1;height:8px;background:#f3f4f6;border-radius:6px;overflow:hidden">
+        <div style="flex:1;height:8px;background:#F0EDF8;border-radius:6px;overflow:hidden">
           <div style="width:${u._pct}%;height:100%;background:${col}"></div>
         </div>
         <span style="font-size:12px;font-weight:700;color:${col};font-family:var(--mono)">${u._ok}/${u._tot}</span>
       </div>
-      <div style="font-size:9.5px;color:#9ca3af;margin-bottom:6px">📄 Docs. de la unidad</div>
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#9ca3af;gap:6px">
+      <div style="font-size:9.5px;color:#9B89B8;margin-bottom:6px">📄 Docs. de la unidad</div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #F0EDF8;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#9B89B8;gap:6px">
         <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">🏢 ${u.proveedor||'—'}</span>
         <span style="color:var(--accent);font-weight:600;flex-shrink:0">Ver placa →</span>
       </div>
@@ -4328,8 +4396,8 @@ function renderTarjetasConductores(f){
       if(nm && !placaHoyPorNombre[nm]) placaHoyPorNombre[nm]=r.placa;
     }
     if(!r.grupo) return;
-    if(dn){ if(!dniGrupos[dn]) dniGrupos[dn]=new Set(); dniGrupos[dn].add(String(r.grupo).trim()); }
-    if(nm){ if(!nomGrupos[nm]) nomGrupos[nm]=new Set(); nomGrupos[nm].add(String(r.grupo).trim()); }
+    if(dn){ if(!dniGrupos[dn]) dniGrupos[dn]=new Set(); dniGrupos[dn].add(normGrupoVehic(r.grupo)); }
+    if(nm){ if(!nomGrupos[nm]) nomGrupos[nm]=new Set(); nomGrupos[nm].add(normGrupoVehic(r.grupo)); }
   });
   // Set de referencias EXACTAS a los conductores de la base que corresponden al reporte
   // de hoy (usando la misma función de cruce ya probada), para no confundir conductores
@@ -4357,7 +4425,7 @@ function renderTarjetasConductores(f){
       const dn=String(c.dni||'').trim(); const nm=_normNomG(c.conductor);
       const grps=(dn&&dniGrupos[dn])||nomGrupos[nm];
       const porReporte = grps&&grps.has(f.grupoF);
-      const porTipo = (c.tipoUnidad||'').trim()===f.grupoF;
+      const porTipo = normGrupoVehic(c.tipoUnidad)===f.grupoF;
       if(!porReporte && !porTipo) return false;
     }
     if(f.respF && !matchResponsable(responsableDeProveedor(c.proveedor), f.respF)) return false;
@@ -4377,7 +4445,7 @@ function renderTarjetasConductores(f){
     cont.innerHTML=`<div class="empty-state" style="grid-column:1/-1">${msg}</div>`; return;
   }
   const cardCondHtml = c=>{
-    const col=c._pct>=80?'#10b981':c._pct>=50?'#f59e0b':'#ef4444';
+    const col=c._pct>=80?'#5BAD1E':c._pct>=50?'#f59e0b':'#ef4444';
     const zonaP=zonaDeProveedor(c.proveedor);
     const respC=responsableDeProveedor(c.proveedor);
     const nomJs=(c.conductor||'').replace(/'/g,"\\'");
@@ -4386,30 +4454,30 @@ function renderTarjetasConductores(f){
     const cat=pProv?clasifServicio(provTipoServicio(pProv)):'';
     const dn=String(c.dni||'').trim();
     const placaHoy = (dn&&placaHoyPorDni[dn]) || placaHoyPorNombre[_normNomG(c.conductor)] || '';
-    return `<div onclick="abrirDetalleConductorSolo('${nomJs}')" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
+    return `<div onclick="abrirDetalleConductorSolo('${nomJs}')" style="background:#fff;border:1px solid #D4CBE8;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
       onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.10)';this.style.transform='translateY(-2px)'"
       onmouseout="this.style.boxShadow='';this.style.transform=''">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px">
-        <div style="font-size:13.5px;font-weight:700;color:#111;line-height:1.3">👤 ${c.conductor||'—'}</div>
+        <div style="font-size:13.5px;font-weight:700;color:#1C0840;line-height:1.3">👤 ${c.conductor||'—'}</div>
         <span class="badge ok" style="flex-shrink:0">ACTIVO</span>
       </div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;font-family:var(--mono)">${c.dni||'—'}${placaHoy?` · 🚛 ${placaHoy}`:''}</div>
+      <div style="font-size:11px;color:#9B89B8;margin-bottom:4px;font-family:var(--mono)">${c.dni||'—'}${placaHoy?` · 🚛 ${placaHoy}`:''}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
         ${zonaP?`<span style="font-size:10px;background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:20px;font-weight:600">${zonaP}</span>`:''}
-        ${cat?`<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:20px;font-weight:600">${cat}</span>`:''}
-        ${respC?`<span style="font-size:10px;background:#f9fafb;color:#6b7280;padding:2px 8px;border-radius:20px;font-weight:600">👤 ${respC}</span>`:''}
+        ${cat?`<span style="font-size:10px;background:#F2FAEC;color:#3D7A14;padding:2px 8px;border-radius:20px;font-weight:600">${cat}</span>`:''}
+        ${respC?`<span style="font-size:10px;background:#F7F4FC;color:#5C4880;padding:2px 8px;border-radius:20px;font-weight:600">👤 ${respC}</span>`:''}
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <div style="flex:1;height:8px;background:#f3f4f6;border-radius:6px;overflow:hidden">
+        <div style="flex:1;height:8px;background:#F0EDF8;border-radius:6px;overflow:hidden">
           <div style="width:${c._pct}%;height:100%;background:${col}"></div>
         </div>
         <span style="font-size:12px;font-weight:700;color:${col};font-family:var(--mono)">${c._ok}/${c._tot}</span>
       </div>
-      <div style="font-size:9.5px;color:#9ca3af;margin-bottom:6px">📄 Docs. del conductor</div>
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#9ca3af;gap:6px">
+      <div style="font-size:9.5px;color:#9B89B8;margin-bottom:6px">📄 Docs. del conductor</div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #F0EDF8;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#9B89B8;gap:6px">
         <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;display:flex;align-items:center;gap:6px">
           🏢 ${c.proveedor||'—'}
-          ${pProv?`<button onclick="event.stopPropagation();abrirDetalleProvPorNombre('${provEsc}','todo')" title="Ver ficha completa del proveedor" style="background:#f3f4f6;border:none;border-radius:6px;width:20px;height:20px;flex-shrink:0;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center">👁️</button>`:''}
+          ${pProv?`<button onclick="event.stopPropagation();abrirDetalleProvPorNombre('${provEsc}','todo')" title="Ver ficha completa del proveedor" style="background:#F0EDF8;border:none;border-radius:6px;width:20px;height:20px;flex-shrink:0;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center">👁️</button>`:''}
         </span>
         <span style="display:flex;align-items:center;gap:8px;flex-shrink:0">
           <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:11px">🚛 ${placaHoy||c.placa||'—'}</span>
@@ -4430,6 +4498,7 @@ function renderProveedores(){
   }
   poblarSelectGrupo('pv-grupo','🚛 Todos los grupos');
   poblarSelectResponsable('pv-resp');
+  renderRespPills('pv-resp-pills','pv-resp');
   const search  = (document.getElementById('pv-srch')||{value:''}).value.toLowerCase();
   const zona    = (document.getElementById('pv-zona')||{value:''}).value;
   const cumplF  = (document.getElementById('pv-cumpl')||{value:''}).value;
@@ -4450,13 +4519,13 @@ function renderProveedores(){
     if(!r.grupo) return;
     const nUp=(r.proveedor||'').trim().toUpperCase(); if(!nUp) return;
     if(!provGruposPv[nUp]) provGruposPv[nUp]=new Set();
-    provGruposPv[nUp].add(String(r.grupo).trim());
+    provGruposPv[nUp].add(normGrupoVehic(r.grupo));
   });
   (typeof UNIDADES!=='undefined'?UNIDADES:[]).forEach(u=>{
     if(!u.tipo || (u.estado||'ACTIVO').toUpperCase()!=='ACTIVO') return;
     const nUp=(u.proveedor||'').trim().toUpperCase(); if(!nUp) return;
     if(!provGruposPv[nUp]) provGruposPv[nUp]=new Set();
-    provGruposPv[nUp].add(String(u.tipo).trim());
+    provGruposPv[nUp].add(normGrupoVehic(u.tipo));
   });
 
   let activos = provValidos();
@@ -4548,14 +4617,14 @@ function renderProveedores(){
           <span class="badge warn" style="flex-shrink:0">NUEVO</span>
         </div>
         <div style="font-size:11px;color:#b45309;margin-bottom:10px">📋 Apareció en el reporte del día — no está registrado en la base</div>
-        ${serv?`<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:20px;font-weight:600">${serv}</span>`:''}
+        ${serv?`<span style="font-size:10px;background:#F2FAEC;color:#3D7A14;padding:2px 8px;border-radius:20px;font-weight:600">${serv}</span>`:''}
         <button onclick="registrarProvNuevo('${nomEsc}')" style="margin-top:12px;width:100%;background:#f59e0b;color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer">✚ Registrar proveedor</button>
       </div>`;
     }
     const pd=getPD(p.nombre);
     const nUp=(p.nombre||'').trim().toUpperCase();
     const cmp=metricaProv(p); const ok=cmp.ok, pct=cmp.pct;
-    const col=pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
+    const col=pct>=80?'#5BAD1E':pct>=50?'#f59e0b':'#ef4444';
     const estadoTxt=pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO';
     let faltanTxt;
     if(PV_METRICA==='unidad'){
@@ -4568,30 +4637,30 @@ function renderProveedores(){
       faltanTxt = faltan.length ? faltan.slice(0,3).join(', ')+(faltan.length>3?` +${faltan.length-3} más`:'') : 'Todo completo ✓';
     }
     const serv=clasifServicio(provTipoServicio(p));
-    return `<div onclick="PV_DETALLE_TAB='prov';abrirDetalleProv(${i})" style="background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
+    return `<div onclick="PV_DETALLE_TAB='prov';abrirDetalleProv(${i})" style="background:#fff;border:1px solid #D4CBE8;border-radius:14px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s;border-left:4px solid ${col}"
       onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.10)';this.style.transform='translateY(-2px)'"
       onmouseout="this.style.boxShadow='';this.style.transform=''">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px">
-        <div style="font-size:13.5px;font-weight:700;color:#111;line-height:1.3">${p.nombre}</div>
+        <div style="font-size:13.5px;font-weight:700;color:#1C0840;line-height:1.3">${p.nombre}</div>
         <span class="badge ok" style="flex-shrink:0">ACTIVO</span>
       </div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;font-family:var(--mono)">${p.ruc||'—'}</div>
+      <div style="font-size:11px;color:#9B89B8;margin-bottom:4px;font-family:var(--mono)">${p.ruc||'—'}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
         ${p.zona?`<span style="font-size:10px;background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:20px;font-weight:600">${p.zona}</span>`:''}
-        ${serv?`<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:20px;font-weight:600">${serv}</span>`:''}
-        ${(pd.resp||p.responsable)?`<span style="font-size:10px;background:#f9fafb;color:#6b7280;padding:2px 8px;border-radius:20px;font-weight:600">👤 ${pd.resp||p.responsable}</span>`:''}
+        ${serv?`<span style="font-size:10px;background:#F2FAEC;color:#3D7A14;padding:2px 8px;border-radius:20px;font-weight:600">${serv}</span>`:''}
+        ${(pd.resp||p.responsable)?`<span style="font-size:10px;background:#F7F4FC;color:#5C4880;padding:2px 8px;border-radius:20px;font-weight:600">👤 ${pd.resp||p.responsable}</span>`:''}
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <div style="flex:1;height:8px;background:#f3f4f6;border-radius:6px;overflow:hidden">
+        <div style="flex:1;height:8px;background:#F0EDF8;border-radius:6px;overflow:hidden">
           <div style="width:${pct}%;height:100%;background:${col}"></div>
         </div>
         <span style="font-size:12px;font-weight:700;color:${col};font-family:var(--mono)">${ok}/${cmp.tot}</span>
       </div>
-      <div style="font-size:9.5px;color:#9ca3af;margin-bottom:6px">${PV_METRICA==='unidad'?'📄 Docs. de unidades':PV_METRICA==='conductor'?'📄 Docs. de conductores':'📄 Docs. del proveedor'}</div>
-      <div style="font-size:11px;color:${pct>=80?'#15803d':'#b45309'};display:flex;align-items:center;gap:4px">
+      <div style="font-size:9.5px;color:#9B89B8;margin-bottom:6px">${PV_METRICA==='unidad'?'📄 Docs. de unidades':PV_METRICA==='conductor'?'📄 Docs. de conductores':'📄 Docs. del proveedor'}</div>
+      <div style="font-size:11px;color:${pct>=80?'#3D7A14':'#b45309'};display:flex;align-items:center;gap:4px">
         ${pct>=80 ? '✓ '+estadoTxt : (PV_METRICA==='proveedor' ? '⚠ Falta: '+faltanTxt : '⚠ '+faltanTxt)}
       </div>
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af">
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #F0EDF8;display:flex;justify-content:space-between;font-size:11px;color:#9B89B8">
         <span>👤 ${provCond[nUp]||0} cond.</span>
         <span>🚛 ${provUnid[nUp]||0} unid.</span>
         <span style="color:var(--accent);font-weight:600">Ver detalle →</span>
@@ -4605,6 +4674,58 @@ let PV_DETALLE_I = null; // índice del proveedor abierto en el modal (para refr
 let PV_DETALLE_TAB = 'prov'; // pestaña activa del modal: 'prov' | 'unid' | 'cond' | 'todo'
 let PV_SOLO_PLACA = null; // si está seteada, el modal muestra SOLO esa unidad (no la ficha completa del proveedor)
 let PV_SOLO_COND = null;  // si está seteada, el modal muestra SOLO ese conductor (no la ficha completa del proveedor)
+let PV_DETALLE_RESP = ''; // filtro "por analista" activo dentro del modal (pestañas Unidades/Conductores)
+let PV_DETALLE_CUMPL = ''; // filtro "por cumplimiento" activo dentro del modal: '' | 'completo' | 'proceso' | 'incompleto'
+let PV_VOLVER_MODAL = null; // recuerda el proveedor/pestaña/filtros abiertos antes de ir a Editar, para volver igual
+function setDetalleResp(val){
+  PV_DETALLE_RESP = val;
+  if(PV_DETALLE_I!=null) abrirDetalleProv(PV_DETALLE_I);
+}
+function setDetalleCumpl(val){
+  PV_DETALLE_CUMPL = val;
+  if(PV_DETALLE_I!=null) abrirDetalleProv(PV_DETALLE_I);
+}
+function bucketPct(pct){ return pct>=80?'completo':(pct>=50?'proceso':'incompleto'); }
+function pctUnidadModal(u){
+  const ap=docsUnidAplicables(u.tipoServicio||provServicioDeUnidad(u), u.tipo, u);
+  const tot=ap.length, ok=ap.filter(d=>u[d.campo]==='✓').length;
+  return tot?Math.round(ok/tot*100):0;
+}
+function pctConductorModal(c){
+  const tot=DOCS_C_PROV.length, ok=DOCS_C_PROV.filter(d=>c[d.c]==='✓').length;
+  return tot?Math.round(ok/tot*100):0;
+}
+// Pastillas "por cumplimiento" dentro del modal, mismas categorías que se usan en el resto del panel
+function pillsCumplModal(){
+  const opts=[['','👥 Todos'],['completo','✅ Completo'],['proceso','⏳ Proceso'],['incompleto','❌ Incompleto']];
+  const pill=([v,label])=>`<button type="button" class="resp-pill${PV_DETALLE_CUMPL===v?' active':''}" onclick='event.stopPropagation();setDetalleCumpl(${JSON.stringify(v)})'>${label}</button>`;
+  return `<div class="resp-pills" style="margin:0 0 14px">${opts.map(pill).join('')}</div>`;
+}
+// Restaura el modal (proveedor + pestaña + filtros) que estaba abierto antes de ir a Editar
+function volverDesdeEdicion(){
+  const v = PV_VOLVER_MODAL; PV_VOLVER_MODAL = null;
+  goPage('proveedores', document.querySelector('.nav-item[onclick*=proveedores]'));
+  if(v){
+    setTimeout(()=>{
+      PV_DETALLE_I = v.idx; // evita que abrirDetalleProv() limpie los filtros al "detectar" proveedor nuevo
+      PV_DETALLE_TAB = v.tab;
+      PV_DETALLE_RESP = v.resp;
+      PV_DETALLE_CUMPL = v.cumpl;
+      abrirDetalleProv(v.idx);
+    }, 130);
+  }
+}
+// Pastillas "por analista" dentro del modal: junta el Responsable del proveedor + el de cada
+// unidad (las unidades pueden tener su propio Responsable, distinto al del proveedor)
+function pillsRespModal(unids, respProv){
+  const set = new Set();
+  (respProv||'').split(/[\/,\-]/).map(x=>x.trim().toUpperCase()).filter(Boolean).forEach(x=>set.add(x));
+  (unids||[]).forEach(u=>(u.responsable||'').split(/[\/,\-]/).map(x=>x.trim().toUpperCase()).filter(Boolean).forEach(x=>set.add(x)));
+  if(!set.size) return '';
+  const vals=[...set].sort();
+  const pill=(v,label)=>`<button type="button" class="resp-pill${PV_DETALLE_RESP===v?' active':''}" onclick='event.stopPropagation();setDetalleResp(${JSON.stringify(v)})'>${label}</button>`;
+  return `<div class="resp-pills" style="margin:0 0 14px">${pill('','👥 Todos')}${vals.map(v=>pill(v,v)).join('')}</div>`;
+}
 
 // Muestra solo los datos de UNA unidad (sin la ficha completa del proveedor)
 function abrirDetalleUnidadSola(placa){
@@ -4618,15 +4739,15 @@ function abrirDetalleUnidadSola(placa){
   const provEsc = (u.proveedor||'').replace(/'/g,"\\'");
   box.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:6px">
-      <div style="font-size:20px;font-weight:800;color:#111;font-family:var(--mono)">🚛 ${u.placa||'—'}</div>
+      <div style="font-size:20px;font-weight:800;color:#1C0840;font-family:var(--mono)">🚛 ${u.placa||'—'}</div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button onclick="editarUnidad('${(u.placa||'').replace(/'/g,"\\'")}')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 14px;height:30px;cursor:pointer;font-size:12px;font-weight:700">✏️ Editar</button>
-        <button onclick="cerrarDetalleProv()" style="background:#f3f4f6;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#6b7280">✕</button>
+        <button onclick="cerrarDetalleProv()" style="background:#F0EDF8;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#5C4880">✕</button>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-      <div style="font-size:12px;color:#9ca3af">🏢 ${u.proveedor||'—'}</div>
-      ${idxProv>=0?`<button onclick="abrirDetalleProvPorNombre('${provEsc}','todo')" title="Ver ficha completa del proveedor" style="background:#f3f4f6;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👁️</button>`:''}
+      <div style="font-size:12px;color:#9B89B8">🏢 ${u.proveedor||'—'}</div>
+      ${idxProv>=0?`<button onclick="abrirDetalleProvPorNombre('${provEsc}','todo')" title="Ver ficha completa del proveedor" style="background:#F0EDF8;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👁️</button>`:''}
     </div>
     ${tarjetaUnidadHTML(u, idxProv, false)}`;
   document.getElementById('pv-detalle-modal').classList.add('open');
@@ -4652,16 +4773,16 @@ function abrirDetalleConductorSolo(nombre){
   const placaHoySolo = filaHoy?.placa || '';
   box.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:6px">
-      <div style="font-size:18px;font-weight:800;color:#111">👤 ${c.conductor||'—'}</div>
+      <div style="font-size:18px;font-weight:800;color:#1C0840">👤 ${c.conductor||'—'}</div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button onclick="editarConductor('${(c.dni||'').replace(/'/g,"\\'")}')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 14px;height:30px;cursor:pointer;font-size:12px;font-weight:700">✏️ Editar</button>
-        <button onclick="cerrarDetalleProv()" style="background:#f3f4f6;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#6b7280">✕</button>
+        <button onclick="cerrarDetalleProv()" style="background:#F0EDF8;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#5C4880">✕</button>
       </div>
     </div>
-    ${placaHoySolo?`<div style="font-size:11px;color:#9ca3af;font-family:var(--mono);margin-bottom:4px">🚛 Placa hoy: ${placaHoySolo}</div>`:''}
+    ${placaHoySolo?`<div style="font-size:11px;color:#9B89B8;font-family:var(--mono);margin-bottom:4px">🚛 Placa hoy: ${placaHoySolo}</div>`:''}
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-      <div style="font-size:12px;color:#9ca3af">🏢 ${c.proveedor||'—'}</div>
-      ${idxProv>=0?`<button onclick="abrirDetalleProvPorNombre('${provEsc}','todo')" title="Ver ficha completa del proveedor" style="background:#f3f4f6;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👁️</button>`:''}
+      <div style="font-size:12px;color:#9B89B8">🏢 ${c.proveedor||'—'}</div>
+      ${idxProv>=0?`<button onclick="abrirDetalleProvPorNombre('${provEsc}','todo')" title="Ver ficha completa del proveedor" style="background:#F0EDF8;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👁️</button>`:''}
     </div>
     ${tarjetaConductorHTML(c, idxProv, false)}`;
   document.getElementById('pv-detalle-modal').classList.add('open');
@@ -4673,12 +4794,12 @@ function toggleVerBaseCond(){ PV_VER_BASE_COND=!PV_VER_BASE_COND; abrirDetallePr
 // HTML de una tarjeta de UNIDAD
 function tarjetaUnidadHTML(u, i, enRuta){
   const pl=(u.placa||'').replace(/'/g,"\\'");
-  const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocUnidModal('${pl}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
-  const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditPlacaModal('${pl}','${diasC}','${fechaC}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
+  const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocUnidModal('${pl}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#E6F4D9':'#fee2e2'};color:${v==='✓'?'#3D7A14':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
+  const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#E6F4D9','#3D7A14'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const c=m[est]||['#F0EDF8','#9B89B8'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditPlacaModal('${pl}','${diasC}','${fechaC}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${c[0]};color:${c[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
   const faltanU = unidDatosFaltantes(u);
-  return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
+  return `<div style="border:1px solid ${enRuta?'#A8D97E':'#D4CBE8'};background:${enRuta?'#F2FAEC':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:12px">${u.placa||'—'}${enRuta?' <span style="font-family:inherit;font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''}</span>
+      <span style="font-family:var(--mono);font-weight:700;color:var(--accent2);font-size:12px">${u.placa||'—'}${enRuta?' <span style="font-family:inherit;font-size:9px;background:#4A8F18;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''}</span>
       <button onclick="event.stopPropagation();editarUnidad('${pl}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
     </div>
     ${faltanU>0?`<div onclick="event.stopPropagation();editarUnidad('${pl}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Completar — faltan ${faltanU} dato(s) básicos</div>`:''}
@@ -4693,12 +4814,12 @@ function tarjetaUnidadHTML(u, i, enRuta){
 function tarjetaConductorHTML(c, i, enRuta){
   const dn=(c.dni||'').replace(/'/g,"\\'");
   const nm=(c.conductor||'').replace(/'/g,"\\'");
-  const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocCondModal('${dn}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#d1fae5':'#fee2e2'};color:${v==='✓'?'#15803d':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
-  const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#d1fae5','#15803d'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#f3f4f6','#9ca3af'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditDniModal('${dn}','${diasC}','${fechaC}','${nm}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
+  const pill=(v,lbl,campo)=>`<span onclick="event.stopPropagation();toggleDocCondModal('${dn}','${campo}',${i})" title="Clic para marcar/desmarcar" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${v==='✓'?'#E6F4D9':'#fee2e2'};color:${v==='✓'?'#3D7A14':'#b91c1c'}">${v==='✓'?'✓':'✗'} ${lbl}</span>`;
+  const estPill=(est,lbl,diasC,fechaC,dias)=>{const m={'VIGENTE':['#E6F4D9','#3D7A14'],'POR VENCER':['#fef3c7','#92400e'],'VENCIDO':['#fee2e2','#b91c1c']};const cc=m[est]||['#F0EDF8','#9B89B8'];const d=(dias!==undefined&&dias!=='')?` (${dias}d)`:'';return `<span onclick="event.stopPropagation();abrirEditDniModal('${dn}','${diasC}','${fechaC}','${nm}',${i})" title="Clic para editar fecha" style="cursor:pointer;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:600;background:${cc[0]};color:${cc[1]}">✎ ${lbl}: ${est||'—'}${d}</span>`;};
   const faltanC = condDatosFaltantes(c);
-  return `<div style="border:1px solid ${enRuta?'#86efac':'#ebebeb'};background:${enRuta?'#f0fdf4':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
+  return `<div style="border:1px solid ${enRuta?'#A8D97E':'#D4CBE8'};background:${enRuta?'#F2FAEC':'#fff'};border-radius:8px;padding:9px 11px;margin-bottom:6px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <span style="font-weight:600;color:#111;font-size:12px">${c.conductor||'—'}${enRuta?' <span style="font-size:9px;background:#16a34a;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''} <span style="font-size:10px;color:#9ca3af;font-family:var(--mono)">· DNI ${c.dni||'—'}</span></span>
+      <span style="font-weight:600;color:#1C0840;font-size:12px">${c.conductor||'—'}${enRuta?' <span style="font-size:9px;background:#4A8F18;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;letter-spacing:.3px">● ACTIVO HOY</span>':''} <span style="font-size:10px;color:#9B89B8;font-family:var(--mono)">· DNI ${c.dni||'—'}</span></span>
       <button onclick="event.stopPropagation();editarConductor('${dn}')" style="background:var(--accent3);color:var(--accent);border:none;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ Editar todo</button>
     </div>
     ${faltanC>0?`<div onclick="event.stopPropagation();editarConductor('${dn}')" style="cursor:pointer;font-size:10px;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:6px">⚠ Completar — faltan ${faltanC} dato(s) básicos</div>`:''}
@@ -4711,20 +4832,30 @@ function tarjetaConductorHTML(c, i, enRuta){
 }
 function abrirDetalleProv(i){
   const nombre = PV_MAP[i]; if(!nombre) return;
+  if(i!==PV_DETALLE_I){ PV_DETALLE_RESP=''; PV_DETALLE_CUMPL=''; } // proveedor distinto → limpiar filtros
   PV_DETALLE_I = i;
   const p = PROVEEDORES.find(x=>normProvName(x.nombre)===normProvName(nombre)); if(!p) return;
   const pd = getPD(nombre);
   const cmp = cumplProv(p); const ok = cmp.ok; const pct = cmp.pct;
   const aplicaSet = new Set(docsAplicables(p));
-  const col = pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
+  const col = pct>=80?'#5BAD1E':pct>=50?'#f59e0b':'#ef4444';
   const nUp=(nombre||'').trim().toUpperCase();
   // Dedup por placa/DNI normalizado (evita duplicados por mayúsculas/espacios)
   const _uMap=new Map();
   UNIDADES.filter(u=>(u.proveedor||'').trim().toUpperCase()===nUp).forEach(u=>{const k=normPlaca(u.placa);if(k&&!_uMap.has(k))_uMap.set(k,u);});
-  const unids=[..._uMap.values()];
+  const unidsTodas=[..._uMap.values()];
   const _cMap=new Map();
   CONDUCTORES.filter(c=>(c.proveedor||'').trim().toUpperCase()===nUp && !esConductorBeta(c)).forEach(c=>{const k=String(c.dni||'').trim()||(c.conductor||'').trim().toUpperCase();if(k&&!_cMap.has(k))_cMap.set(k,c);});
-  const conds=[..._cMap.values()];
+  const condsTodas=[..._cMap.values()];
+  // Pastillas "por analista" (a partir del Responsable del proveedor + el de cada unidad)
+  const respPillsHtml = pillsRespModal(unidsTodas, pd.resp||p.responsable||'');
+  const cumplPillsHtml = pillsCumplModal();
+  let unids = PV_DETALLE_RESP ? unidsTodas.filter(u=>matchResponsable(responsableDeUnidad(u), PV_DETALLE_RESP)) : unidsTodas;
+  let conds = PV_DETALLE_RESP ? condsTodas.filter(c=>matchResponsable(responsableDeProveedor(c.proveedor), PV_DETALLE_RESP)) : condsTodas;
+  if(PV_DETALLE_CUMPL){
+    unids = unids.filter(u=>bucketPct(pctUnidadModal(u))===PV_DETALLE_CUMPL);
+    conds = conds.filter(c=>bucketPct(pctConductorModal(c))===PV_DETALLE_CUMPL);
+  }
 
   // Placas y conductores NUEVOS del reporte (no registrados en BD) para este proveedor
   let unidsNuevas=[], condsNuevos=[];
@@ -4732,9 +4863,12 @@ function abrirDetalleProv(i){
   const placasHoy=new Set(), dnisHoy=new Set(), condsNomHoy=new Set();
   const normNombre=nombreKey; // ignora mayúsculas/minúsculas, acentos y orden de palabras
   if(typeof REP_ROWS!=='undefined' && REP_ROWS.length){
-    const placasBD=new Set(unids.map(u=>normPlaca(u.placa)));
-    const dnisBD=new Set(conds.map(c=>String(c.dni||'').trim()).filter(Boolean));
-    const nombresBD=new Set(conds.map(c=>normNombre(c.conductor)).filter(Boolean));
+    // OJO: comparar siempre contra la lista COMPLETA del proveedor (sin el filtro de
+    // analista/cumplimiento activo), si no, una unidad/conductor que sí está registrado
+    // pero quedó fuera del filtro actual se marca por error como "NUEVO".
+    const placasBD=new Set(unidsTodas.map(u=>normPlaca(u.placa)));
+    const dnisBD=new Set(condsTodas.map(c=>String(c.dni||'').trim()).filter(Boolean));
+    const nombresBD=new Set(condsTodas.map(c=>normNombre(c.conductor)).filter(Boolean));
     const vP=new Set(), vC=new Set();
     REP_ROWS.forEach(r=>{
       if(r.placa) placasHoy.add(normPlaca(r.placa));
@@ -4760,9 +4894,9 @@ function abrirDetalleProv(i){
   const docsHtml = DOCS_PROV.map((d,di)=>{
     if(!aplicaSet.has(di)) return ''; // no aplica a esta categoría → no se muestra
     const tiene=pd.docs[di];
-    return `<div onclick="toggleProvDocModal('${i}',${di})" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid ${tiene?'#bbf7d0':'#fecaca'};background:${tiene?'#f0fdf4':'#fef2f2'};border-radius:8px;cursor:pointer;font-size:11.5px">
+    return `<div onclick="toggleProvDocModal('${i}',${di})" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid ${tiene?'#C9E8AE':'#fecaca'};background:${tiene?'#F2FAEC':'#fef2f2'};border-radius:8px;cursor:pointer;font-size:11.5px">
       <span style="font-size:14px">${tiene?'✅':'❌'}</span>
-      <span style="color:${tiene?'#15803d':'#b91c1c'};font-weight:500">${d}</span>
+      <span style="color:${tiene?'#3D7A14':'#b91c1c'};font-weight:500">${d}</span>
     </div>`;
   }).join('');
 
@@ -4770,16 +4904,16 @@ function abrirDetalleProv(i){
 
   // ── Bloque: checklist documentario del PROVEEDOR ──
   const bloqueProv = `
-    <div style="background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:16px">
+    <div style="background:#F7F4FC;border-radius:10px;padding:14px;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="flex:1;height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden">
+        <div style="flex:1;height:10px;background:#D4CBE8;border-radius:6px;overflow:hidden">
           <div style="width:${pct}%;height:100%;background:${col}"></div>
         </div>
         <span style="font-size:15px;font-weight:800;color:${col};font-family:var(--mono)">${pct}%</span>
       </div>
-      <div style="font-size:12px;color:#6b7280">${ok} de ${cmp.tot} documentos · <b style="color:${col}">${pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO'}</b></div>
+      <div style="font-size:12px;color:#5C4880">${ok} de ${cmp.tot} documentos · <b style="color:${col}">${pct>=80?'COMPLETO':pct>=50?'EN PROCESO':'INCOMPLETO'}</b></div>
     </div>
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:10px">📋 Checklist Documentario del Proveedor (clic para marcar)</div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9B89B8;margin-bottom:10px">📋 Checklist Documentario del Proveedor (clic para marcar)</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">${docsHtml}</div>`;
 
   // ── Bloque: UNIDADES con su propia documentación (solo activas hoy + botón para ver base) ──
@@ -4789,14 +4923,16 @@ function abrirDetalleProv(i){
       const hayRep = placasHoy.size>0;
       const listaPrincipal = hayRep ? uHoy : unids;       // si no hay reporte, muestra todas
       const ocultas = hayRep ? uBase : [];
-      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">🚛 Unidades ${hayRep?`activas hoy (${uHoy.length})`:`(${unids.length})`}</div><div style="margin-bottom:8px">`;
-      html += listaPrincipal.length ? listaPrincipal.map(u=>tarjetaUnidadHTML(u,i,placasHoy.has(normPlaca(u.placa)))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin unidades activas hoy</div>';
-      html += unidsNuevas.map(un=>{const e=(un.placa||'').replace(/"/g,'&quot;');const ce=(un.centro||'').replace(/'/g,"\\'"),mo=(un.modalidad||'').replace(/'/g,"\\'"),ca=(un.tipoServicio||'').replace(/'/g,"\\'"),pv=(nombre||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9B89B8;margin:4px 0 8px">🚛 Unidades ${hayRep?`activas hoy (${uHoy.length})`:`(${unids.length})`}</div><div style="margin-bottom:8px">`;
+      html += listaPrincipal.length ? listaPrincipal.map(u=>tarjetaUnidadHTML(u,i,placasHoy.has(normPlaca(u.placa)))).join('') : '<div style="font-size:11px;color:#9B89B8">Sin unidades activas hoy</div>';
+      // Las unidades "nuevas" del reporte (aún sin registrar) no tienen Responsable asignado todavía,
+      // así que no se pueden atribuir a ningún analista: se ocultan mientras haya una pastilla activa.
+      html += (PV_DETALLE_RESP||PV_DETALLE_CUMPL) ? '' : unidsNuevas.map(un=>{const e=(un.placa||'').replace(/"/g,'&quot;');const ce=(un.centro||'').replace(/'/g,"\\'"),mo=(un.modalidad||'').replace(/'/g,"\\'"),ca=(un.tipoServicio||'').replace(/'/g,"\\'"),pv=(nombre||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-family:var(--mono);font-weight:700;color:#92400e;font-size:12px">${un.placa} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVA</span></span>
         <button onclick="abrirRegUnid2('${e}',{proveedor:'${pv}',centro:'${ce}',modalidad:'${mo}',categoria:'${ca}'})" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
       </div>`;}).join('');
       if(ocultas.length){
-        html += `<button onclick="event.stopPropagation();toggleVerBaseUnid()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_UNID?'▲ Ocultar':'▼ Ver '+ocultas.length+' unidad(es) más en base'}</button>`;
+        html += `<button onclick="event.stopPropagation();toggleVerBaseUnid()" style="width:100%;background:#F0EDF8;border:1px dashed #C2B4DD;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#5C4880;cursor:pointer;margin-top:4px">${PV_VER_BASE_UNID?'▲ Ocultar':'▼ Ver '+ocultas.length+' unidad(es) más en base'}</button>`;
         if(PV_VER_BASE_UNID) html += '<div style="margin-top:8px">'+ocultas.map(u=>tarjetaUnidadHTML(u,i,false)).join('')+'</div>';
       }
       html+='</div>';
@@ -4811,14 +4947,16 @@ function abrirDetalleProv(i){
       const hayRep = (dnisHoy.size>0||condsNomHoy.size>0);
       const listaPrincipal = hayRep ? cHoy : conds;
       const ocultas = hayRep ? cBase : [];
-      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin:4px 0 8px">👤 Conductores ${hayRep?`activos hoy (${cHoy.length})`:`(${conds.length})`}</div><div>`;
-      html += listaPrincipal.length ? listaPrincipal.map(c=>tarjetaConductorHTML(c,i,cActivo(c))).join('') : '<div style="font-size:11px;color:#9ca3af">Sin conductores activos hoy</div>';
-      html += condsNuevos.map(c=>{const nm=(c.nombre||'').replace(/'/g,"\\'"),dn=(c.dni||'').replace(/'/g,"\\'"),pl=(c.placa||'').replace(/'/g,"\\'"),ce=(c.centro||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+      let html=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9B89B8;margin:4px 0 8px">👤 Conductores ${hayRep?`activos hoy (${cHoy.length})`:`(${conds.length})`}</div><div>`;
+      html += listaPrincipal.length ? listaPrincipal.map(c=>tarjetaConductorHTML(c,i,cActivo(c))).join('') : '<div style="font-size:11px;color:#9B89B8">Sin conductores activos hoy</div>';
+      // Igual que con unidades: un conductor "nuevo" del reporte aún no tiene proveedor/responsable
+      // confirmado en la base, así que no se puede atribuir a ningún analista.
+      html += (PV_DETALLE_RESP||PV_DETALLE_CUMPL) ? '' : condsNuevos.map(c=>{const nm=(c.nombre||'').replace(/'/g,"\\'"),dn=(c.dni||'').replace(/'/g,"\\'"),pl=(c.placa||'').replace(/'/g,"\\'"),ce=(c.centro||'').replace(/'/g,"\\'");return `<div style="border:1.5px dashed #f59e0b;background:#fffbeb;border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-weight:600;color:#92400e;font-size:12px">${c.nombre||'—'} <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;margin-left:4px">NUEVO</span><br><span style="font-size:10px;color:#b45309;font-family:var(--mono)">DNI ${c.dni||'—'}</span></span>
         <button onclick="irRegistrarConductor('${nm}','${dn}','${(nombre||'').replace(/'/g,"\\'")}','${pl}','${ce}')" style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">✚ Registrar</button>
       </div>`;}).join('');
       if(ocultas.length){
-        html += `<button onclick="event.stopPropagation();toggleVerBaseCond()" style="width:100%;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;margin-top:4px">${PV_VER_BASE_COND?'▲ Ocultar':'▼ Ver '+ocultas.length+' conductor(es) más en base'}</button>`;
+        html += `<button onclick="event.stopPropagation();toggleVerBaseCond()" style="width:100%;background:#F0EDF8;border:1px dashed #C2B4DD;border-radius:8px;padding:8px;font-size:11px;font-weight:600;color:#5C4880;cursor:pointer;margin-top:4px">${PV_VER_BASE_COND?'▲ Ocultar':'▼ Ver '+ocultas.length+' conductor(es) más en base'}</button>`;
         if(PV_VER_BASE_COND) html += '<div style="margin-top:8px">'+ocultas.map(c=>tarjetaConductorHTML(c,i,false)).join('')+'</div>';
       }
       html+='</div>';
@@ -4828,7 +4966,7 @@ function abrirDetalleProv(i){
   // ── Pestañas ──
   const tabBtn = (tab,label)=>{
     const activo = PV_DETALLE_TAB===tab;
-    return `<button onclick="cambiarTabDetalleProv('${tab}')" style="flex:1;padding:8px 4px;font-size:11.5px;font-weight:700;border:2px solid ${activo?'#4f46e5':'transparent'};border-radius:8px;cursor:pointer;background:${activo?'#4f46e5':'#f3f4f6'};color:${activo?'#fff':'#4b5563'};box-shadow:${activo?'0 2px 6px rgba(79,70,229,.35)':'none'}">${activo?'● ':''}${label}</button>`;
+    return `<button onclick="cambiarTabDetalleProv('${tab}')" style="flex:1;padding:8px 4px;font-size:11.5px;font-weight:700;border:2px solid ${activo?'#4f46e5':'transparent'};border-radius:8px;cursor:pointer;background:${activo?'#4f46e5':'#F0EDF8'};color:${activo?'#fff':'#5C4880'};box-shadow:${activo?'0 2px 6px rgba(79,70,229,.35)':'none'}">${activo?'● ':''}${label}</button>`;
   };
   const tabsHtml = `<div style="display:flex;gap:6px;margin-bottom:16px">
     ${tabBtn('prov','🏢 Proveedor')}
@@ -4837,31 +4975,31 @@ function abrirDetalleProv(i){
     ${tabBtn('todo','📄 Completo')}
   </div>`;
   let contenidoTab = bloqueProv;
-  if(PV_DETALLE_TAB==='unid') contenidoTab = bloqueUnid;
-  else if(PV_DETALLE_TAB==='cond') contenidoTab = bloqueCond;
-  else if(PV_DETALLE_TAB==='todo') contenidoTab = bloqueProv + bloqueUnid + bloqueCond;
+  if(PV_DETALLE_TAB==='unid') contenidoTab = respPillsHtml + cumplPillsHtml + bloqueUnid;
+  else if(PV_DETALLE_TAB==='cond') contenidoTab = respPillsHtml + cumplPillsHtml + bloqueCond;
+  else if(PV_DETALLE_TAB==='todo') contenidoTab = bloqueProv + respPillsHtml + cumplPillsHtml + bloqueUnid + bloqueCond;
 
   box.innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:4px">
-      <div style="font-size:18px;font-weight:800;color:#111;line-height:1.3">${p.nombre}</div>
+      <div style="font-size:18px;font-weight:800;color:#1C0840;line-height:1.3">${p.nombre}</div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button onclick="editarProveedor('${(nombre||'').replace(/'/g,"\\'")}')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:0 14px;height:30px;cursor:pointer;font-size:12px;font-weight:700">✏️ Editar</button>
-        <button onclick="cerrarDetalleProv()" style="background:#f3f4f6;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#6b7280">✕</button>
+        <button onclick="cerrarDetalleProv()" style="background:#F0EDF8;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#5C4880">✕</button>
       </div>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
       <span class="badge ok">ACTIVO</span>
       ${p.zona?`<span style="font-size:10px;background:#eef2ff;color:#4338ca;padding:3px 9px;border-radius:20px;font-weight:600">${p.zona}</span>`:''}
-      ${clasifServicio(provTipoServicio(p))?`<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:3px 9px;border-radius:20px;font-weight:600">${clasifServicio(provTipoServicio(p))}</span>`:''}
+      ${clasifServicio(provTipoServicio(p))?`<span style="font-size:10px;background:#F2FAEC;color:#3D7A14;padding:3px 9px;border-radius:20px;font-weight:600">${clasifServicio(provTipoServicio(p))}</span>`:''}
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;font-size:12px">
-      <div><span style="color:#9ca3af">RUC:</span> <b style="font-family:var(--mono)">${p.ruc||'—'}</b></div>
-      <div><span style="color:#9ca3af">Responsable:</span> <b>${pd.resp||p.responsable||'—'}</b></div>
-      <div><span style="color:#9ca3af">Contacto:</span> <b>${p.contacto||'—'}</b></div>
-      <div><span style="color:#9ca3af">Celular:</span> <b>${p.celular||'—'}</b></div>
-      <div style="grid-column:1/-1"><span style="color:#9ca3af">Correo:</span> <b>${p.correo||'—'}</b></div>
-      <div style="grid-column:1/-1">${p.carpeta?`<a href="${p.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,0.12);color:#2563eb;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none">📁 Abrir carpeta SharePoint</a>`:'<span style="color:#9ca3af;font-size:11px">Sin carpeta SharePoint</span>'}</div>
+      <div><span style="color:#9B89B8">RUC:</span> <b style="font-family:var(--mono)">${p.ruc||'—'}</b></div>
+      <div><span style="color:#9B89B8">Responsable:</span> <b>${pd.resp||p.responsable||'—'}</b></div>
+      <div><span style="color:#9B89B8">Contacto:</span> <b>${p.contacto||'—'}</b></div>
+      <div><span style="color:#9B89B8">Celular:</span> <b>${p.celular||'—'}</b></div>
+      <div style="grid-column:1/-1"><span style="color:#9B89B8">Correo:</span> <b>${p.correo||'—'}</b></div>
+      <div style="grid-column:1/-1">${p.carpeta?`<a href="${p.carpeta}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,0.12);color:#2563eb;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none">📁 Abrir carpeta SharePoint</a>`:'<span style="color:#9B89B8;font-size:11px">Sin carpeta SharePoint</span>'}</div>
     </div>
 
     ${tabsHtml}
@@ -4872,7 +5010,7 @@ function cambiarTabDetalleProv(tab){
   PV_DETALLE_TAB = tab;
   if(PV_DETALLE_I!==null) abrirDetalleProv(PV_DETALLE_I);
 }
-function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); PV_DETALLE_I=null; PV_DETALLE_TAB='prov'; PV_SOLO_PLACA=null; PV_SOLO_COND=null; }
+function cerrarDetalleProv(){ document.getElementById('pv-detalle-modal').classList.remove('open'); PV_DETALLE_I=null; PV_DETALLE_TAB='prov'; PV_DETALLE_RESP=''; PV_DETALLE_CUMPL=''; PV_SOLO_PLACA=null; PV_SOLO_COND=null; }
 // Editar fecha de vencimiento de UNIDAD desde el modal del proveedor
 function abrirEditPlacaModal(placa, diasCampo, fechaCampo, i){
   PV_DETALLE_I = i;
@@ -4885,6 +5023,7 @@ function abrirEditDniModal(dni, diasCampo, fechaCampo, nombre, i){
 }
 // Abre el formulario de registro con TODOS los datos del proveedor cargados (editar)
 function editarProveedor(nombre){
+  PV_VOLVER_MODAL = PV_DETALLE_I!==null ? {idx:PV_DETALLE_I, tab:PV_DETALLE_TAB, resp:PV_DETALLE_RESP, cumpl:PV_DETALLE_CUMPL} : null;
   cerrarDetalleProv();
   const p = PROVEEDORES.find(x=>normProvName(x.nombre)===normProvName(nombre)); if(!p) return;
   goPage('reg-proveedor', document.querySelector('.nav-item[onclick*="reg-proveedor"]'));
@@ -5142,6 +5281,45 @@ function calcularAlertasDelDia(){
   });
   return alertas;
 }
+// Documentos "por confirmar": ya tenemos una fecha de vencimiento válida (VIGENTE/POR VENCER,
+// venga de una API o de donde sea) pero el checklist NO tiene marcado el documento (✓) —
+// significa que falta pedirle el archivo real al proveedor/conductor.
+const ALERTAS_PEDIR_DOC = [
+  {docCampo:'docLic',  estado:'estadoLic',  nombre:'Licencia de Conducir',   tipo:'conductor'},
+  {docCampo:'docSoat', estado:'estadoSoat', nombre:'SOAT',                   tipo:'unidad'},
+  {docCampo:'docRtv',  estado:'estadoRtv',  nombre:'Revisión Técnica (RTV)', tipo:'unidad'},
+];
+function calcularAlertasPedirDoc(){
+  const alertas=[];
+  const vistos=new Set();
+  REP_ROWS.forEach(r=>{
+    const c=r.condBD, u=r.unidBD;
+    const esBeta=(r.conductor||'').toUpperCase().includes('BETA');
+    ALERTAS_PEDIR_DOC.forEach(d=>{
+      if(d.tipo==='conductor' && esBeta) return;
+      const rec = d.tipo==='conductor' ? c : u;
+      if(!rec) return;
+      const est = rec[d.estado];
+      if(est!=='VIGENTE' && est!=='POR VENCER') return; // sin fecha válida no hay nada que confirmar
+      if(rec[d.docCampo]==='✓') return; // ya confirmado con el archivo real
+      const idClave = d.tipo==='unidad' ? (r.placa||'') : (r.dni||r.conductor||'');
+      const key = d.tipo+'|'+d.nombre+'|'+idClave;
+      if(vistos.has(key)) return;
+      vistos.add(key);
+      const prov = buscarProveedorPorNombre(r.proveedor);
+      alertas.push({
+        documento: d.nombre,
+        tipo: d.tipo,
+        idText: d.tipo==='unidad' ? (r.placa||'—') : (r.conductor||'—'),
+        proveedor: r.proveedor||'—',
+        contacto: prov?.contacto||'—',
+        celular: prov?.celular||'',
+        correo: prov?.correo||'',
+      });
+    });
+  });
+  return alertas;
+}
 // Proveedores activos HOY (según el reporte diario) que tienen documentación incompleta.
 function calcularAlertasProveedores(){
   if(typeof PROVEEDORES==='undefined' || !PROVEEDORES.length) return [];
@@ -5175,7 +5353,7 @@ function mostrarAvisoVencidosInicio(){
   const banner=document.createElement('div');
   banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:'+(vencidos?'#ef4444':'#f59e0b')+';color:#fff;font-size:14px;font-weight:700;padding:12px 18px;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:0 4px 12px rgba(0,0,0,.3)';
   banner.innerHTML = `⚠️ ${vencidos?`<b>${vencidos} documento(s) VENCIDO(S)</b>`:''}${vencidos&&porVencer?' · ':''}${porVencer?`${porVencer} por vencer`:''}
-    <button onclick="goPage('alertas'); this.parentNode.remove();" style="background:#fff;color:#111;border:none;border-radius:6px;padding:5px 12px;font-weight:700;cursor:pointer">Ver detalle</button>
+    <button onclick="goPage('alertas'); this.parentNode.remove();" style="background:#fff;color:#1C0840;border:none;border-radius:6px;padding:5px 12px;font-weight:700;cursor:pointer">Ver detalle</button>
     <button onclick="this.parentNode.remove()" style="background:rgba(255,255,255,.25);color:#fff;border:none;border-radius:6px;padding:5px 10px;cursor:pointer">✕</button>`;
   document.body.appendChild(banner);
 }
@@ -5185,7 +5363,8 @@ function renderAlertas(){
   const tbCond=document.getElementById('alertas-tbody-cond');
   const tbUnid=document.getElementById('alertas-tbody-unid');
   const tbProv=document.getElementById('alertas-tbody-prov');
-  if(!sinRep||!cont||!tbCond||!tbUnid||!tbProv) return;
+  const tbPedirDoc=document.getElementById('alertas-tbody-pedirdoc');
+  if(!sinRep||!cont||!tbCond||!tbUnid||!tbProv||!tbPedirDoc) return;
 
   if(!REP_ROWS.length){
     sinRep.style.display='';
@@ -5197,6 +5376,7 @@ function renderAlertas(){
 
   const alertas=calcularAlertasDelDia();
   const alertasProv=calcularAlertasProveedores();
+  const alertasPedirDoc=calcularAlertasPedirDoc();
 
   // KPIs
   const fecha=document.getElementById('rep-fecha')?.value||'—';
@@ -5211,6 +5391,7 @@ function renderAlertas(){
   document.getElementById('al-vencidos').textContent=alertas.filter(a=>a.estado==='VENCIDO').length;
   document.getElementById('al-porvencer').textContent=alertas.filter(a=>a.estado==='POR VENCER').length;
   document.getElementById('al-proveedores').textContent=alertasProv.length;
+  document.getElementById('al-pedirdoc').textContent=alertasPedirDoc.length;
 
   poblarSelectResponsable('al-fil-resp');
   // Filtro + búsqueda (aplica estado VENCIDO/POR VENCER a conductores y unidades)
@@ -5238,10 +5419,15 @@ function renderAlertas(){
   // solo se filtran por búsqueda de texto, zona, cumplimiento y responsable.
   const filtProv = alertasProv.filter(a =>
     pasaZonaCumplResp(a) && (!busc || `${a.nombre} ${a.categoria} ${a.contacto}`.toLowerCase().includes(busc)));
+  // "Por confirmar" no tiene estado VENCIDO/POR VENCER (es sobre falta de archivo, no de fecha),
+  // así que solo se filtra por zona/cumplimiento/responsable y búsqueda de texto.
+  const filtPedirDoc = alertasPedirDoc.filter(a=>pasaZonaCumplResp(a)
+    && (!busc || `${a.documento} ${a.idText} ${a.proveedor} ${a.contacto}`.toLowerCase().includes(busc)));
 
   document.getElementById('alertas-count-cond').textContent=filtCond.length;
   document.getElementById('alertas-count-unid').textContent=filtUnid.length;
   document.getElementById('alertas-count-prov').textContent=filtProv.length;
+  document.getElementById('alertas-count-pedirdoc').textContent=filtPedirDoc.length;
 
   const filaAccion = a => `
       ${a.celular?`<a href="tel:${a.celular}" class="tb-btn" style="padding:4px 8px;font-size:12px;text-decoration:none;display:inline-flex;margin-right:4px" title="Llamar a ${a.celular}">📞</a>`:''}
@@ -5250,7 +5436,7 @@ function renderAlertas(){
   tbCond.innerHTML = filtCond.length ? filtCond.map((a,i)=>`<tr>
     <td class="mono" style="color:var(--text3)">${i+1}</td>
     <td style="font-size:12px;font-weight:600">${a.documento}</td>
-    <td class="mono" style="font-weight:700;color:#111">${a.idText}</td>
+    <td class="mono" style="font-weight:700;color:#1C0840">${a.idText}</td>
     <td style="font-size:11.5px;white-space:normal;max-width:160px">${provCellHtml(a.proveedor,'cond')}</td>
     <td style="font-size:11.5px;white-space:normal;max-width:150px">${a.contacto||'—'}</td>
     <td class="mono" style="font-size:11.5px">${a.celular||'—'}</td>
@@ -5273,11 +5459,23 @@ function renderAlertas(){
     <td style="white-space:nowrap">${filaAccion(a)}</td>
   </tr>`).join('') : '<tr><td colspan="10" class="empty-state">Sin alertas para los filtros aplicados ✓</td></tr>';
 
+  tbPedirDoc.innerHTML = filtPedirDoc.length ? filtPedirDoc.map((a,i)=>`<tr>
+    <td class="mono" style="color:var(--text3)">${i+1}</td>
+    <td style="font-size:12px;font-weight:600">${a.documento}</td>
+    <td style="font-size:11px">${a.tipo==='unidad'?'🚚 Unidad':'👤 Conductor'}</td>
+    <td class="mono" style="font-weight:700;color:#1C0840">${a.idText}</td>
+    <td style="font-size:11.5px;white-space:normal;max-width:160px">${provCellHtml(a.proveedor,a.tipo==='unidad'?'unid':'cond')}</td>
+    <td style="font-size:11.5px;white-space:normal;max-width:150px">${a.contacto||'—'}</td>
+    <td class="mono" style="font-size:11.5px">${a.celular||'—'}</td>
+    <td style="font-size:11px;white-space:normal;max-width:150px">${a.correo||'—'}</td>
+    <td style="white-space:nowrap">${filaAccion(a)}</td>
+  </tr>`).join('') : '<tr><td colspan="9" class="empty-state">Sin pendientes ✓</td></tr>';
+
   tbProv.innerHTML = filtProv.length ? filtProv.map((a,i)=>{
     const col = a.pct>=80?'#f59e0b':'#ef4444';
     return `<tr>
     <td class="mono" style="color:var(--text3)">${i+1}</td>
-    <td style="font-size:12px;font-weight:700;color:#111;white-space:normal;max-width:180px">${provCellHtml(a.nombre,'prov')}</td>
+    <td style="font-size:12px;font-weight:700;color:#1C0840;white-space:normal;max-width:180px">${provCellHtml(a.nombre,'prov')}</td>
     <td style="font-size:11px">${a.categoria}</td>
     <td class="mono" style="font-size:11.5px">${a.ok}/${a.tot}</td>
     <td><span style="font-weight:700;font-size:12px;color:${col}">${a.pct}%</span></td>
@@ -5865,9 +6063,9 @@ function renderReporte(){
   };
   document.getElementById('rep-tbody').innerHTML=rows.length?rows.map((r,i)=>{
     const u=r.unidBD,c=r.condBD;
-    const rowBg=r.estado==='bad'?'rgba(239,68,68,0.05)':r.estado==='warn'?'rgba(245,158,11,0.05)':r.estado==='nf'?'rgba(107,114,128,0.05)':(i%2?'#fafafa':'#fff');
+    const rowBg=r.estado==='bad'?'rgba(239,68,68,0.05)':r.estado==='warn'?'rgba(245,158,11,0.05)':r.estado==='nf'?'rgba(107,114,128,0.05)':(i%2?'#F7F4FC':'#fff');
     const rowStyle=`style="background:${rowBg}"`;
-    const stickyBg = r.estado==='bad'?'#fef2f2':r.estado==='warn'?'#fffbeb':r.estado==='nf'?'#f9fafb':(i%2?'#fafafa':'#fff');
+    const stickyBg = r.estado==='bad'?'#fef2f2':r.estado==='warn'?'#fffbeb':r.estado==='nf'?'#F7F4FC':(i%2?'#F7F4FC':'#fff');
     // Conductor: mostrar nombre + badge si no está en BD + botón registrar
     const condCell = c
       ? `<span style="font-size:12px;font-weight:500">${c.conductor||r.conductor||'—'}</span>`
@@ -6225,7 +6423,7 @@ async function autoRellenarSoatRtv(placaRaw){
   if(!/^[A-Z0-9]{6,7}$/.test(placa)) return;
   if(!GS_URL){ if(info){info.style.display='block';info.textContent='⚠ Conecta Google Sheets primero para consultar SOAT/RTV.';} return; }
   if(info){ info.style.display='block'; info.textContent='🔎 Consultando SOAT y Revisión Técnica...'; }
-  const [s,rt]=await Promise.all([ bqFetch('soat',placa), bqFetch('revision-tecnica',placa) ]);
+  const [s,rt]=await Promise.all([ bqFetch('soat',placa), workerFetch('consulta_citv_json',{placa}) ]);
   const partes=[];
   if(!s._error && s.success && s.data){
     const su=(id,v)=>{const e=document.getElementById(id);if(e&&v)e.value=v;};
@@ -6255,6 +6453,7 @@ async function autoRellenarSoatRtv(placaRaw){
 }
 // Abre el formulario de UNIDAD con todos los datos cargados (editar)
 function editarUnidad(placa){
+  PV_VOLVER_MODAL = PV_DETALLE_I!==null ? {idx:PV_DETALLE_I, tab:PV_DETALLE_TAB, resp:PV_DETALLE_RESP, cumpl:PV_DETALLE_CUMPL} : null;
   if(typeof cerrarDetalleProv==='function') cerrarDetalleProv();
   const u=UNIDADES.find(x=>normPlaca(x.placa)===normPlaca(placa));
   if(!u){ showToast('Unidad no encontrada','err'); return; }
@@ -6275,6 +6474,7 @@ function editarUnidad(placa){
 }
 // Abre el formulario de CONDUCTOR con todos los datos cargados (editar)
 function editarConductor(dni){
+  PV_VOLVER_MODAL = PV_DETALLE_I!==null ? {idx:PV_DETALLE_I, tab:PV_DETALLE_TAB, resp:PV_DETALLE_RESP, cumpl:PV_DETALLE_CUMPL} : null;
   if(typeof cerrarDetalleProv==='function') cerrarDetalleProv();
   const c=CONDUCTORES.find(x=>normDni(x.dni)===normDni(dni));
   if(!c){ showToast('Conductor no encontrado','err'); return; }
@@ -6383,7 +6583,9 @@ async function guardarUnidad(){
     docTc:document.getElementById('uch-tc').checked?'✓':'✗',
     docMnto:document.getElementById('uch-mnto').checked?'✓':'✗',
     docBoletin:document.getElementById('uch-boletin').checked?'✓':'✗',
-    docPoliza:document.getElementById('uch-poliza').checked?'✓':'✗',
+    // Motos/mototaxis/motocargas no piden Póliza: se guarda vacío (no ✗) para que no
+    // aparezca como pendiente, pero la columna del Sheet se mantiene igual (no se corre el orden).
+    docPoliza:esMotoTipo(gv('u-tipo'))?'':(document.getElementById('uch-poliza').checked?'✓':'✗'),
     docSeguroRc:document.getElementById('uch-seguro-rc')?.checked?'✓':'✗',
     docSeguroCarga:document.getElementById('uch-seguro-carga')?.checked?'✓':'✗',
     tipoServicio:document.getElementById('u-tiposervicio')?.value||'',
@@ -6440,7 +6642,7 @@ function mostrarCargando(show){
     ov=document.createElement('div');
     ov.id='cargando-ov';
     ov.style.cssText='position:fixed;inset:0;background:rgba(15,10,40,.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .3s';
-    ov.innerHTML=`<div style="width:52px;height:52px;border:4px solid rgba(167,139,250,.25);border-top-color:#7c3aed;border-radius:50%;animation:sps .8s linear infinite"></div>
+    ov.innerHTML=`<div style="width:52px;height:52px;border:4px solid rgba(167,139,250,.25);border-top-color:#5212A0;border-radius:50%;animation:sps .8s linear infinite"></div>
       <div style="color:#fff;font-size:15px;font-weight:700;font-family:Inter,sans-serif">Cargando desde Google Sheets...</div>
       <div style="color:rgba(255,255,255,.45);font-size:12px;font-family:Inter,sans-serif">Conductores · Unidades · Proveedores</div>
       <style>@keyframes sps{to{transform:rotate(360deg)}}</style>`;
@@ -6598,7 +6800,7 @@ function renderReporteProveedores(){
     if(!provSedes[nUp]) provSedes[nUp]=new Set();
     if(r.centro) provSedes[nUp].add(String(r.centro).trim());
     if(!provGrupos[nUp]) provGrupos[nUp]=new Set();
-    if(r.grupo) provGrupos[nUp].add(String(r.grupo).trim());
+    if(r.grupo) provGrupos[nUp].add(normGrupoVehic(r.grupo));
     if(!provTiposServ[nUp]) provTiposServ[nUp]=new Set();
     if(r.tipoServicio) provTiposServ[nUp].add(String(r.tipoServicio).trim());
   });
@@ -6665,17 +6867,17 @@ function renderReporteProveedores(){
   tbody.innerHTML=rows.map((r,n)=>filaClProv(r,n)).join('');
 }
 function filaClProv(r,n){
-  const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
+  const col=r.pct>=80?'#4A8F18':r.pct>=50?'#d97706':'#dc2626';
   const nomEsc=(r.p.nombre||'').replace(/'/g,"\\'");
   const cells=DOCS_PROV.map((d,i)=>{
     if(!r.aplica.has(i)) return '<td class="tc" style="background:#f8fafc;color:#cbd5e1;font-size:11px">–</td>';
     const tiene=r.pd.docs[i];
     return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleRepProvDoc('${nomEsc}',${i})" title="${d}: ${tiene?'TIENE':'FALTA'}">
-      <div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${tiene?'#dcfce7':'#fee2e2'};color:${tiene?'#16a34a':'#dc2626'}">${tiene?'✓':'✗'}</div></td>`;
+      <div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${tiene?'#E6F4D9':'#fee2e2'};color:${tiene?'#4A8F18':'#dc2626'}">${tiene?'✓':'✗'}</div></td>`;
   }).join('');
   return `<tr style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
-    <td class="mono" style="color:#94a3b8">${n+1}</td>
-    <td style="font-weight:700;font-size:12.5px;color:#0f172a;text-align:left;max-width:190px">${provCellHtml(r.p.nombre,'prov')}</td>
+    <td class="mono" style="color:#9B89B8">${n+1}</td>
+    <td style="font-weight:700;font-size:12.5px;color:#1C0840;text-align:left;max-width:190px">${provCellHtml(r.p.nombre,'prov')}</td>
     <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:3px 9px;border-radius:12px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'<span style="color:#cbd5e1">—</span>'}</td>
     <td class="mono" style="font-size:10px;color:#475569">${r.sedes||'—'}</td>
     ${cells}
@@ -6727,13 +6929,53 @@ function clTab(tab){
   document.querySelectorAll('.cl-tab').forEach(b=>{
     const on=b.getAttribute('data-clt')===tab;
     b.style.borderBottomColor=on?'var(--accent)':'transparent';
-    b.style.color=on?'var(--accent)':'#6b7280';
+    b.style.color=on?'var(--accent)':'#5C4880';
   });
   document.querySelectorAll('.cl-panel').forEach(p=>p.style.display='none');
   const panel=document.getElementById('cl-'+tab); if(panel) panel.style.display='block';
   if(tab==='prov') renderReporteProveedores();
   if(tab==='unid') renderChecklistUnid();
   if(tab==='cond') renderChecklistCond();
+}
+// Distancia de edición (Levenshtein) — para tolerar que a una palabra le sobre/falte 1-2 letras
+function levenshtein(a,b){
+  const m=a.length, n=b.length;
+  if(!m) return n; if(!n) return m;
+  const dp=Array.from({length:m+1},()=>new Array(n+1).fill(0));
+  for(let i=0;i<=m;i++) dp[i][0]=i;
+  for(let j=0;j<=n;j++) dp[0][j]=j;
+  for(let i=1;i<=m;i++){
+    for(let j=1;j<=n;j++){
+      dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j-1],dp[i-1][j],dp[i][j-1]);
+    }
+  }
+  return dp[m][n];
+}
+// Palabras base conocidas de tipo de vehículo: si el valor (sin tildes/espacios) se le
+// parece mucho — 1 o 2 letras de diferencia por typo — se agrupa bajo esa palabra.
+const GRUPOS_BASE_VEHIC=['MOTOCARGA','MOTOTAXI','MOTO','CAMIONETA','CAMION','TRAILER','FURGON','CISTERNA','VOLQUETE','REMOLQUE','PLATAFORMA','MICROBUS','BUS'];
+// Normaliza el "Grupo de Vehículo" / "Tipo de Unidad" para que variantes con tilde, mayúscula/
+// minúscula distinta, mal escritas o con especificaciones extra caigan en un solo grupo
+// (ej. "CAMION"/"CAMIÓN" → CAMION; "MOTO"/"MOTO LINEAL" → MOTO; "MOTOCARGA"/"MOTO CARGA" →
+// MOTOCARGA; "CAMIONETA 4X2"/"CAMIONETA DOBLE CABINA" → CAMIONETA).
+function normGrupoVehic(raw){
+  const s=(raw||'').toString().toUpperCase().trim()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'') // quita tildes: CAMIÓN → CAMION
+    .replace(/\s+/g,' ');
+  if(!s) return '';
+  const compact=s.replace(/\s+/g,'');
+  if(compact.startsWith('MOTOCARGA')) return 'MOTOCARGA';
+  if(compact.startsWith('MOTOTAXI'))  return 'MOTOTAXI';
+  if(compact.startsWith('MOTO'))      return 'MOTO';
+  if(s.includes('CAMIONETA'))         return 'CAMIONETA';
+  if(compact.startsWith('CAMION'))    return 'CAMION';
+  // Tolerancia a typos (letra de más/menos) contra las palabras base conocidas —
+  // solo si el valor es una sola palabra corta parecida (no confunde tipos con specs extra).
+  for(const base of GRUPOS_BASE_VEHIC){
+    const tol = base.length<=5 ? 1 : 2;
+    if(Math.abs(compact.length-base.length)<=tol && levenshtein(compact,base)<=tol) return base;
+  }
+  return s;
 }
 // Puebla CUALQUIER <select> de Grupo de Vehículo con los valores únicos que trae el reporte diario
 function poblarSelectGrupo(selId, etiquetaVacia){
@@ -6743,8 +6985,8 @@ function poblarSelectGrupo(selId, etiquetaVacia){
   // 2) 'Grupo de Vehículo' del reporte del día (si está cargado), por si trae categorías extra.
   const gruposBase = (typeof UNIDADES!=='undefined'?UNIDADES:[])
     .filter(u=>(u.estado||'ACTIVO').toUpperCase()==='ACTIVO')
-    .map(u=>(u.tipo||'').trim());
-  const gruposRep = (REP_ROWS||[]).map(r=>(r.grupo||'').trim());
+    .map(u=>normGrupoVehic(u.tipo));
+  const gruposRep = (REP_ROWS||[]).map(r=>normGrupoVehic(r.grupo));
   const grupos=[...new Set([...gruposBase,...gruposRep])].filter(Boolean).sort();
   const actual=sel.value;
   sel.innerHTML=`<option value="">${etiquetaVacia||'Todos los grupos'}</option>`+grupos.map(g=>`<option value="${g}">${g}</option>`).join('');
@@ -6814,7 +7056,7 @@ function renderChecklistUnid(){
   if(hayRep) REP_ROWS.forEach(r=>{
     const pn=normPlaca(r.placa); if(!pn) return;
     if(!placaGrupos[pn]) placaGrupos[pn]=new Set();
-    if(r.grupo) placaGrupos[pn].add(String(r.grupo).trim());
+    if(r.grupo) placaGrupos[pn].add(normGrupoVehic(r.grupo));
     if(!placaTiposServ[pn]) placaTiposServ[pn]=new Set();
     if(r.tipoServicio) placaTiposServ[pn].add(String(r.tipoServicio).trim());
   });
@@ -6849,15 +7091,15 @@ function renderChecklistUnid(){
   tbody.innerHTML=rows.map((r,n)=>filaClUnid(r,n)).join('');
 }
 function filaClUnid(r,n){
-  const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
+  const col=r.pct>=80?'#4A8F18':r.pct>=50?'#d97706':'#dc2626';
   const pl=(r.u.placa||'').replace(/'/g,"\\'");
   const cells=DOCS_UNID.map(d=>{
     if(!r.aplica.has(d.campo)) return '<td class="tc" style="background:#f8fafc;color:#cbd5e1">–</td>';
     const v=r.u[d.campo]==='✓';
-    return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleClUnidDoc('${pl}','${d.campo}')" title="${d.lbl}"><div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${v?'#dcfce7':'#fee2e2'};color:${v?'#16a34a':'#dc2626'}">${v?'✓':'✗'}</div></td>`;
+    return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleClUnidDoc('${pl}','${d.campo}')" title="${d.lbl}"><div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${v?'#E6F4D9':'#fee2e2'};color:${v?'#4A8F18':'#dc2626'}">${v?'✓':'✗'}</div></td>`;
   }).join('');
   return `<tr style="border-bottom:1px solid #f1f5f9">
-    <td class="mono" style="color:#94a3b8">${n+1}</td>
+    <td class="mono" style="color:#9B89B8">${n+1}</td>
     <td class="mono" style="font-weight:700;text-align:left;color:var(--accent2)">${r.u.placa||'—'}</td>
     <td style="font-size:11px;text-align:left;max-width:150px">${provCellHtml(r.u.proveedor,'unid')}</td>
     <td style="font-size:10px">${r.cat?`<span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap">${r.cat}</span>`:'—'}</td>
@@ -6910,8 +7152,8 @@ function renderChecklistCond(){
   const dniGrupos={}, nomGrupos={}, dniTiposServ={}, nomTiposServ={};
   if(hayRep) REP_ROWS.forEach(r=>{
     const dn=String(r.dni||'').trim(); const nm=normNom(r.conductor);
-    if(r.grupo && dn){ if(!dniGrupos[dn]) dniGrupos[dn]=new Set(); dniGrupos[dn].add(String(r.grupo).trim()); }
-    if(r.grupo && nm){ if(!nomGrupos[nm]) nomGrupos[nm]=new Set(); nomGrupos[nm].add(String(r.grupo).trim()); }
+    if(r.grupo && dn){ if(!dniGrupos[dn]) dniGrupos[dn]=new Set(); dniGrupos[dn].add(normGrupoVehic(r.grupo)); }
+    if(r.grupo && nm){ if(!nomGrupos[nm]) nomGrupos[nm]=new Set(); nomGrupos[nm].add(normGrupoVehic(r.grupo)); }
     if(r.tipoServicio && dn){ if(!dniTiposServ[dn]) dniTiposServ[dn]=new Set(); dniTiposServ[dn].add(String(r.tipoServicio).trim()); }
     if(r.tipoServicio && nm){ if(!nomTiposServ[nm]) nomTiposServ[nm]=new Set(); nomTiposServ[nm].add(String(r.tipoServicio).trim()); }
   });
@@ -6953,14 +7195,14 @@ function renderChecklistCond(){
   tbody.innerHTML=rows.map((r,n)=>filaClCond(r,n,DOCS_C)).join('');
 }
 function filaClCond(r,n,DOCS_C){
-  const col=r.pct>=80?'#16a34a':r.pct>=50?'#d97706':'#dc2626';
+  const col=r.pct>=80?'#4A8F18':r.pct>=50?'#d97706':'#dc2626';
   const dn=(r.c.dni||'').replace(/'/g,"\\'");
   const cells=DOCS_C.map(d=>{
     const v=r.c[d.c]==='✓';
-    return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleClCondDoc('${dn}','${d.c}')" title="${d.l}"><div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${v?'#dcfce7':'#fee2e2'};color:${v?'#16a34a':'#dc2626'}">${v?'✓':'✗'}</div></td>`;
+    return `<td class="tc" style="cursor:pointer;padding:0" onclick="toggleClCondDoc('${dn}','${d.c}')" title="${d.l}"><div style="margin:3px;border-radius:5px;padding:6px 0;font-size:13px;font-weight:800;background:${v?'#E6F4D9':'#fee2e2'};color:${v?'#4A8F18':'#dc2626'}">${v?'✓':'✗'}</div></td>`;
   }).join('');
   return `<tr style="border-bottom:1px solid #f1f5f9">
-    <td class="mono" style="color:#94a3b8">${n+1}</td>
+    <td class="mono" style="color:#9B89B8">${n+1}</td>
     <td style="font-weight:700;text-align:left;font-size:11.5px">${r.c.conductor||'—'}</td>
     <td class="mono" style="font-size:10px">${r.c.dni||'—'}</td>
     <td style="font-size:11px;text-align:left;max-width:140px">${provCellHtml(r.c.proveedor,'cond')}</td>
@@ -7388,26 +7630,26 @@ function generarTablaAuditoria(){
   const th = s => `<th style="text-align:left;padding:9px 10px;font-size:9.5px;font-weight:700;text-transform:uppercase;color:var(--text3);border-bottom:1.5px solid var(--border);white-space:nowrap">${s}</th>`;
   const thC = (s,col) => `<th style="text-align:center;padding:9px 10px;font-size:9.5px;font-weight:700;text-transform:uppercase;color:${col};border-bottom:1.5px solid var(--border)">${s}</th>`;
   let html = `<div style="background:#ffffff;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08)">
-    <div style="padding:12px 18px;background:#f9fafb;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+    <div style="padding:12px 18px;background:#F7F4FC;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
       <div style="font-size:13px;font-weight:700;color:var(--text)">📋 Resultados — ${filas.length} filas</div>
       <div style="display:flex;gap:8px">
-        <button onclick="copiarTablaAud('html')" style="background:#10b981;color:white;border:none;border-radius:6px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer">📋 Copiar (Outlook)</button>
+        <button onclick="copiarTablaAud('html')" style="background:#5BAD1E;color:white;border:none;border-radius:6px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer">📋 Copiar (Outlook)</button>
         <button onclick="copiarTablaAud('texto')" style="background:#3b82f6;color:white;border:none;border-radius:6px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer">📄 Copiar (Excel)</button>
         <button onclick="descargarTablaAud()" style="background:#8b5cf6;color:white;border:none;border-radius:6px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer">⬇️ CSV</button>
       </div>
     </div>
     <div style="overflow-x:auto;max-height:620px;overflow-y:auto">
       <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead style="position:sticky;top:0;background:#f3f4f6;z-index:5"><tr>
+        <thead style="position:sticky;top:0;background:#F0EDF8;z-index:5"><tr>
           ${th('#')}${th('Placa')}${th('Proveedor')}${th('Conductor')}${th('DNI')}
           ${th('Centro/Sede')}${th('Ruta/Destino')}${th('Turno')}
-          ${thC('🏢 Carpeta Prov.','#1e40af')}${thC('🚛 Carpeta Unid.','#059669')}${thC('👤 Carpeta Cond.','#b45309')}
+          ${thC('🏢 Carpeta Prov.','#1e40af')}${thC('🚛 Carpeta Unid.','#4A8F18')}${thC('👤 Carpeta Cond.','#b45309')}
         </tr></thead><tbody>`;
   const linkBtn = (link, color) => link
     ? `<a href="${link}" target="_blank" style="display:inline-block;background:${color};color:white;padding:3px 10px;border-radius:4px;text-decoration:none;font-size:10px;font-weight:700">🔗 Abrir</a>`
     : '<span style="color:var(--text3);font-size:10px">—</span>';
   filas.forEach((f,i) => {
-    const bg = i%2===0 ? '' : 'background:#fafafa';
+    const bg = i%2===0 ? '' : 'background:#F7F4FC';
     html += `<tr style="border-bottom:1px solid #f0f2f5;${bg}">
       <td style="padding:8px 10px;color:var(--text3);font-family:var(--mono);font-size:11px">${i+1}</td>
       <td style="padding:8px 10px;font-family:var(--mono);font-weight:700;color:var(--accent2)">${f.placa}</td>
@@ -7418,7 +7660,7 @@ function generarTablaAuditoria(){
       <td style="padding:8px 10px;font-size:11px">${f.ruta||'—'}</td>
       <td style="padding:8px 10px;font-size:11px">${f.turno||'—'}</td>
       <td style="padding:8px 10px;text-align:center">${linkBtn(f.linkProv,'#3b82f6')}</td>
-      <td style="padding:8px 10px;text-align:center">${linkBtn(f.linkUnid,'#10b981')}</td>
+      <td style="padding:8px 10px;text-align:center">${linkBtn(f.linkUnid,'#5BAD1E')}</td>
       <td style="padding:8px 10px;text-align:center">${linkBtn(f.linkCond,'#f59e0b')}</td>
     </tr>`;
   });
@@ -7634,14 +7876,14 @@ function renderHistorial(){
     return `<span class="badge ${m[s]||'inactive'}">${s||'—'}</span>`;
   };
   const estColor = s => {
-    const m = {'VIGENTE':'#059669','VENCIDO':'#dc2626','POR VENCER':'#d97706'};
-    return `<span style="font-size:11px;font-weight:700;color:${m[s]||'#9ca3af'}">${s||'—'}</span>`;
+    const m = {'VIGENTE':'#4A8F18','VENCIDO':'#dc2626','POR VENCER':'#d97706'};
+    return `<span style="font-size:11px;font-weight:700;color:${m[s]||'#9B89B8'}">${s||'—'}</span>`;
   };
 
   document.getElementById('hist-tbody').innerHTML = sl.length
     ? sl.map((r,i)=>`<tr>
-        <td class="mono" style="color:#9ca3af">${(HIST_PAGE-1)*HIST_PS+i+1}</td>
-        <td class="mono" style="font-weight:700;color:#6d28d9">${r.fecha||'—'}</td>
+        <td class="mono" style="color:#9B89B8">${(HIST_PAGE-1)*HIST_PS+i+1}</td>
+        <td class="mono" style="font-weight:700;color:#3C0C79">${r.fecha||'—'}</td>
         <td class="mono" style="font-weight:700;color:#1e40af">${r.placa||'—'}</td>
         <td style="font-size:12px;font-weight:500;white-space:normal;min-width:130px">${r.conductor||'—'}</td>
         <td style="font-size:11.5px;white-space:normal;max-width:140px">${r.proveedor||'—'}</td>
