@@ -2460,7 +2460,7 @@ async function syncFromSheets(){
         turno:         o.turno||'',
         numLic:        o['n° licencia de conducir']||'',
         catLic:        o['categoria licencia']||'',
-        fechaLic:      o['fecha de revalidacion']||'',
+        fechaLic:      normFechaISO(o['fecha de revalidacion'])||'',
         diasLic:       o['dias vencimiento lic.']||'',
         estadoLic:     (o['estado licencia']||'').toString().toUpperCase(),
         restriccion:   o['restriccion']||'',
@@ -2473,7 +2473,7 @@ async function syncFromSheets(){
         alertaPuntos:  o['alerta puntos (mtc)']||'',
         asegSctr:      o['aseguradora sctr']||'',
         tipoSctr:      o['tipo de sctr']||'',
-        fechaSctr:     o['fecha vencimiento sctr']||'',
+        fechaSctr:     normFechaISO(o['fecha vencimiento sctr'])||'',
         diasSctr:      o['dias vencimiento sctr']||'',
         estadoSctr:    (o['estado sctr']||'').toString().toUpperCase(),
         docDni:        boolDoc(o['dni']),
@@ -2521,7 +2521,7 @@ async function syncFromSheets(){
         pesoNeto:      o['peso neto']||'',
         reacondicionado: o.reacondicionado||'',
         tieneTarjProp: o['tiene tarj. prop.']||'',
-        fechaSoat:     o['fecha vencimiento soat']||'',
+        fechaSoat:     normFechaISO(o['fecha vencimiento soat'])||'',
         diasSoat:      o['dias vencimiento soat']||'',
         estadoSoat:    (o['alerta soat']||'').toString().toUpperCase(),
         usoSoat:       o['uso soat']||'',
@@ -2529,12 +2529,12 @@ async function syncFromSheets(){
         aseguradora:   o.aseguradora||'',
         tipoSoat:      o['tipo soat']||'',
         tieneRtv:      o['le toca rvt']||o['le toca rtv']||'',
-        fechaRtv:      o['fecha vencimiento rtv']||'',
+        fechaRtv:      normFechaISO(o['fecha vencimiento rtv'])||'',
         diasRtv:       o['dias vencimiento rtv']||'',
         estadoRtv:     (o['alerta rtv']||'').toString().toUpperCase(),
         obsRtv:        o.observaciones||'',
         tieneTc:       o['¿tiene t.c.?']||'',
-        fechaTc:       o['fecha vencimiento t.c.']||'',
+        fechaTc:       normFechaISO(o['fecha vencimiento t.c.'])||'',
         diasTc:        o['dias vencimiento t.c.']||'',
         estadoTc:      (o['alerta t.c.']||'').toString().toUpperCase(),
         propietario:   o.propietario||'',
@@ -6428,9 +6428,19 @@ function buscarUnidad(placa){
 }
 // Convierte fecha DD/MM/AAAA (u otros formatos comunes) a AAAA-MM-DD para <input type="date">
 function normFechaISO(v){
-  if(!v) return '';
+  if(!v && v!==0) return '';
   v=String(v).trim();
+  if(!v) return '';
   if(/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0,10);
+  // Número de serie de Google Sheets/Excel (días desde 1899-12-30) — pasa cuando la
+  // celda de la hoja está formateada como NÚMERO en vez de FECHA.
+  if(/^\d{4,6}(\.\d+)?$/.test(v)){
+    const serial=parseFloat(v);
+    if(serial>20000 && serial<80000){
+      const d=new Date(Date.UTC(1899,11,30)+Math.round(serial)*86400000);
+      return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+    }
+  }
   let m=v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
   if(m) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
   m=v.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
