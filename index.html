@@ -2022,7 +2022,7 @@ async function buscarSoatRtvCD(){
     if(tipoSeguro){ const el=document.getElementById('u-tipo-seguro'); if(el && !el.value.trim()) el.value=tipoSeguro; }
     if(tipoSoat){ const el=document.getElementById('u-tipo-soat'); if(el && !el.value.trim()) el.value=tipoSoat; }
     if(claseVehic){ const el=document.getElementById('u-tipo'); if(el && !el.value.trim()){ el.value=claseVehic; if(typeof aplicarReglasTipoUnidad==='function') aplicarReglasTipoUnidad(); } }
-    htmlSoat = avisoPedirDoc('el SOAT (póliza/certificado)') + cdCardWrap('🔎🛡️','SOAT', cdEstadoBadge(s.estado), cdRenderAll(s));
+    htmlSoat = avisoPedirDoc('el SOAT (póliza/certificado)') + cdCardWrap('🔎🛡️','SOAT (actual)', cdEstadoBadge(s.estado), cdRenderAll(s, ['ok','http','historial','detalle','registros','tramites','polizas']));
   }
 
   // — Revisión Técnica vía JSON.pe: solo el registro ACTUAL (sin historial de inspecciones pasadas) —
