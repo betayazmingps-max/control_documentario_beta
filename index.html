@@ -1981,31 +1981,50 @@ async function buscarSoatRtvCD(){
     workerFetch('consulta_citv_json',{placa}),   // json.pe, vía el Worker
   ]);
 
-  let html='';
+  const rtItems = (!rt._error && rt.success && Array.isArray(rt.data)) ? rt.data : [];
+  const rtUltima = rtItems.find(x=>x.orden==='ULTIMO') || rtItems[0]; // solo el registro ACTUAL, no el historial
+
+  // — Datos generales de la unidad: json.pe suele traer año/marca/tipo junto con la RTV —
+  let htmlDatos = '';
+  if(rtUltima){
+    const anio   = cdPick(rtUltima,'anio_fabricacion','anio','año','ano_fabricacion','year');
+    const marca  = cdPick(rtUltima,'marca','brand');
+    const modelo = cdPick(rtUltima,'modelo','model');
+    const tipoV  = cdPick(rtUltima,'tipo_vehiculo','tipo_unidad','categoria_vehicular','categoria','clase_vehiculo','clase');
+    const color  = cdPick(rtUltima,'color');
+    const anioEl=document.getElementById('u-anio');
+    if(anioEl && !anioEl.value.trim() && anio){ anioEl.value=anio; if(typeof calcAntig==='function') calcAntig(); }
+    const marcaEl=document.getElementById('u-marca');
+    if(marcaEl && !marcaEl.value.trim() && marca) marcaEl.value=marca;
+    const tipoEl=document.getElementById('u-tipo');
+    if(tipoEl && !tipoEl.value.trim() && tipoV){ tipoEl.value=tipoV; if(typeof aplicarReglasTipoUnidad==='function') aplicarReglasTipoUnidad(); }
+    const filasDatos = cdRow('Año',anio)+cdRow('Marca',marca)+cdRow('Modelo',modelo)+cdRow('Tipo',tipoV)+cdRow('Color',color);
+    if(filasDatos) htmlDatos = cdCardWrap('🚚','Datos de la Unidad','', filasDatos);
+  }
 
   // — SOAT vía ConsultaDatos —
+  let htmlSoat='';
   if(s._error||s.ok===false){
-    html += cdError('SOAT (ConsultaDatos): '+(s._error||s.error), s.http);
+    htmlSoat = cdError('SOAT (ConsultaDatos): '+(s._error||s.error), s.http);
   } else {
     const compania = cdPick(s,'nombre_compania','compania','aseguradora');
     const fechaFin = normFechaISO(cdPick(s,'fecha_fin','vigencia_hasta'));
     if(compania) setSelectFuzzy('u-aseg-soat', compania);
     if(fechaFin){ const el=document.getElementById('u-fecha-soat'); if(el){ el.value=fechaFin; calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat'); } }
-    html += avisoPedirDoc('el SOAT (póliza/certificado)') + cdCardWrap('🔎🛡️','ConsultaDatos — SOAT (todos los campos)', cdEstadoBadge(s.estado), cdRenderAll(s));
+    htmlSoat = avisoPedirDoc('el SOAT (póliza/certificado)') + cdCardWrap('🔎🛡️','SOAT', cdEstadoBadge(s.estado), cdRenderAll(s));
   }
 
-  // — Revisión Técnica vía JSON.pe (backend actual, más confiable que ConsultaDatos para esto) —
-  const rtItems = (!rt._error && rt.success && Array.isArray(rt.data)) ? rt.data : [];
-  const rtUltima = rtItems.find(x=>x.orden==='ULTIMO') || rtItems[0];
+  // — Revisión Técnica vía JSON.pe: solo el registro ACTUAL (sin historial de inspecciones pasadas) —
+  let htmlRtv='';
   if(rtUltima){
     const fRtv = normFechaISO(rtUltima.vigente_hasta);
     if(fRtv){ const el=document.getElementById('u-fecha-rtv'); if(el){ el.value=fRtv; calcDocDias('u-fecha-rtv','u-dias-rtv','u-est-rtv'); } }
-    html += avisoPedirDoc('el certificado de Revisión Técnica') + cdCardWrap('✅🔧','JSON.pe — Revisión Técnica (todos los campos)', cdEstadoBadge(rtUltima.resultado_inspeccion), cdRenderAll(rtUltima));
+    htmlRtv = avisoPedirDoc('el certificado de Revisión Técnica') + cdCardWrap('✅🔧','Revisión Técnica (actual)', cdEstadoBadge(rtUltima.resultado_inspeccion), cdRenderAll(rtUltima, ['ok','http','historial','detalle','registros','tramites']));
   } else {
-    html += cdError('Revisión Técnica (JSON.pe): '+(rt._error||'no se encontró información para esta placa'));
+    htmlRtv = cdError('Revisión Técnica (JSON.pe): '+(rt._error||'no se encontró información para esta placa'));
   }
 
-  box.innerHTML = html;
+  box.innerHTML = htmlDatos + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${htmlSoat}${htmlRtv}</div>`;
   showToast('✓ SOAT/RTV consultados y campos autocompletados','ok');
 }
 
