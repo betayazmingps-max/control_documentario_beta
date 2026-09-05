@@ -2015,11 +2015,13 @@ async function buscarSoatRtvCD(){
     const uso        = cdPick(s,'uso','uso_soat','tipo_uso');
     const tipoSeguro = cdPick(s,'tipo_seguro','clase_seguro');
     const tipoSoat   = cdPick(s,'tipo_soat','modalidad_soat','tipo_certificado');
+    const claseVehic = cdPick(s,'clase_vehiculo'); // confirmado: así lo trae el SOAT de ConsultaDatos
     if(compania) setSelectFuzzy('u-aseg-soat', compania);
     if(fechaFin){ const el=document.getElementById('u-fecha-soat'); if(el){ el.value=fechaFin; calcDocDias('u-fecha-soat','u-dias-soat','u-est-soat'); } }
     if(uso){ const el=document.getElementById('u-uso-soat'); if(el && !el.value.trim()) el.value=uso; }
     if(tipoSeguro){ const el=document.getElementById('u-tipo-seguro'); if(el && !el.value.trim()) el.value=tipoSeguro; }
     if(tipoSoat){ const el=document.getElementById('u-tipo-soat'); if(el && !el.value.trim()) el.value=tipoSoat; }
+    if(claseVehic){ const el=document.getElementById('u-tipo'); if(el && !el.value.trim()){ el.value=claseVehic; if(typeof aplicarReglasTipoUnidad==='function') aplicarReglasTipoUnidad(); } }
     htmlSoat = avisoPedirDoc('el SOAT (póliza/certificado)') + cdCardWrap('🔎🛡️','SOAT', cdEstadoBadge(s.estado), cdRenderAll(s));
   }
 
